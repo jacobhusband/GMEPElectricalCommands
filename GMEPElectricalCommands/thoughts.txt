@@ -37,3 +37,61 @@ Here is the data converted to JSON format:
 }
 ```
 
+Here is an updated version of a function to test at home:
+
+private void PHASE_SUM_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+{
+    // Check if the modified cell is in row 0 and column 0 or 1
+    if (e.RowIndex == 0 && (e.ColumnIndex == 0 || e.ColumnIndex == 1))
+    {
+        // Retrieve the values from dataGridView2, row 0, column 0 and 1
+        object value1 = PHASE_SUM_GRID.Rows[0].Cells[0].Value;
+        object value2 = PHASE_SUM_GRID.Rows[0].Cells[1].Value;
+
+        // Perform the sum (checking for null values)
+        double sum = 0;
+        if (value1 != null)
+        {
+            sum += Convert.ToDouble(value1);
+        }
+        if (value2 != null)
+        {
+            sum += Convert.ToDouble(value2);
+        }
+
+        object otherLoadObj = TOTAL_OTHER_LOAD_GRID[0, 0].Value;
+        double otherLoadValue = (otherLoadObj != null) ? Convert.ToDouble(otherLoadObj) : 0;
+
+        if (LARGEST_LCL_CHECKBOX.Checked && otherLoadObj != null)
+        {
+            // Update total VA with the added other load value
+            TOTAL_VA_GRID.Rows[0].Cells[0].Value = Math.Round(otherLoadValue + sum, 1);
+
+            // Update panel load (remains the same)
+            PANEL_LOAD_GRID.Rows[0].Cells[0].Value = Math.Round(sum / 1000, 1);
+
+            // Update feeder amps
+            int numberOfColumns = PHASE_SUM_GRID.ColumnCount;
+            double feederAmps = Convert.ToDouble(TOTAL_VA_GRID.Rows[0].Cells[0].Value) / (120 * numberOfColumns);
+            FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(feederAmps, 1);
+        }
+        else
+        {
+            // Update total VA and panel load as before
+            TOTAL_VA_GRID.Rows[0].Cells[0].Value = Math.Round(sum, 1);
+            PANEL_LOAD_GRID.Rows[0].Cells[0].Value = Math.Round(sum / 1000, 1);
+
+            // Update feeder amps as before
+            object lineVoltageObj = LINE_VOLTAGE_COMBOBOX.SelectedItem;
+            if (lineVoltageObj != null)
+            {
+                double lineVoltage = Convert.ToDouble(lineVoltageObj);
+                if (lineVoltage != 0)
+                {
+                    double panelLoadValue = sum / lineVoltage;
+                    FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(panelLoadValue, 1);
+                }
+            }
+        }
+    }
+}
