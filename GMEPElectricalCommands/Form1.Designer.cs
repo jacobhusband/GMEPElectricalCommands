@@ -64,24 +64,24 @@ namespace AutoCADCommands
       this.ADD_ROW_BUTTON = new System.Windows.Forms.Button();
       this.DELETE_ROW_BUTTON = new System.Windows.Forms.Button();
       this.PHASE_SUM_GRID = new System.Windows.Forms.DataGridView();
-      this.TOTAL_PH_A = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.TOTAL_PH_B = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.TOTAL_VA_GRID = new System.Windows.Forms.DataGridView();
       this.TOTAL_VA = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.LCL_GRID = new System.Windows.Forms.DataGridView();
       this.TOTAL_OTHER_LOAD_GRID = new System.Windows.Forms.DataGridView();
-      this.TOTAL_OTHER_LOAD = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.PANEL_LOAD_GRID = new System.Windows.Forms.DataGridView();
-      this.PANEL_LOAD = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.FEEDER_AMP_GRID = new System.Windows.Forms.DataGridView();
-      this.FEEDER_AMPS = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.CREATE_PANEL_BUTTON = new System.Windows.Forms.Button();
-      this.LCL_AT_125PC = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.EQUALS = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.SAVE_PANEL_BUTTON = new System.Windows.Forms.Button();
       this.LARGEST_LCL_INPUT = new System.Windows.Forms.TextBox();
       this.LARGEST_LCL_LABEL = new System.Windows.Forms.Label();
       this.LARGEST_LCL_CHECKBOX = new System.Windows.Forms.CheckBox();
+      this.TOTAL_PH_A = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.TOTAL_PH_B = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.FEEDER_AMPS = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.PANEL_LOAD = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.TOTAL_OTHER_LOAD = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.LCL_AT_100PC = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.LCL_AT_125PC = new System.Windows.Forms.DataGridViewTextBoxColumn();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PHASE_SUM_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.TOTAL_VA_GRID)).BeginInit();
@@ -218,38 +218,38 @@ namespace AutoCADCommands
       // label13
       // 
       this.label13.AutoSize = true;
-      this.label13.Location = new System.Drawing.Point(115, 252);
+      this.label13.Location = new System.Drawing.Point(96, 252);
       this.label13.Name = "label13";
-      this.label13.Size = new System.Drawing.Size(96, 13);
+      this.label13.Size = new System.Drawing.Size(112, 13);
       this.label13.TabIndex = 48;
-      this.label13.Text = "PHASE VOLTAGE";
+      this.label13.Text = "PHASE VOLTAGE (V)";
       // 
       // label14
       // 
       this.label14.AutoSize = true;
-      this.label14.Location = new System.Drawing.Point(127, 226);
+      this.label14.Location = new System.Drawing.Point(108, 226);
       this.label14.Name = "label14";
-      this.label14.Size = new System.Drawing.Size(84, 13);
+      this.label14.Size = new System.Drawing.Size(100, 13);
       this.label14.TabIndex = 46;
-      this.label14.Text = "LINE VOLTAGE";
+      this.label14.Text = "LINE VOLTAGE (V)";
       // 
       // label15
       // 
       this.label15.AutoSize = true;
-      this.label15.Location = new System.Drawing.Point(158, 200);
+      this.label15.Location = new System.Drawing.Point(140, 200);
       this.label15.Name = "label15";
-      this.label15.Size = new System.Drawing.Size(73, 13);
+      this.label15.Size = new System.Drawing.Size(89, 13);
       this.label15.TabIndex = 44;
-      this.label15.Text = "BUS RATING";
+      this.label15.Text = "BUS RATING (A)";
       // 
       // label16
       // 
       this.label16.AutoSize = true;
-      this.label16.Location = new System.Drawing.Point(168, 174);
+      this.label16.Location = new System.Drawing.Point(179, 174);
       this.label16.Name = "label16";
-      this.label16.Size = new System.Drawing.Size(63, 13);
+      this.label16.Size = new System.Drawing.Size(50, 13);
       this.label16.TabIndex = 42;
-      this.label16.Text = "MAIN(AMP)";
+      this.label16.Text = "MAIN (A)";
       // 
       // label17
       // 
@@ -272,11 +272,11 @@ namespace AutoCADCommands
       // label1
       // 
       this.label1.AutoSize = true;
-      this.label1.Location = new System.Drawing.Point(161, 99);
+      this.label1.Location = new System.Drawing.Point(100, 98);
       this.label1.Name = "label1";
-      this.label1.Size = new System.Drawing.Size(50, 13);
+      this.label1.Size = new System.Drawing.Size(108, 13);
       this.label1.TabIndex = 56;
-      this.label1.Text = "STATUS";
+      this.label1.Text = "STATUS (N, EX, RE)";
       // 
       // STATUS_COMBOBOX
       // 
@@ -382,18 +382,6 @@ namespace AutoCADCommands
       this.PHASE_SUM_GRID.Size = new System.Drawing.Size(245, 44);
       this.PHASE_SUM_GRID.TabIndex = 65;
       // 
-      // TOTAL_PH_A
-      // 
-      this.TOTAL_PH_A.HeaderText = "PH A";
-      this.TOTAL_PH_A.Name = "TOTAL_PH_A";
-      this.TOTAL_PH_A.ReadOnly = true;
-      // 
-      // TOTAL_PH_B
-      // 
-      this.TOTAL_PH_B.HeaderText = "PH B";
-      this.TOTAL_PH_B.Name = "TOTAL_PH_B";
-      this.TOTAL_PH_B.ReadOnly = true;
-      // 
       // TOTAL_VA_GRID
       // 
       this.TOTAL_VA_GRID.AllowUserToAddRows = false;
@@ -419,12 +407,12 @@ namespace AutoCADCommands
       this.LCL_GRID.AllowUserToDeleteRows = false;
       this.LCL_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.LCL_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.LCL_AT_125PC,
-            this.EQUALS});
-      this.LCL_GRID.Location = new System.Drawing.Point(90, 512);
+            this.LCL_AT_100PC,
+            this.LCL_AT_125PC});
+      this.LCL_GRID.Location = new System.Drawing.Point(51, 512);
       this.LCL_GRID.Name = "LCL_GRID";
       this.LCL_GRID.ReadOnly = true;
-      this.LCL_GRID.Size = new System.Drawing.Size(245, 42);
+      this.LCL_GRID.Size = new System.Drawing.Size(284, 42);
       this.LCL_GRID.TabIndex = 15;
       // 
       // TOTAL_OTHER_LOAD_GRID
@@ -434,17 +422,11 @@ namespace AutoCADCommands
       this.TOTAL_OTHER_LOAD_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.TOTAL_OTHER_LOAD_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.TOTAL_OTHER_LOAD});
-      this.TOTAL_OTHER_LOAD_GRID.Location = new System.Drawing.Point(41, 560);
+      this.TOTAL_OTHER_LOAD_GRID.Location = new System.Drawing.Point(121, 560);
       this.TOTAL_OTHER_LOAD_GRID.Name = "TOTAL_OTHER_LOAD_GRID";
       this.TOTAL_OTHER_LOAD_GRID.ReadOnly = true;
-      this.TOTAL_OTHER_LOAD_GRID.Size = new System.Drawing.Size(144, 57);
+      this.TOTAL_OTHER_LOAD_GRID.Size = new System.Drawing.Size(214, 41);
       this.TOTAL_OTHER_LOAD_GRID.TabIndex = 16;
-      // 
-      // TOTAL_OTHER_LOAD
-      // 
-      this.TOTAL_OTHER_LOAD.HeaderText = "TOTAL OTHER LOAD";
-      this.TOTAL_OTHER_LOAD.Name = "TOTAL_OTHER_LOAD";
-      this.TOTAL_OTHER_LOAD.ReadOnly = true;
       // 
       // PANEL_LOAD_GRID
       // 
@@ -453,17 +435,11 @@ namespace AutoCADCommands
       this.PANEL_LOAD_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.PANEL_LOAD_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.PANEL_LOAD});
-      this.PANEL_LOAD_GRID.Location = new System.Drawing.Point(191, 560);
+      this.PANEL_LOAD_GRID.Location = new System.Drawing.Point(152, 607);
       this.PANEL_LOAD_GRID.Name = "PANEL_LOAD_GRID";
       this.PANEL_LOAD_GRID.ReadOnly = true;
-      this.PANEL_LOAD_GRID.Size = new System.Drawing.Size(144, 43);
+      this.PANEL_LOAD_GRID.Size = new System.Drawing.Size(183, 43);
       this.PANEL_LOAD_GRID.TabIndex = 17;
-      // 
-      // PANEL_LOAD
-      // 
-      this.PANEL_LOAD.HeaderText = "PANEL LOAD";
-      this.PANEL_LOAD.Name = "PANEL_LOAD";
-      this.PANEL_LOAD.ReadOnly = true;
       // 
       // FEEDER_AMP_GRID
       // 
@@ -472,17 +448,11 @@ namespace AutoCADCommands
       this.FEEDER_AMP_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.FEEDER_AMP_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.FEEDER_AMPS});
-      this.FEEDER_AMP_GRID.Location = new System.Drawing.Point(191, 609);
+      this.FEEDER_AMP_GRID.Location = new System.Drawing.Point(160, 656);
       this.FEEDER_AMP_GRID.Name = "FEEDER_AMP_GRID";
       this.FEEDER_AMP_GRID.ReadOnly = true;
-      this.FEEDER_AMP_GRID.Size = new System.Drawing.Size(144, 56);
+      this.FEEDER_AMP_GRID.Size = new System.Drawing.Size(175, 40);
       this.FEEDER_AMP_GRID.TabIndex = 18;
-      // 
-      // FEEDER_AMPS
-      // 
-      this.FEEDER_AMPS.HeaderText = "FEEDER AMPS";
-      this.FEEDER_AMPS.Name = "FEEDER_AMPS";
-      this.FEEDER_AMPS.ReadOnly = true;
       // 
       // CREATE_PANEL_BUTTON
       // 
@@ -493,18 +463,6 @@ namespace AutoCADCommands
       this.CREATE_PANEL_BUTTON.Text = "CREATE PANEL";
       this.CREATE_PANEL_BUTTON.UseVisualStyleBackColor = true;
       this.CREATE_PANEL_BUTTON.Click += new System.EventHandler(this.CREATE_PANEL_BUTTON_CLICK);
-      // 
-      // LCL_AT_125PC
-      // 
-      this.LCL_AT_125PC.HeaderText = "LCL @ 125%";
-      this.LCL_AT_125PC.Name = "LCL_AT_125PC";
-      this.LCL_AT_125PC.ReadOnly = true;
-      // 
-      // EQUALS
-      // 
-      this.EQUALS.HeaderText = "EQUALS";
-      this.EQUALS.Name = "EQUALS";
-      this.EQUALS.ReadOnly = true;
       // 
       // SAVE_PANEL_BUTTON
       // 
@@ -525,11 +483,11 @@ namespace AutoCADCommands
       // LARGEST_LCL_LABEL
       // 
       this.LARGEST_LCL_LABEL.AutoSize = true;
-      this.LARGEST_LCL_LABEL.Location = new System.Drawing.Point(138, 467);
+      this.LARGEST_LCL_LABEL.Location = new System.Drawing.Point(65, 468);
       this.LARGEST_LCL_LABEL.Name = "LARGEST_LCL_LABEL";
-      this.LARGEST_LCL_LABEL.Size = new System.Drawing.Size(197, 13);
+      this.LARGEST_LCL_LABEL.Size = new System.Drawing.Size(268, 13);
       this.LARGEST_LCL_LABEL.TabIndex = 68;
-      this.LARGEST_LCL_LABEL.Text = "LARGEST LONG CONTINUOUS LOAD";
+      this.LARGEST_LCL_LABEL.Text = "LARGEST LONG CONTINUOUS LOAD (LCL @ 100%)";
       // 
       // LARGEST_LCL_CHECKBOX
       // 
@@ -541,6 +499,54 @@ namespace AutoCADCommands
       this.LARGEST_LCL_CHECKBOX.TabIndex = 69;
       this.LARGEST_LCL_CHECKBOX.Text = "ENABLE";
       this.LARGEST_LCL_CHECKBOX.UseVisualStyleBackColor = true;
+      this.LARGEST_LCL_CHECKBOX.CheckedChanged += new System.EventHandler(this.LARGEST_LCL_CHECKBOX_CheckedChanged);
+      // 
+      // TOTAL_PH_A
+      // 
+      this.TOTAL_PH_A.HeaderText = "PH A (VA)";
+      this.TOTAL_PH_A.Name = "TOTAL_PH_A";
+      this.TOTAL_PH_A.ReadOnly = true;
+      // 
+      // TOTAL_PH_B
+      // 
+      this.TOTAL_PH_B.HeaderText = "PH B (VA)";
+      this.TOTAL_PH_B.Name = "TOTAL_PH_B";
+      this.TOTAL_PH_B.ReadOnly = true;
+      // 
+      // FEEDER_AMPS
+      // 
+      this.FEEDER_AMPS.HeaderText = "FEEDER AMPS (A)";
+      this.FEEDER_AMPS.Name = "FEEDER_AMPS";
+      this.FEEDER_AMPS.ReadOnly = true;
+      this.FEEDER_AMPS.Width = 130;
+      // 
+      // PANEL_LOAD
+      // 
+      this.PANEL_LOAD.HeaderText = "PANEL LOAD (KVA)";
+      this.PANEL_LOAD.Name = "PANEL_LOAD";
+      this.PANEL_LOAD.ReadOnly = true;
+      this.PANEL_LOAD.Width = 140;
+      // 
+      // TOTAL_OTHER_LOAD
+      // 
+      this.TOTAL_OTHER_LOAD.HeaderText = "TOTAL OTHER LOAD (VA)";
+      this.TOTAL_OTHER_LOAD.Name = "TOTAL_OTHER_LOAD";
+      this.TOTAL_OTHER_LOAD.ReadOnly = true;
+      this.TOTAL_OTHER_LOAD.Width = 170;
+      // 
+      // LCL_AT_100PC
+      // 
+      this.LCL_AT_100PC.HeaderText = "LCL @ 100% (VA)";
+      this.LCL_AT_100PC.Name = "LCL_AT_100PC";
+      this.LCL_AT_100PC.ReadOnly = true;
+      this.LCL_AT_100PC.Width = 120;
+      // 
+      // LCL_AT_125PC
+      // 
+      this.LCL_AT_125PC.HeaderText = "LCL @ 125% (VA)";
+      this.LCL_AT_125PC.Name = "LCL_AT_125PC";
+      this.LCL_AT_125PC.ReadOnly = true;
+      this.LCL_AT_125PC.Width = 120;
       // 
       // Form1
       // 
@@ -631,24 +637,24 @@ namespace AutoCADCommands
     private System.Windows.Forms.Button ADD_ROW_BUTTON;
     private System.Windows.Forms.Button DELETE_ROW_BUTTON;
     private System.Windows.Forms.DataGridView PHASE_SUM_GRID;
-    private System.Windows.Forms.DataGridViewTextBoxColumn TOTAL_PH_A;
-    private System.Windows.Forms.DataGridViewTextBoxColumn TOTAL_PH_B;
     private System.Windows.Forms.DataGridView TOTAL_VA_GRID;
     private System.Windows.Forms.DataGridViewTextBoxColumn TOTAL_VA;
     private System.Windows.Forms.DataGridView LCL_GRID;
     private System.Windows.Forms.DataGridView TOTAL_OTHER_LOAD_GRID;
-    private System.Windows.Forms.DataGridViewTextBoxColumn TOTAL_OTHER_LOAD;
     private System.Windows.Forms.DataGridView PANEL_LOAD_GRID;
-    private System.Windows.Forms.DataGridViewTextBoxColumn PANEL_LOAD;
     private System.Windows.Forms.DataGridView FEEDER_AMP_GRID;
-    private System.Windows.Forms.DataGridViewTextBoxColumn FEEDER_AMPS;
     private System.Windows.Forms.Button CREATE_PANEL_BUTTON;
-    private System.Windows.Forms.DataGridViewTextBoxColumn LCL_AT_125PC;
-    private System.Windows.Forms.DataGridViewTextBoxColumn EQUALS;
     private System.Windows.Forms.Button SAVE_PANEL_BUTTON;
     private System.Windows.Forms.TextBox LARGEST_LCL_INPUT;
     private System.Windows.Forms.Label LARGEST_LCL_LABEL;
     private System.Windows.Forms.CheckBox LARGEST_LCL_CHECKBOX;
+    private System.Windows.Forms.DataGridViewTextBoxColumn TOTAL_PH_A;
+    private System.Windows.Forms.DataGridViewTextBoxColumn TOTAL_PH_B;
+    private System.Windows.Forms.DataGridViewTextBoxColumn TOTAL_OTHER_LOAD;
+    private System.Windows.Forms.DataGridViewTextBoxColumn PANEL_LOAD;
+    private System.Windows.Forms.DataGridViewTextBoxColumn FEEDER_AMPS;
+    private System.Windows.Forms.DataGridViewTextBoxColumn LCL_AT_100PC;
+    private System.Windows.Forms.DataGridViewTextBoxColumn LCL_AT_125PC;
   }
 }
 

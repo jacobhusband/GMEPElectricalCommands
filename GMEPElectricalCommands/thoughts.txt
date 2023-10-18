@@ -39,40 +39,98 @@ Here is the data converted to JSON format:
 
 
 
-// Add simple values
-        panel.Add("panel", textBox18.Text);
-        panel.Add("location", textBox17.Text);
-        panel.Add("bus_rating", textBox15.Text);
-        panel.Add("main", textBox16.Text);
-        panel.Add("voltage1", comboBox6.SelectedItem.ToString());
-        panel.Add("voltage2", comboBox5.SelectedItem.ToString());
-        panel.Add("phase", comboBox4.SelectedItem.ToString());
-        panel.Add("wire", comboBox3.SelectedItem.ToString());
-        panel.Add("mounting", comboBox2.SelectedItem.ToString());
-        panel.Add("existing", comboBox1.SelectedItem.ToString());
+I have a textbox called "LARGEST_LCL_INPUT" that is a number input.
+I have a checkbox called "LARGEST_LCL_CHECKBOX" that is a checkbox input.
+I have a datagridview called "LCL_GRID" that has two columns LCL @ 100% and LCL @ 125%.
+I have a datagridview called "TOTAL_OTHER_LOAD_GRID" that has a single column called "TOTAL OTHER LOAD".
+I have a datagridview called "PANEL_LOAD_GRID" that has a single column called "PANEL LOAD".
+I have a datagridview called "FEEDER_AMP_GRID" that has a single column called "FEEDER AMP".
 
-        // Add data grid cell values
-        panel.Add("description_left", row.Cells["DESCRIPTIONLEFT"].Value);
-        panel.Add("phase_a_left", row.Cells["PHASEALEFT"].Value);
-        panel.Add("phase_b_left", row.Cells["PHASEBLEFT"].Value);
-        panel.Add("breaker_left", row.Cells["BKRLEFT"].Value);
-        panel.Add("circuit_left", row.Cells["CKTNOLEFT"].Value);
+Here is the code that I have so far:
+```
+private void PHASE_SUM_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+    {
+      // Check if the modified cell is in row 0 and column 0 or 1
+      if (e.RowIndex == 0 && (e.ColumnIndex == 0 || e.ColumnIndex == 1))
+      {
+        // Retrieve the values from dataGridView2, row 0, column 0 and 1
+        object value1 = PHASE_SUM_GRID.Rows[0].Cells[0].Value;
+        object value2 = PHASE_SUM_GRID.Rows[0].Cells[1].Value;
 
-        panel.Add("circuit_right", row.Cells["CKTNORIGHT"].Value);
-        panel.Add("breaker_right", row.Cells["BRKRIGHT"].Value);
-        panel.Add("phase_a_right", row.Cells["PHASEARIGHT"].Value);
-        panel.Add("phase_b_right", row.Cells["PHASEBRIGHT"].Value);
-        panel.Add("description_right", row.Cells["DESCRIPTIONRIGHT"].Value);
+        // Perform the sum (checking for null values)
+        double sum = 0;
+        if (value1 != null)
+        {
+          sum += Convert.ToDouble(value1);
+        }
+        if (value2 != null)
+        {
+          sum += Convert.ToDouble(value2);
+        }
 
-        // Add highlight lists
-        panel.Add("description_left_highlights", GetHighlightBools(40));
-        panel.Add("description_right_highlights", GetHighlightBools(40));
-        panel.Add("breaker_left_highlights", GetHighlightBools(40));
-        panel.Add("breaker_right_highlights", GetHighlightBools(40));
+        // Update total VA and panel load
+        TOTAL_VA_GRID.Rows[0].Cells[0].Value = Math.Round(sum, 1); // Rounded to 1 decimal place
+        PANEL_LOAD_GRID.Rows[0].Cells[0].Value = Math.Round(sum / 1000, 1); // Rounded to 1 decimal place
 
-        // Add totals
-        panel.Add("total_va", dataGridView3.Rows[0].Cells[0].Value);
-        panel.Add("lcl", dataGridView4.Rows[0].Cells[0].Value);
-        panel.Add("total_other_load", dataGridView5.Rows[0].Cells[0].Value);
-        panel.Add("kva", dataGridView6.Rows[0].Cells[0].Value);
-        panel.Add("feeder_amps", dataGridView7.Rows[0].Cells[0].Value);
+        // Update feeder amps
+        double maxVal = 0;
+        if (value1 != null && value2 != null)
+        {
+          maxVal = Math.Max(Convert.ToDouble(value1), Convert.ToDouble(value2));
+        }
+        else if (value1 != null)
+        {
+          maxVal = Convert.ToDouble(value1);
+        }
+        else if (value2 != null)
+        {
+          maxVal = Convert.ToDouble(value2);
+        }
+
+        object lineVoltageObj = LINE_VOLTAGE_COMBOBOX.SelectedItem;
+        if (lineVoltageObj != null)
+        {
+          double lineVoltage = Convert.ToDouble(lineVoltageObj);
+          if (lineVoltage != 0)
+          {
+            double panelLoadValue = maxVal / lineVoltage;
+            FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(panelLoadValue, 1); // Rounded to 1 decimal place
+          }
+        }
+      }
+    }
+```
+
+This function is called when the user changes the value of a cell in the datagridview called "PHASE_SUM_GRID".
+
+There is an alternate formula to calculate the total VA, panel load, and feeder amps.  The alternate formula is used when the checkbox called "LARGEST_LCL_CHECKBOX" is checked.
+
+Here is the alternate formula:
+
+
+
+I have a textbox called "LARGEST_LCL_INPUT" that is a number input.
+I have a checkbox called "LARGEST_LCL_CHECKBOX" that is a checkbox input.
+I have a datagridview called "LCL_GRID" that has two columns LCL @ 100% and LCL @ 125%.
+I have a datagridview called "TOTAL_OTHER_LOAD_GRID" that has a single column called "TOTAL OTHER LOAD".
+I have a datagridview called "PANEL_LOAD_GRID" that has a single column called "PANEL LOAD".
+I have a datagridview called "FEEDER_AMP_GRID" that has a single column called "FEEDER AMP".
+
+Here is my code for observing the checkbox change state in a windows form:
+
+"
+private void LARGEST_LCL_CHECKBOX_CheckedChanged(object sender, EventArgs e)
+    {
+
+    }
+"
+
+Can this function check if the checkbox is turned on then do the following:
+1. Check if the textbox called "LARGEST_LCL_INPUT" is empty.  If it is empty, then do nothing.
+2. If it has a number, then put that number in col 0 row 0 of the datagridview called "LCL_GRID".
+3. Take that number and multiply it by 125% and put that number in col 1 row 0 of the datagridview called "LCL_GRID".
+4. Take the number in col 1 row 0 of the datagridview called "LCL_GRID" and subtract the value in row 0 col 0 of "LCL_GRID".
+5. Take that number and put it in col 0 row 0 of the datagridview called "TOTAL_OTHER_LOAD_GRID".
+6. Take the value in col 0 row 0 of the datagridview called "TOTAL_OTHER_LOAD_GRID" and add it to the value in col 0 row 0 of the datagridview called "PANEL_LOAD_GRID".
+7. Take the value in col 0 row 0 of the datagridview called "PANEL_LOAD_GRID" and divide it by the value in the combobox called "PHASE_VOLTAGE_COMBOBOX".
+

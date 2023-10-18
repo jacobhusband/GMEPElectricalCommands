@@ -164,11 +164,11 @@ namespace AutoCADCommands
           sum += Convert.ToDouble(value2);
         }
 
-        // Update the sum in dataGridView3, row 0, column 0
+        // Update total VA and panel load
         TOTAL_VA_GRID.Rows[0].Cells[0].Value = Math.Round(sum, 1); // Rounded to 1 decimal place
         PANEL_LOAD_GRID.Rows[0].Cells[0].Value = Math.Round(sum / 1000, 1); // Rounded to 1 decimal place
 
-        // Calculate the larger of value1 and value2 and divide it by the value in LINE_VOLTAGE_COMBOBOX
+        // Update feeder amps
         double maxVal = 0;
         if (value1 != null && value2 != null)
         {
@@ -235,7 +235,6 @@ namespace AutoCADCommands
       }
 
       object newValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
-      Console.WriteLine($"Old Value: {oldValue}, New Value: {newValue}");
       oldValue = null;
     }
 
@@ -380,6 +379,53 @@ namespace AutoCADCommands
 
       panels.Add(panel);
       return panels;
+    }
+
+    private void LARGEST_LCL_CHECKBOX_CheckedChanged(object sender, EventArgs e)
+    {
+      if (LARGEST_LCL_CHECKBOX.Checked)
+      {
+        // 1. Check if the textbox is empty
+        string largestLclInputText = LARGEST_LCL_INPUT.Text;
+        if (string.IsNullOrEmpty(largestLclInputText))
+        {
+          return;
+        }
+
+        // 2. If it has a number, put that number in col 0 row 0 of "LCL_GRID".
+        double largestLclInputValue;
+        if (double.TryParse(largestLclInputText, out largestLclInputValue))
+        {
+          LCL_GRID[0, 0].Value = largestLclInputValue;
+
+          // 3. Multiply by 125% and put that in col 1 row 0 of "LCL_GRID".
+          double value125 = largestLclInputValue * 1.25;
+          LCL_GRID[1, 0].Value = value125;
+
+          // 4. Subtract value in col 1 row 0 from value in col 0 row 0 of "LCL_GRID".
+          double difference = value125 - largestLclInputValue;
+
+          // 5. Put that number in col 0 row 0 of "TOTAL_OTHER_LOAD_GRID".
+          TOTAL_OTHER_LOAD_GRID[0, 0].Value = difference;
+
+          // 6. Add to the value in "PANEL_LOAD_GRID".
+          double panelLoad = Convert.ToDouble(TOTAL_VA_GRID[0, 0].Value);
+          double total_KVA = (panelLoad + difference) / 1000;
+          PANEL_LOAD_GRID[0, 0].Value = Math.Round(total_KVA, 1);
+
+          // 7. Divide by value in "PHASE_VOLTAGE_COMBOBOX".
+          double lineVoltage = Convert.ToDouble(LINE_VOLTAGE_COMBOBOX.SelectedItem);
+          if (lineVoltage != 0)
+          {
+            double result = (panelLoad + difference) / (lineVoltage * 2);
+            FEEDER_AMP_GRID[0, 0].Value = Math.Round(result, 1);
+          }
+        }
+        else
+        {
+          MessageBox.Show("Invalid number format in LARGEST_LCL_INPUT.");
+        }
+      }
     }
   }
 }
