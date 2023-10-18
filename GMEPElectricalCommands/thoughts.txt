@@ -1,0 +1,78 @@
+Here is the data converted to JSON format:
+
+```json
+{
+  "panel": "B",
+  "location": "BREAK ROOM",
+  "bus_rating": "225A",
+  "voltage1": "120",
+  "voltage2": "208",  
+  "phase": "1",
+  "wire": "3",
+  "main": "M.L.O",
+  "mounting": "SURFACE",
+  "subtotal_a": "3750",
+  "subtotal_b": "2910",
+  "subtotal_c": "0",
+  "total_va": "6660",
+  "lcl": "0",
+  "total_other_load": "0", 
+  "kva": "6.66",
+  "feeder_amps": "31.25",
+  "existing": "EXISTING",
+  "description_left_highlights": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+  "description_right_highlights": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+  "breaker_left_highlights": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], 
+  "breaker_right_highlights": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+  "description_left": ["MICROWAVE", "SPACE", "TV", "SPACE", "FAN", "SPACE", "SPARE", "SPACE", "SPARE", "SPACE", "SPARE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE"],
+  "phase_a_left": [900, 0, 0, 0, 300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  "phase_b_left": [0, 0, 360, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  "breaker_left": ["20", "", "20", "", "20", "", "20", "", "20", "", "20", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+  "circuit_left": ["1", "", "3", "", "5", "", "7", "", "9", "", "11", "", "13", "", "15", "", "17", "", "19", "", "21", "", "23", "", "25", "", "27", "", "29", "", "31", "", "33", "", "35", "", "37", "", "39", "", "41"], 
+  "circuit_right": ["2", "", "4", "", "6", "", "8", "", "10", "", "12", "", "14", "", "16", "", "18", "", "20", "", "22", "", "24", "", "26", "", "28", "", "30", "", "32", "", "34", "", "36", "", "38", "", "40", "", "42"],
+  "breaker_right": ["20", "", "2", "", "30", "", "2", "", "20", "", "20", "", "20", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+  "phase_a_right": [250, 0, 0, 0, 2300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  "phase_b_right": [0, 0, 250, 0, 0, 0, 2300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  "description_right": ["EVAP COIL", "SPACE", "SPACE", "SPACE", "CONDENSER", "SPACE", "SPACE", "SPACE", "SPARE", "SPACE", "SPARE", "SPACE", "SPARE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE"]
+}
+```
+
+
+
+// Add simple values
+        panel.Add("panel", textBox18.Text);
+        panel.Add("location", textBox17.Text);
+        panel.Add("bus_rating", textBox15.Text);
+        panel.Add("main", textBox16.Text);
+        panel.Add("voltage1", comboBox6.SelectedItem.ToString());
+        panel.Add("voltage2", comboBox5.SelectedItem.ToString());
+        panel.Add("phase", comboBox4.SelectedItem.ToString());
+        panel.Add("wire", comboBox3.SelectedItem.ToString());
+        panel.Add("mounting", comboBox2.SelectedItem.ToString());
+        panel.Add("existing", comboBox1.SelectedItem.ToString());
+
+        // Add data grid cell values
+        panel.Add("description_left", row.Cells["DESCRIPTIONLEFT"].Value);
+        panel.Add("phase_a_left", row.Cells["PHASEALEFT"].Value);
+        panel.Add("phase_b_left", row.Cells["PHASEBLEFT"].Value);
+        panel.Add("breaker_left", row.Cells["BKRLEFT"].Value);
+        panel.Add("circuit_left", row.Cells["CKTNOLEFT"].Value);
+
+        panel.Add("circuit_right", row.Cells["CKTNORIGHT"].Value);
+        panel.Add("breaker_right", row.Cells["BRKRIGHT"].Value);
+        panel.Add("phase_a_right", row.Cells["PHASEARIGHT"].Value);
+        panel.Add("phase_b_right", row.Cells["PHASEBRIGHT"].Value);
+        panel.Add("description_right", row.Cells["DESCRIPTIONRIGHT"].Value);
+
+        // Add highlight lists
+        panel.Add("description_left_highlights", GetHighlightBools(40));
+        panel.Add("description_right_highlights", GetHighlightBools(40));
+        panel.Add("breaker_left_highlights", GetHighlightBools(40));
+        panel.Add("breaker_right_highlights", GetHighlightBools(40));
+
+        // Add totals
+        panel.Add("total_va", dataGridView3.Rows[0].Cells[0].Value);
+        panel.Add("lcl", dataGridView4.Rows[0].Cells[0].Value);
+        panel.Add("total_other_load", dataGridView5.Rows[0].Cells[0].Value);
+        panel.Add("kva", dataGridView6.Rows[0].Cells[0].Value);
+        panel.Add("feeder_amps", dataGridView7.Rows[0].Cells[0].Value);
