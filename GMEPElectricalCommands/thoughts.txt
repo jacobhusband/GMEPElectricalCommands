@@ -89,3 +89,6 @@ private List<Dictionary<string, object>> Retrieve_Data_From_Modal()
     panels.Add(panel);
     return panels;
 }
+
+I want to make an addition to the function. I have a datagridview component named PANEL_GRID.
+Within the PANEL_GRID I have rows that can be filled with data.
