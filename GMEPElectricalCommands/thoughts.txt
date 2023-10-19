@@ -37,79 +37,8 @@ Here is the data converted to JSON format:
 }
 ```
 
-Here is an updated version of a function to test at home:
-
-private void PHASE_SUM_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-    {
-      // Check if the modified cell is in row 0 and column 0 or 1
-      if (e.RowIndex == 0 && (e.ColumnIndex == 0 || e.ColumnIndex == 1))
-      {
-        // Retrieve the values from dataGridView2, row 0, column 0 and 1
-        object value1 = PHASE_SUM_GRID.Rows[0].Cells[0].Value;
-        object value2 = PHASE_SUM_GRID.Rows[0].Cells[1].Value;
-
-        // Perform the sum (checking for null values)
-        double sum = 0;
-        if (value1 != null)
-        {
-          sum += Convert.ToDouble(value1);
-        }
-        if (value2 != null)
-        {
-          sum += Convert.ToDouble(value2);
-        }
-
-        // Update total VA and panel load
-        TOTAL_VA_GRID.Rows[0].Cells[0].Value = Math.Round(sum, 1); // Rounded to 1 decimal place
-        PANEL_LOAD_GRID.Rows[0].Cells[0].Value = Math.Round(sum / 1000, 1); // Rounded to 1 decimal place
-
-        // Update feeder amps
-        double maxVal = 0;
-        if (value1 != null && value2 != null)
-        {
-          maxVal = Math.Max(Convert.ToDouble(value1), Convert.ToDouble(value2));
-        }
-        else if (value1 != null)
-        {
-          maxVal = Convert.ToDouble(value1);
-        }
-        else if (value2 != null)
-        {
-          maxVal = Convert.ToDouble(value2);
-        }
-
-        object lineVoltageObj = LINE_VOLTAGE_COMBOBOX.SelectedItem;
-        if (lineVoltageObj != null)
-        {
-          double lineVoltage = Convert.ToDouble(lineVoltageObj);
-          if (lineVoltage != 0)
-          {
-            double panelLoadValue = maxVal / lineVoltage;
-            FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(panelLoadValue, 1); // Rounded to 1 decimal place
-          }
-        }
-      }
-    }
-
-Modify this function.
-Check if this checkbox is checked: LARGEST_LCL_CHECKBOX.Checked
-and check if this datagridview has a number value: TOTAL_OTHER_LOAD_GRID[0, 0].Value
-If both these conditions are true, do the following:
-1. Set TOTAL_VA_GRID.Rows[0].Cells[0].Value equal to Math.Round(sum, 0)
-2. Leave panel load grid as PANEL_LOAD_GRID.Rows[0].Cells[0].Value = Math.Round((TOTAL_OTHER_LOAD_GRID[0, 0].Value + sum) / 1000, 1); // Rounded to 1 decimal place
-3. Set FEEDER_AMP_GRID.Rows[0].Cells[0].Value equal to Math.Round(TOTAL_VA_GRID.Rows[0].Cells[0].Value / (120 * the number of columns in PHASE_SUM_GRID), 1)
-If these conditions are false, calculate the total VA the same way, calculate PANEL_LOAD without the TOTAL_OTHER_LOAD_GRID[0, 0].Value value, and calculate feeder amps by finding the greater value between phase a and phase b and dividing it by LINE_VOLTAGE_COMBOBOX.SelectedItem.
-
 Here are the missing keys in the panel data:
 
-subtotal_a
-subtotal_b
-subtotal_c
-total_va
-lcl
-total_other_load
-kva
-feeder_amps
 description_left_highlights
 description_right_highlights
 breaker_left_highlights
@@ -124,3 +53,39 @@ breaker_right
 phase_a_right
 phase_b_right
 description_right
+
+Here is the new function:
+
+private List<Dictionary<string, object>> Retrieve_Data_From_Modal()
+{
+    List<Dictionary<string, object>> panels = new List<Dictionary<string, object>>();
+
+    // Create a new panel
+    Dictionary<string, object> panel = new Dictionary<string, object>();
+
+    // Add simple values
+    panel.Add("panel", PANEL_NAME_INPUT.Text);
+    panel.Add("location", PANEL_LOCATION_INPUT.Text);
+    panel.Add("bus_rating", BUS_RATING_INPUT.Text);
+    panel.Add("main", MAIN_INPUT.Text);
+    panel.Add("voltage1", LINE_VOLTAGE_COMBOBOX.SelectedItem.ToString());
+    panel.Add("voltage2", PHASE_VOLTAGE_COMBOBOX.SelectedItem.ToString());
+    panel.Add("phase", PHASE_COMBOBOX.SelectedItem.ToString());
+    panel.Add("wire", WIRE_COMBOBOX.SelectedItem.ToString());
+    panel.Add("mounting", MOUNTING_COMBOBOX.SelectedItem.ToString());
+    panel.Add("existing", STATUS_COMBOBOX.SelectedItem.ToString());
+
+    // Add datagrid values
+    // Assuming that these grids are DataGridViews and the specific cells mentioned are not null or empty
+    panel.Add("subtotal_a", PHASE_SUM_GRID.Rows[0].Cells[0].Value.ToString());
+    panel.Add("subtotal_b", PHASE_SUM_GRID.Rows[0].Cells[1].Value.ToString());
+    panel.Add("subtotal_c", "0"); // Set to "0" as per the requirement
+    panel.Add("total_va", TOTAL_VA_GRID.Rows[0].Cells[0].Value.ToString());
+    panel.Add("lcl", LCL_GRID.Rows[0].Cells[1].Value.ToString());
+    panel.Add("total_other_load", TOTAL_OTHER_LOAD_GRID.Rows[0].Cells[0].Value.ToString());
+    panel.Add("kva", PANEL_LOAD_GRID.Rows[0].Cells[0].Value.ToString());
+    panel.Add("feeder_amps", FEEDER_AMP_GRID.Rows[0].Cells[0].Value.ToString());
+
+    panels.Add(panel);
+    return panels;
+}
