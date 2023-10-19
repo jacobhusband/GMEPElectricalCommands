@@ -40,10 +40,10 @@ Here is the data converted to JSON format:
 Here is an updated version of a function to test at home:
 
 private void PHASE_SUM_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-{
-    // Check if the modified cell is in row 0 and column 0 or 1
-    if (e.RowIndex == 0 && (e.ColumnIndex == 0 || e.ColumnIndex == 1))
     {
+      // Check if the modified cell is in row 0 and column 0 or 1
+      if (e.RowIndex == 0 && (e.ColumnIndex == 0 || e.ColumnIndex == 1))
+      {
         // Retrieve the values from dataGridView2, row 0, column 0 and 1
         object value1 = PHASE_SUM_GRID.Rows[0].Cells[0].Value;
         object value2 = PHASE_SUM_GRID.Rows[0].Cells[1].Value;
@@ -52,49 +52,53 @@ private void PHASE_SUM_GRID_CellValueChanged(object sender, DataGridViewCellEven
         double sum = 0;
         if (value1 != null)
         {
-            sum += Convert.ToDouble(value1);
+          sum += Convert.ToDouble(value1);
         }
         if (value2 != null)
         {
-            sum += Convert.ToDouble(value2);
+          sum += Convert.ToDouble(value2);
         }
 
-        object otherLoadObj = TOTAL_OTHER_LOAD_GRID[0, 0].Value;
-        double otherLoadValue = (otherLoadObj != null) ? Convert.ToDouble(otherLoadObj) : 0;
+        // Update total VA and panel load
+        TOTAL_VA_GRID.Rows[0].Cells[0].Value = Math.Round(sum, 1); // Rounded to 1 decimal place
+        PANEL_LOAD_GRID.Rows[0].Cells[0].Value = Math.Round(sum / 1000, 1); // Rounded to 1 decimal place
 
-        if (LARGEST_LCL_CHECKBOX.Checked && otherLoadObj != null)
+        // Update feeder amps
+        double maxVal = 0;
+        if (value1 != null && value2 != null)
         {
-            // Update total VA with the added other load value
-            TOTAL_VA_GRID.Rows[0].Cells[0].Value = Math.Round(otherLoadValue + sum, 1);
-
-            // Update panel load (remains the same)
-            PANEL_LOAD_GRID.Rows[0].Cells[0].Value = Math.Round(sum / 1000, 1);
-
-            // Update feeder amps
-            int numberOfColumns = PHASE_SUM_GRID.ColumnCount;
-            double feederAmps = Convert.ToDouble(TOTAL_VA_GRID.Rows[0].Cells[0].Value) / (120 * numberOfColumns);
-            FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(feederAmps, 1);
+          maxVal = Math.Max(Convert.ToDouble(value1), Convert.ToDouble(value2));
         }
-        else
+        else if (value1 != null)
         {
-            // Update total VA and panel load as before
-            TOTAL_VA_GRID.Rows[0].Cells[0].Value = Math.Round(sum, 1);
-            PANEL_LOAD_GRID.Rows[0].Cells[0].Value = Math.Round(sum / 1000, 1);
-
-            // Update feeder amps as before
-            object lineVoltageObj = LINE_VOLTAGE_COMBOBOX.SelectedItem;
-            if (lineVoltageObj != null)
-            {
-                double lineVoltage = Convert.ToDouble(lineVoltageObj);
-                if (lineVoltage != 0)
-                {
-                    double panelLoadValue = sum / lineVoltage;
-                    FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(panelLoadValue, 1);
-                }
-            }
+          maxVal = Convert.ToDouble(value1);
         }
+        else if (value2 != null)
+        {
+          maxVal = Convert.ToDouble(value2);
+        }
+
+        object lineVoltageObj = LINE_VOLTAGE_COMBOBOX.SelectedItem;
+        if (lineVoltageObj != null)
+        {
+          double lineVoltage = Convert.ToDouble(lineVoltageObj);
+          if (lineVoltage != 0)
+          {
+            double panelLoadValue = maxVal / lineVoltage;
+            FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(panelLoadValue, 1); // Rounded to 1 decimal place
+          }
+        }
+      }
     }
-}
+
+Modify this function.
+Check if this checkbox is checked: LARGEST_LCL_CHECKBOX.Checked
+and check if this datagridview has a number value: TOTAL_OTHER_LOAD_GRID[0, 0].Value
+If both these conditions are true, do the following:
+1. Set TOTAL_VA_GRID.Rows[0].Cells[0].Value equal to Math.Round(sum, 0)
+2. Leave panel load grid as PANEL_LOAD_GRID.Rows[0].Cells[0].Value = Math.Round((TOTAL_OTHER_LOAD_GRID[0, 0].Value + sum) / 1000, 1); // Rounded to 1 decimal place
+3. Set FEEDER_AMP_GRID.Rows[0].Cells[0].Value equal to Math.Round(TOTAL_VA_GRID.Rows[0].Cells[0].Value / (120 * the number of columns in PHASE_SUM_GRID), 1)
+If these conditions are false, calculate the total VA the same way, calculate PANEL_LOAD without the TOTAL_OTHER_LOAD_GRID[0, 0].Value value, and calculate feeder amps by finding the greater value between phase a and phase b and dividing it by LINE_VOLTAGE_COMBOBOX.SelectedItem.
 
 Here are the missing keys in the panel data:
 

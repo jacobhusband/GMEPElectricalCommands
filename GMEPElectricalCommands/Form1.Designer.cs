@@ -64,24 +64,24 @@ namespace AutoCADCommands
       this.ADD_ROW_BUTTON = new System.Windows.Forms.Button();
       this.DELETE_ROW_BUTTON = new System.Windows.Forms.Button();
       this.PHASE_SUM_GRID = new System.Windows.Forms.DataGridView();
+      this.TOTAL_PH_A = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.TOTAL_PH_B = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.TOTAL_VA_GRID = new System.Windows.Forms.DataGridView();
-      this.TOTAL_VA = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.LCL_GRID = new System.Windows.Forms.DataGridView();
+      this.LCL_AT_100PC = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.LCL_AT_125PC = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.TOTAL_OTHER_LOAD_GRID = new System.Windows.Forms.DataGridView();
+      this.TOTAL_OTHER_LOAD = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.PANEL_LOAD_GRID = new System.Windows.Forms.DataGridView();
+      this.PANEL_LOAD = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.FEEDER_AMP_GRID = new System.Windows.Forms.DataGridView();
+      this.FEEDER_AMPS = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.CREATE_PANEL_BUTTON = new System.Windows.Forms.Button();
       this.SAVE_PANEL_BUTTON = new System.Windows.Forms.Button();
       this.LARGEST_LCL_INPUT = new System.Windows.Forms.TextBox();
       this.LARGEST_LCL_LABEL = new System.Windows.Forms.Label();
       this.LARGEST_LCL_CHECKBOX = new System.Windows.Forms.CheckBox();
-      this.TOTAL_PH_A = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.TOTAL_PH_B = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.FEEDER_AMPS = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.PANEL_LOAD = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.TOTAL_OTHER_LOAD = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.LCL_AT_100PC = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.LCL_AT_125PC = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.TOTAL_VA = new System.Windows.Forms.DataGridViewTextBoxColumn();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PHASE_SUM_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.TOTAL_VA_GRID)).BeginInit();
@@ -382,6 +382,18 @@ namespace AutoCADCommands
       this.PHASE_SUM_GRID.Size = new System.Drawing.Size(245, 44);
       this.PHASE_SUM_GRID.TabIndex = 65;
       // 
+      // TOTAL_PH_A
+      // 
+      this.TOTAL_PH_A.HeaderText = "PH A (VA)";
+      this.TOTAL_PH_A.Name = "TOTAL_PH_A";
+      this.TOTAL_PH_A.ReadOnly = true;
+      // 
+      // TOTAL_PH_B
+      // 
+      this.TOTAL_PH_B.HeaderText = "PH B (VA)";
+      this.TOTAL_PH_B.Name = "TOTAL_PH_B";
+      this.TOTAL_PH_B.ReadOnly = true;
+      // 
       // TOTAL_VA_GRID
       // 
       this.TOTAL_VA_GRID.AllowUserToAddRows = false;
@@ -394,12 +406,6 @@ namespace AutoCADCommands
       this.TOTAL_VA_GRID.ReadOnly = true;
       this.TOTAL_VA_GRID.Size = new System.Drawing.Size(144, 42);
       this.TOTAL_VA_GRID.TabIndex = 14;
-      // 
-      // TOTAL_VA
-      // 
-      this.TOTAL_VA.HeaderText = "TOTAL VA";
-      this.TOTAL_VA.Name = "TOTAL_VA";
-      this.TOTAL_VA.ReadOnly = true;
       // 
       // LCL_GRID
       // 
@@ -415,6 +421,20 @@ namespace AutoCADCommands
       this.LCL_GRID.Size = new System.Drawing.Size(284, 42);
       this.LCL_GRID.TabIndex = 15;
       // 
+      // LCL_AT_100PC
+      // 
+      this.LCL_AT_100PC.HeaderText = "LCL @ 100% (VA)";
+      this.LCL_AT_100PC.Name = "LCL_AT_100PC";
+      this.LCL_AT_100PC.ReadOnly = true;
+      this.LCL_AT_100PC.Width = 120;
+      // 
+      // LCL_AT_125PC
+      // 
+      this.LCL_AT_125PC.HeaderText = "LCL @ 125% (VA)";
+      this.LCL_AT_125PC.Name = "LCL_AT_125PC";
+      this.LCL_AT_125PC.ReadOnly = true;
+      this.LCL_AT_125PC.Width = 120;
+      // 
       // TOTAL_OTHER_LOAD_GRID
       // 
       this.TOTAL_OTHER_LOAD_GRID.AllowUserToAddRows = false;
@@ -427,6 +447,13 @@ namespace AutoCADCommands
       this.TOTAL_OTHER_LOAD_GRID.ReadOnly = true;
       this.TOTAL_OTHER_LOAD_GRID.Size = new System.Drawing.Size(214, 41);
       this.TOTAL_OTHER_LOAD_GRID.TabIndex = 16;
+      // 
+      // TOTAL_OTHER_LOAD
+      // 
+      this.TOTAL_OTHER_LOAD.HeaderText = "TOTAL OTHER LOAD (VA)";
+      this.TOTAL_OTHER_LOAD.Name = "TOTAL_OTHER_LOAD";
+      this.TOTAL_OTHER_LOAD.ReadOnly = true;
+      this.TOTAL_OTHER_LOAD.Width = 170;
       // 
       // PANEL_LOAD_GRID
       // 
@@ -441,6 +468,13 @@ namespace AutoCADCommands
       this.PANEL_LOAD_GRID.Size = new System.Drawing.Size(183, 43);
       this.PANEL_LOAD_GRID.TabIndex = 17;
       // 
+      // PANEL_LOAD
+      // 
+      this.PANEL_LOAD.HeaderText = "PANEL LOAD (KVA)";
+      this.PANEL_LOAD.Name = "PANEL_LOAD";
+      this.PANEL_LOAD.ReadOnly = true;
+      this.PANEL_LOAD.Width = 140;
+      // 
       // FEEDER_AMP_GRID
       // 
       this.FEEDER_AMP_GRID.AllowUserToAddRows = false;
@@ -453,6 +487,13 @@ namespace AutoCADCommands
       this.FEEDER_AMP_GRID.ReadOnly = true;
       this.FEEDER_AMP_GRID.Size = new System.Drawing.Size(175, 40);
       this.FEEDER_AMP_GRID.TabIndex = 18;
+      // 
+      // FEEDER_AMPS
+      // 
+      this.FEEDER_AMPS.HeaderText = "FEEDER AMPS (A)";
+      this.FEEDER_AMPS.Name = "FEEDER_AMPS";
+      this.FEEDER_AMPS.ReadOnly = true;
+      this.FEEDER_AMPS.Width = 130;
       // 
       // CREATE_PANEL_BUTTON
       // 
@@ -479,6 +520,7 @@ namespace AutoCADCommands
       this.LARGEST_LCL_INPUT.Name = "LARGEST_LCL_INPUT";
       this.LARGEST_LCL_INPUT.Size = new System.Drawing.Size(144, 20);
       this.LARGEST_LCL_INPUT.TabIndex = 67;
+      this.LARGEST_LCL_INPUT.TextChanged += new System.EventHandler(this.LARGEST_LCL_INPUT_TextChanged);
       // 
       // LARGEST_LCL_LABEL
       // 
@@ -501,52 +543,11 @@ namespace AutoCADCommands
       this.LARGEST_LCL_CHECKBOX.UseVisualStyleBackColor = true;
       this.LARGEST_LCL_CHECKBOX.CheckedChanged += new System.EventHandler(this.LARGEST_LCL_CHECKBOX_CheckedChanged);
       // 
-      // TOTAL_PH_A
+      // TOTAL_VA
       // 
-      this.TOTAL_PH_A.HeaderText = "PH A (VA)";
-      this.TOTAL_PH_A.Name = "TOTAL_PH_A";
-      this.TOTAL_PH_A.ReadOnly = true;
-      // 
-      // TOTAL_PH_B
-      // 
-      this.TOTAL_PH_B.HeaderText = "PH B (VA)";
-      this.TOTAL_PH_B.Name = "TOTAL_PH_B";
-      this.TOTAL_PH_B.ReadOnly = true;
-      // 
-      // FEEDER_AMPS
-      // 
-      this.FEEDER_AMPS.HeaderText = "FEEDER AMPS (A)";
-      this.FEEDER_AMPS.Name = "FEEDER_AMPS";
-      this.FEEDER_AMPS.ReadOnly = true;
-      this.FEEDER_AMPS.Width = 130;
-      // 
-      // PANEL_LOAD
-      // 
-      this.PANEL_LOAD.HeaderText = "PANEL LOAD (KVA)";
-      this.PANEL_LOAD.Name = "PANEL_LOAD";
-      this.PANEL_LOAD.ReadOnly = true;
-      this.PANEL_LOAD.Width = 140;
-      // 
-      // TOTAL_OTHER_LOAD
-      // 
-      this.TOTAL_OTHER_LOAD.HeaderText = "TOTAL OTHER LOAD (VA)";
-      this.TOTAL_OTHER_LOAD.Name = "TOTAL_OTHER_LOAD";
-      this.TOTAL_OTHER_LOAD.ReadOnly = true;
-      this.TOTAL_OTHER_LOAD.Width = 170;
-      // 
-      // LCL_AT_100PC
-      // 
-      this.LCL_AT_100PC.HeaderText = "LCL @ 100% (VA)";
-      this.LCL_AT_100PC.Name = "LCL_AT_100PC";
-      this.LCL_AT_100PC.ReadOnly = true;
-      this.LCL_AT_100PC.Width = 120;
-      // 
-      // LCL_AT_125PC
-      // 
-      this.LCL_AT_125PC.HeaderText = "LCL @ 125% (VA)";
-      this.LCL_AT_125PC.Name = "LCL_AT_125PC";
-      this.LCL_AT_125PC.ReadOnly = true;
-      this.LCL_AT_125PC.Width = 120;
+      this.TOTAL_VA.HeaderText = "TOTAL (VA)";
+      this.TOTAL_VA.Name = "TOTAL_VA";
+      this.TOTAL_VA.ReadOnly = true;
       // 
       // Form1
       // 
@@ -638,7 +639,6 @@ namespace AutoCADCommands
     private System.Windows.Forms.Button DELETE_ROW_BUTTON;
     private System.Windows.Forms.DataGridView PHASE_SUM_GRID;
     private System.Windows.Forms.DataGridView TOTAL_VA_GRID;
-    private System.Windows.Forms.DataGridViewTextBoxColumn TOTAL_VA;
     private System.Windows.Forms.DataGridView LCL_GRID;
     private System.Windows.Forms.DataGridView TOTAL_OTHER_LOAD_GRID;
     private System.Windows.Forms.DataGridView PANEL_LOAD_GRID;
@@ -655,6 +655,7 @@ namespace AutoCADCommands
     private System.Windows.Forms.DataGridViewTextBoxColumn FEEDER_AMPS;
     private System.Windows.Forms.DataGridViewTextBoxColumn LCL_AT_100PC;
     private System.Windows.Forms.DataGridViewTextBoxColumn LCL_AT_125PC;
+    private System.Windows.Forms.DataGridViewTextBoxColumn TOTAL_VA;
   }
 }
 

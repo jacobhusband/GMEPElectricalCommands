@@ -1,4 +1,5 @@
-﻿using Autodesk.AutoCAD.Geometry;
+﻿using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.Geometry;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static OfficeOpenXml.ExcelErrorValue;
 
 namespace AutoCADCommands
 {
@@ -149,49 +151,55 @@ namespace AutoCADCommands
       // Check if the modified cell is in row 0 and column 0 or 1
       if (e.RowIndex == 0 && (e.ColumnIndex == 0 || e.ColumnIndex == 1))
       {
-        // Retrieve the values from dataGridView2, row 0, column 0 and 1
-        object value1 = PHASE_SUM_GRID.Rows[0].Cells[0].Value;
-        object value2 = PHASE_SUM_GRID.Rows[0].Cells[1].Value;
+        // Retrieve the values from PHASE_SUM_GRID, row 0, column 0 and 1
+        double value1 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[0].Value);
+        double value2 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[1].Value);
 
         // Perform the sum (checking for null values)
-        double sum = 0;
-        if (value1 != null)
-        {
-          sum += Convert.ToDouble(value1);
-        }
-        if (value2 != null)
-        {
-          sum += Convert.ToDouble(value2);
-        }
+        double sum = value1 + value2;
 
-        // Update total VA and panel load
-        TOTAL_VA_GRID.Rows[0].Cells[0].Value = Math.Round(sum, 1); // Rounded to 1 decimal place
-        PANEL_LOAD_GRID.Rows[0].Cells[0].Value = Math.Round(sum / 1000, 1); // Rounded to 1 decimal place
+        if (LARGEST_LCL_CHECKBOX.Checked && TOTAL_OTHER_LOAD_GRID[0, 0].Value != null)
+        {
+          calculate_totalva_panelload_feederamps_lcl(sum);
+        }
+        else
+        {
+          calculate_totalva_panelload_feederamps_regular(value1, value2, sum);
+        }
+      }
+    }
 
-        // Update feeder amps
-        double maxVal = 0;
-        if (value1 != null && value2 != null)
-        {
-          maxVal = Math.Max(Convert.ToDouble(value1), Convert.ToDouble(value2));
-        }
-        else if (value1 != null)
-        {
-          maxVal = Convert.ToDouble(value1);
-        }
-        else if (value2 != null)
-        {
-          maxVal = Convert.ToDouble(value2);
-        }
+    private void calculate_totalva_panelload_feederamps_lcl(double sum)
+    {
+      // Update total VA
+      TOTAL_VA_GRID.Rows[0].Cells[0].Value = Math.Round(sum, 0); // Rounded to 0 decimal places
 
-        object lineVoltageObj = LINE_VOLTAGE_COMBOBOX.SelectedItem;
-        if (lineVoltageObj != null)
+      // Update panel load grid including the other load value
+      double otherLoad = Convert.ToDouble(TOTAL_OTHER_LOAD_GRID[0, 0].Value);
+      PANEL_LOAD_GRID.Rows[0].Cells[0].Value = Math.Round((otherLoad + sum) / 1000, 1); // Rounded to 1 decimal place
+
+      // Update feeder amps
+      double panelLoadValue = Convert.ToDouble(Convert.ToDouble(TOTAL_VA_GRID.Rows[0].Cells[0].Value) + otherLoad) / (120 * PHASE_SUM_GRID.ColumnCount);
+      FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(panelLoadValue, 1); // Rounded to 1 decimal place
+    }
+
+    private void calculate_totalva_panelload_feederamps_regular(double value1, double value2, double sum)
+    {
+      // Update total VA and panel load without other loads
+      TOTAL_VA_GRID.Rows[0].Cells[0].Value = Math.Round(sum, 0); // Rounded to 1 decimal place
+      PANEL_LOAD_GRID.Rows[0].Cells[0].Value = Math.Round(sum / 1000, 1); // Rounded to 1 decimal place
+
+      // Update feeder amps
+      double maxVal = Math.Max(Convert.ToDouble(value1), Convert.ToDouble(value2));
+
+      object lineVoltageObj = LINE_VOLTAGE_COMBOBOX.SelectedItem;
+      if (lineVoltageObj != null)
+      {
+        double lineVoltage = Convert.ToDouble(lineVoltageObj);
+        if (lineVoltage != 0)
         {
-          double lineVoltage = Convert.ToDouble(lineVoltageObj);
-          if (lineVoltage != 0)
-          {
-            double panelLoadValue = maxVal / lineVoltage;
-            FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(panelLoadValue, 1); // Rounded to 1 decimal place
-          }
+          double panelLoadValue = maxVal / lineVoltage;
+          FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(panelLoadValue, 1); // Rounded to 1 decimal place
         }
       }
     }
@@ -260,7 +268,7 @@ namespace AutoCADCommands
       PANEL_NAME_INPUT.Text = "A";
       PANEL_LOCATION_INPUT.Text = "ELECTRIC ROOM";
       MAIN_INPUT.Text = "M.L.O";
-      BUS_RATING_INPUT.Text = "100A";
+      BUS_RATING_INPUT.Text = "100";
 
       // Comboboxes
       STATUS_COMBOBOX.SelectedIndex = 0;
@@ -383,6 +391,16 @@ namespace AutoCADCommands
 
     private void LARGEST_LCL_CHECKBOX_CheckedChanged(object sender, EventArgs e)
     {
+      calculate_lcl_otherload_panelload_feederamps();
+    }
+
+    private void LARGEST_LCL_INPUT_TextChanged(object sender, EventArgs e)
+    {
+      calculate_lcl_otherload_panelload_feederamps();
+    }
+
+    private void calculate_lcl_otherload_panelload_feederamps()
+    {
       if (LARGEST_LCL_CHECKBOX.Checked)
       {
         // 1. Check if the textbox is empty
@@ -425,6 +443,21 @@ namespace AutoCADCommands
         {
           MessageBox.Show("Invalid number format in LARGEST_LCL_INPUT.");
         }
+      }
+      else
+      {
+        LCL_GRID[0, 0].Value = "0";
+        LCL_GRID[1, 0].Value = "0";
+        TOTAL_OTHER_LOAD_GRID[0, 0].Value = "0";
+
+        // Retrieve the values from PHASE_SUM_GRID, row 0, column 0 and 1
+        double value1 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[0].Value);
+        double value2 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[1].Value);
+
+        // Perform the sum (checking for null values)
+        double sum = value1 + value2;
+
+        calculate_totalva_panelload_feederamps_regular(value1, value2, sum);
       }
     }
   }
