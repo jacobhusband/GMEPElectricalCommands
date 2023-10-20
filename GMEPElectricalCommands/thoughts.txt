@@ -37,58 +37,38 @@ Here is the data converted to JSON format:
 }
 ```
 
-Here are the missing keys in the panel data:
+Here is my data formatted into JSON:
 
-description_left_highlights
-description_right_highlights
-breaker_left_highlights
-breaker_right_highlights
-description_left
-phase_a_left
-phase_b_left
-breaker_left
-circuit_left
-circuit_right
-breaker_right
-phase_a_right
-phase_b_right
-description_right
-
-Here is the new function:
-
-private List<Dictionary<string, object>> Retrieve_Data_From_Modal()
-{
-    List<Dictionary<string, object>> panels = new List<Dictionary<string, object>>();
-
-    // Create a new panel
-    Dictionary<string, object> panel = new Dictionary<string, object>();
-
-    // Add simple values
-    panel.Add("panel", PANEL_NAME_INPUT.Text);
-    panel.Add("location", PANEL_LOCATION_INPUT.Text);
-    panel.Add("bus_rating", BUS_RATING_INPUT.Text);
-    panel.Add("main", MAIN_INPUT.Text);
-    panel.Add("voltage1", LINE_VOLTAGE_COMBOBOX.SelectedItem.ToString());
-    panel.Add("voltage2", PHASE_VOLTAGE_COMBOBOX.SelectedItem.ToString());
-    panel.Add("phase", PHASE_COMBOBOX.SelectedItem.ToString());
-    panel.Add("wire", WIRE_COMBOBOX.SelectedItem.ToString());
-    panel.Add("mounting", MOUNTING_COMBOBOX.SelectedItem.ToString());
-    panel.Add("existing", STATUS_COMBOBOX.SelectedItem.ToString());
-
-    // Add datagrid values
-    // Assuming that these grids are DataGridViews and the specific cells mentioned are not null or empty
-    panel.Add("subtotal_a", PHASE_SUM_GRID.Rows[0].Cells[0].Value.ToString());
-    panel.Add("subtotal_b", PHASE_SUM_GRID.Rows[0].Cells[1].Value.ToString());
-    panel.Add("subtotal_c", "0"); // Set to "0" as per the requirement
-    panel.Add("total_va", TOTAL_VA_GRID.Rows[0].Cells[0].Value.ToString());
-    panel.Add("lcl", LCL_GRID.Rows[0].Cells[1].Value.ToString());
-    panel.Add("total_other_load", TOTAL_OTHER_LOAD_GRID.Rows[0].Cells[0].Value.ToString());
-    panel.Add("kva", PANEL_LOAD_GRID.Rows[0].Cells[0].Value.ToString());
-    panel.Add("feeder_amps", FEEDER_AMP_GRID.Rows[0].Cells[0].Value.ToString());
-
-    panels.Add(panel);
-    return panels;
-}
-
-I want to make an addition to the function. I have a datagridview component named PANEL_GRID.
-Within the PANEL_GRID I have rows that can be filled with data.
+"{
+  "panel": "A",
+  "location": "ELECTRIC ROOM",
+  "voltage1": "120",
+  "voltage2": "208",
+  "phase": "3",
+  "wire": "4",
+  "mounting": "SURFACE",
+  "existing": "NEW",
+  "subtotal_a": "400",
+  "subtotal_b": "400",
+  "subtotal_c": "0",
+  "total_va": "800",  
+  "lcl": "0",
+  "total_other_load": "0",
+  "kva": "0.8",
+  "feeder_amps": "3.3",
+  "bus_rating": "100A",
+  "description_left_highlights": [false, false, ...],
+  "description_right_highlights": [false, false, ...],
+  "breaker_left_highlights": [false, false, ...],
+  "breaker_right_highlights": [false, false, ...],
+  "description_left": ["TV", "SPACE", ...],
+  "description_right": ["SPACE", "SPACE", ...],
+  "phase_a_left": [400, 0, ...],
+  "phase_b_left": [0, 400, ...],
+  "phase_a_right": [0, 0, ...],
+  "phase_b_right": [0, 0, ...],
+  "breaker_left": ["20", "", ...],
+  "breaker_right": ["20", "", ...],
+  "circuit_left": ["1", "", ...],
+  "circuit_right": ["2", "", ...]
+}"

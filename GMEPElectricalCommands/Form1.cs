@@ -10,14 +10,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 using static OfficeOpenXml.ExcelErrorValue;
 
 namespace AutoCADCommands
 {
   public partial class Form1 : Form
   {
-    public Form1()
+    private MyCommands myCommandsInstance;
+
+    public Form1(MyCommands myCommands)
     {
+      myCommandsInstance = myCommands;
       InitializeComponent();
       Listen_For_New_Rows();
       Remove_Column_Header_Sorting();
@@ -342,25 +346,17 @@ namespace AutoCADCommands
     private void CREATE_PANEL_BUTTON_CLICK(object sender, EventArgs e)
     {
       List<Dictionary<string, object>> panelDataList = Retrieve_Data_From_Modal();
-
       Print_Panels(panelDataList);
+      myCommandsInstance.IMPORTPANEL(panelDataList);
+      this.Close();
     }
 
     private void Print_Panels(List<Dictionary<string, object>> panels)
     {
       foreach (Dictionary<string, object> panel in panels)
       {
-        Console.WriteLine("Panel:");
-
-        // Print simple values
-        Console.WriteLine("  Panel: {0}", panel["panel"]);
-        Console.WriteLine("  Location: {0}", panel["location"]);
-
-        // Print combo box selections
-        Console.WriteLine("  Existing: {0}", panel["existing"]);
-        Console.WriteLine("  Mounting: {0}", panel["mounting"]);
-
-        Console.WriteLine(); // Add blank line between panels
+        string jsonFormattedString = JsonConvert.SerializeObject(panel, Formatting.Indented);
+        Console.WriteLine(jsonFormattedString);
       }
     }
 
@@ -371,22 +367,119 @@ namespace AutoCADCommands
       // Create a new panel
       Dictionary<string, object> panel = new Dictionary<string, object>();
 
-      // Add simple values
-      panel.Add("panel", PANEL_NAME_INPUT.Text);
-      panel.Add("location", PANEL_LOCATION_INPUT.Text);
-      panel.Add("bus_rating", BUS_RATING_INPUT.Text);
-      panel.Add("main", MAIN_INPUT.Text);
-      panel.Add("voltage1", LINE_VOLTAGE_COMBOBOX.SelectedItem.ToString());
-      panel.Add("voltage2", PHASE_VOLTAGE_COMBOBOX.SelectedItem.ToString());
-      panel.Add("phase", PHASE_COMBOBOX.SelectedItem.ToString());
-      panel.Add("wire", WIRE_COMBOBOX.SelectedItem.ToString());
-      panel.Add("mounting", MOUNTING_COMBOBOX.SelectedItem.ToString());
-      panel.Add("existing", STATUS_COMBOBOX.SelectedItem.ToString());
+      // Add simple values in uppercase
+      panel.Add("panel", PANEL_NAME_INPUT.Text.ToUpper());
+      panel.Add("location", PANEL_LOCATION_INPUT.Text.ToUpper());
+      panel.Add("main", MAIN_INPUT.Text.ToUpper());
+      panel.Add("voltage1", LINE_VOLTAGE_COMBOBOX.SelectedItem.ToString().ToUpper());
+      panel.Add("voltage2", PHASE_VOLTAGE_COMBOBOX.SelectedItem.ToString().ToUpper());
+      panel.Add("phase", PHASE_COMBOBOX.SelectedItem.ToString().ToUpper());
+      panel.Add("wire", WIRE_COMBOBOX.SelectedItem.ToString().ToUpper());
+      panel.Add("mounting", MOUNTING_COMBOBOX.SelectedItem.ToString().ToUpper());
+      panel.Add("existing", STATUS_COMBOBOX.SelectedItem.ToString().ToUpper());
 
-      // Add datagrid values
+      // Add datagrid values in uppercase
+      // Assuming that these grids are DataGridViews and the specific cells mentioned are not null or empty
+      panel.Add("subtotal_a", PHASE_SUM_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("subtotal_b", PHASE_SUM_GRID.Rows[0].Cells[1].Value.ToString().ToUpper());
+      panel.Add("subtotal_c", "0"); // Set to "0" as per the requirement, no need to convert
+      panel.Add("total_va", TOTAL_VA_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("lcl", LCL_GRID.Rows[0].Cells[1].Value.ToString().ToUpper());
+      panel.Add("lcl_125", LCL_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("total_other_load", TOTAL_OTHER_LOAD_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("kva", PANEL_LOAD_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("feeder_amps", FEEDER_AMP_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+
+      // Add "A" to the bus rating value if it consists of digits only, then convert to uppercase
+      string busRatingInput = BUS_RATING_INPUT.Text;
+      if (IsDigitsOnly(busRatingInput))
+      {
+        busRatingInput += "A"; // append "A" if the input is numeric
+      }
+      panel.Add("bus_rating", busRatingInput.ToUpper());
+
+      List<bool> description_left_highlights = new List<bool>();
+      List<bool> description_right_highlights = new List<bool>();
+      List<bool> breaker_left_highlights = new List<bool>();
+      List<bool> breaker_right_highlights = new List<bool>();
+
+      List<string> description_left = new List<string>();
+      List<string> description_right = new List<string>();
+      List<string> phase_a_left = new List<string>();
+      List<string> phase_b_left = new List<string>();
+      List<string> phase_a_right = new List<string>();
+      List<string> phase_b_right = new List<string>();
+      List<string> breaker_left = new List<string>();
+      List<string> breaker_right = new List<string>();
+      List<string> circuit_left = new List<string>();
+      List<string> circuit_right = new List<string>();
+
+      for (int i = 0; i < PANEL_GRID.Rows.Count; i++)
+      {
+        // Left Side
+        description_left.Add(PANEL_GRID.Rows[i].Cells[DESCRIPTIONLEFT.Name].Value?.ToString().ToUpper() ?? "SPACE");
+        description_left_highlights.Add(false);
+        phase_a_left.Add(int.TryParse(PANEL_GRID.Rows[i].Cells[PHASEALEFT.Name].Value?.ToString(), out int val1) ? val1.ToString() : "0");
+        phase_b_left.Add(int.TryParse(PANEL_GRID.Rows[i].Cells[PHASEBLEFT.Name].Value?.ToString(), out int val2) ? val2.ToString() : "0");
+        breaker_left.Add(PANEL_GRID.Rows[i].Cells[BKRLEFT.Name].Value?.ToString().ToUpper() ?? "");
+        breaker_left_highlights.Add(false);
+        circuit_left.Add(PANEL_GRID.Rows[i].Cells[CKTNOLEFT.Name].Value?.ToString().ToUpper() ?? "");
+
+        // Right Side
+        description_right.Add(PANEL_GRID.Rows[i].Cells[DESCRIPTIONRIGHT.Name].Value?.ToString().ToUpper() ?? "SPACE");
+        description_right_highlights.Add(false);
+        phase_a_right.Add(int.TryParse(PANEL_GRID.Rows[i].Cells[PHASEARIGHT.Name].Value?.ToString(), out int val3) ? val3.ToString() : "0");
+        phase_b_right.Add(int.TryParse(PANEL_GRID.Rows[i].Cells[PHASEBRIGHT.Name].Value?.ToString(), out int val4) ? val4.ToString() : "0");
+        breaker_right.Add(PANEL_GRID.Rows[i].Cells[BRKRIGHT.Name].Value?.ToString().ToUpper() ?? "");
+        breaker_right_highlights.Add(false);
+        circuit_right.Add(PANEL_GRID.Rows[i].Cells[CKTNORIGHT.Name].Value?.ToString().ToUpper() ?? "");
+
+        // Default Values for Left Side
+        description_left.Add("SPACE");
+        description_left_highlights.Add(false);
+        phase_a_left.Add("0");
+        phase_b_left.Add("0");
+        breaker_left.Add("");
+        breaker_left_highlights.Add(false);
+        circuit_left.Add("");
+
+        // Default Values for Right Side
+        description_right.Add("SPACE");
+        description_right_highlights.Add(false);
+        phase_a_right.Add("0");
+        phase_b_right.Add("0");
+        breaker_right.Add("");
+        breaker_right_highlights.Add(false);
+        circuit_right.Add("");
+      }
+
+      panel.Add("description_left_highlights", description_left_highlights);
+      panel.Add("description_right_highlights", description_right_highlights);
+      panel.Add("breaker_left_highlights", breaker_left_highlights);
+      panel.Add("breaker_right_highlights", breaker_right_highlights);
+      panel.Add("description_left", description_left);
+      panel.Add("description_right", description_right);
+      panel.Add("phase_a_left", phase_a_left);
+      panel.Add("phase_b_left", phase_b_left);
+      panel.Add("phase_a_right", phase_a_right);
+      panel.Add("phase_b_right", phase_b_right);
+      panel.Add("breaker_left", breaker_left);
+      panel.Add("breaker_right", breaker_right);
+      panel.Add("circuit_left", circuit_left);
+      panel.Add("circuit_right", circuit_right);
 
       panels.Add(panel);
       return panels;
+    }
+
+    private bool IsDigitsOnly(string str)
+    {
+      foreach (char c in str)
+      {
+        if (c < '0' || c > '9')
+          return false;
+      }
+      return true;
     }
 
     private void LARGEST_LCL_CHECKBOX_CheckedChanged(object sender, EventArgs e)

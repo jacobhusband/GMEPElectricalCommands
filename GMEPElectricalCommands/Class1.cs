@@ -175,7 +175,7 @@ namespace AutoCADCommands
 
       try
       {
-        Form1 myForm = new Form1(); // This is assuming your form's name is Form1.
+        Form1 myForm = new Form1(this);
         Autodesk.AutoCAD.ApplicationServices.Application.ShowModalDialog(null, myForm, false);
       }
       catch (System.Exception ex)
@@ -354,11 +354,14 @@ namespace AutoCADCommands
     }
 
     [CommandMethod("IMPORTPANEL")]
-    public void IMPORTPANEL()
+    public void IMPORTPANEL(List<Dictionary<string, object>> panelDataList)
     {
       var (doc, db, ed) = MyCommands.GetGlobals();
 
-      List<Dictionary<string, object>> panelDataList = ImportExcelData();
+      if (panelDataList == null)
+      {
+        panelDataList = ImportExcelData(); // If not provided, import from Excel
+      }
 
       var spaceId = (db.TileMode == true) ? SymbolUtilityServices.GetBlockModelSpaceId(db) : SymbolUtilityServices.GetBlockPaperSpaceId(db);
 
@@ -938,7 +941,7 @@ namespace AutoCADCommands
       CreateAndPositionRightText(tr, panelData["total_va"] as string, "ROMANS", 0.09375, 1, 2, "PNLTXT", new Point3d(endPoint.X - 6.69695957617801, endPoint.Y - 0.222040136230106, 0));
       CreateAndPositionText(tr, "=", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 7.03028501835593, endPoint.Y - 0.242614932747216, 0));
       CreateAndPositionText(tr, "LCL @ 125 %          ", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 8.91077927366155, endPoint.Y - 0.432165907882307, 0));
-      CreateAndPositionRightText(tr, "0", "ROMANS", 0.09375, 1, 2, "PNLTXT", new Point3d(endPoint.X - 7.59414061117746, endPoint.Y - 0.413648726513742, 0));
+      CreateAndPositionRightText(tr, (string)panelData["lcl_125"], "ROMANS", 0.09375, 1, 2, "PNLTXT", new Point3d(endPoint.X - 7.59414061117746, endPoint.Y - 0.413648726513742, 0));
       CreateAndPositionText(tr, "=", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 7.03028501835593, endPoint.Y - 0.437756414851634, 0));
       CreateAndPositionRightText(tr, panelData["lcl"] as string, "ROMANS", 0.09375, 1, 2, "PNLTXT", new Point3d(endPoint.X - 6.69695957617801, endPoint.Y - 0.413648726513742, 0));
       CreateAndPositionText(tr, "TOTAL OTHER LOAD", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 8.9456956126196, endPoint.Y - 0.616854044919108, 0));
