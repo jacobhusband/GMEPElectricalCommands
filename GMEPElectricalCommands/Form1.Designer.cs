@@ -67,6 +67,7 @@ namespace AutoCADCommands
       this.TOTAL_PH_A = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.TOTAL_PH_B = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.TOTAL_VA_GRID = new System.Windows.Forms.DataGridView();
+      this.TOTAL_VA = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.LCL_GRID = new System.Windows.Forms.DataGridView();
       this.LCL_AT_100PC = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.LCL_AT_125PC = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -77,11 +78,9 @@ namespace AutoCADCommands
       this.FEEDER_AMP_GRID = new System.Windows.Forms.DataGridView();
       this.FEEDER_AMPS = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.CREATE_PANEL_BUTTON = new System.Windows.Forms.Button();
-      this.SAVE_PANEL_BUTTON = new System.Windows.Forms.Button();
       this.LARGEST_LCL_INPUT = new System.Windows.Forms.TextBox();
       this.LARGEST_LCL_LABEL = new System.Windows.Forms.Label();
       this.LARGEST_LCL_CHECKBOX = new System.Windows.Forms.CheckBox();
-      this.TOTAL_VA = new System.Windows.Forms.DataGridViewTextBoxColumn();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PHASE_SUM_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.TOTAL_VA_GRID)).BeginInit();
@@ -407,6 +406,12 @@ namespace AutoCADCommands
       this.TOTAL_VA_GRID.Size = new System.Drawing.Size(144, 42);
       this.TOTAL_VA_GRID.TabIndex = 14;
       // 
+      // TOTAL_VA
+      // 
+      this.TOTAL_VA.HeaderText = "TOTAL (VA)";
+      this.TOTAL_VA.Name = "TOTAL_VA";
+      this.TOTAL_VA.ReadOnly = true;
+      // 
       // LCL_GRID
       // 
       this.LCL_GRID.AllowUserToAddRows = false;
@@ -497,22 +502,13 @@ namespace AutoCADCommands
       // 
       // CREATE_PANEL_BUTTON
       // 
-      this.CREATE_PANEL_BUTTON.Location = new System.Drawing.Point(861, 589);
+      this.CREATE_PANEL_BUTTON.Location = new System.Drawing.Point(805, 589);
       this.CREATE_PANEL_BUTTON.Name = "CREATE_PANEL_BUTTON";
       this.CREATE_PANEL_BUTTON.Size = new System.Drawing.Size(126, 23);
       this.CREATE_PANEL_BUTTON.TabIndex = 13;
       this.CREATE_PANEL_BUTTON.Text = "CREATE PANEL";
       this.CREATE_PANEL_BUTTON.UseVisualStyleBackColor = true;
       this.CREATE_PANEL_BUTTON.Click += new System.EventHandler(this.CREATE_PANEL_BUTTON_CLICK);
-      // 
-      // SAVE_PANEL_BUTTON
-      // 
-      this.SAVE_PANEL_BUTTON.Location = new System.Drawing.Point(751, 589);
-      this.SAVE_PANEL_BUTTON.Name = "SAVE_PANEL_BUTTON";
-      this.SAVE_PANEL_BUTTON.Size = new System.Drawing.Size(104, 23);
-      this.SAVE_PANEL_BUTTON.TabIndex = 66;
-      this.SAVE_PANEL_BUTTON.Text = "SAVE PANEL";
-      this.SAVE_PANEL_BUTTON.UseVisualStyleBackColor = true;
       // 
       // LARGEST_LCL_INPUT
       // 
@@ -543,12 +539,6 @@ namespace AutoCADCommands
       this.LARGEST_LCL_CHECKBOX.UseVisualStyleBackColor = true;
       this.LARGEST_LCL_CHECKBOX.CheckedChanged += new System.EventHandler(this.LARGEST_LCL_CHECKBOX_CheckedChanged);
       // 
-      // TOTAL_VA
-      // 
-      this.TOTAL_VA.HeaderText = "TOTAL (VA)";
-      this.TOTAL_VA.Name = "TOTAL_VA";
-      this.TOTAL_VA.ReadOnly = true;
-      // 
       // Form1
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -557,7 +547,6 @@ namespace AutoCADCommands
       this.Controls.Add(this.LARGEST_LCL_CHECKBOX);
       this.Controls.Add(this.LARGEST_LCL_LABEL);
       this.Controls.Add(this.LARGEST_LCL_INPUT);
-      this.Controls.Add(this.SAVE_PANEL_BUTTON);
       this.Controls.Add(this.CREATE_PANEL_BUTTON);
       this.Controls.Add(this.FEEDER_AMP_GRID);
       this.Controls.Add(this.PANEL_LOAD_GRID);
@@ -644,7 +633,6 @@ namespace AutoCADCommands
     private System.Windows.Forms.DataGridView PANEL_LOAD_GRID;
     private System.Windows.Forms.DataGridView FEEDER_AMP_GRID;
     private System.Windows.Forms.Button CREATE_PANEL_BUTTON;
-    private System.Windows.Forms.Button SAVE_PANEL_BUTTON;
     private System.Windows.Forms.TextBox LARGEST_LCL_INPUT;
     private System.Windows.Forms.Label LARGEST_LCL_LABEL;
     private System.Windows.Forms.CheckBox LARGEST_LCL_CHECKBOX;

@@ -32,6 +32,7 @@ namespace AutoCADCommands
       PANEL_GRID.CellBeginEdit += new DataGridViewCellCancelEventHandler(this.PANEL_GRID_CellBeginEdit);
       PANEL_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PANEL_GRID_CellValueChanged);
       PHASE_SUM_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PHASE_SUM_GRID_CellValueChanged);
+      PANEL_GRID.CellFormatting += PANEL_GRID_CellFormatting;
 
       Set_Default_Form_Values();
       Deselect_Cells();
@@ -210,18 +211,35 @@ namespace AutoCADCommands
 
     private void PANEL_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
     {
+      // Function to parse and sum a cell's value
+      double ParseAndSumCell(string cellValue)
+      {
+        double sum = 0;
+        if (!string.IsNullOrEmpty(cellValue))
+        {
+          var parts = cellValue.Split(',');
+          foreach (var part in parts)
+          {
+            if (double.TryParse(part, out double value))
+            {
+              sum += value;
+            }
+          }
+        }
+        return sum;
+      }
+
       // Check if the modified cell is in column 2 or 8
       if (e.ColumnIndex == 1 || e.ColumnIndex == 7)
       {
-        // Sum the values of all cells in column 2 and 8
         double sum = 0;
         foreach (DataGridViewRow row in PANEL_GRID.Rows)
         {
           if (row.Cells[1].Value != null)
-            sum += Convert.ToDouble(row.Cells[1].Value);
+            sum += ParseAndSumCell(row.Cells[1].Value.ToString());
 
           if (row.Cells[7].Value != null)
-            sum += Convert.ToDouble(row.Cells[7].Value);
+            sum += ParseAndSumCell(row.Cells[7].Value.ToString());
         }
 
         // Update the sum in dataGridView2, row 0, column 0
@@ -231,15 +249,14 @@ namespace AutoCADCommands
       // Check if the modified cell is in column 3 or 9
       if (e.ColumnIndex == 2 || e.ColumnIndex == 8)
       {
-        // Sum the values of all cells in column 3 and 9
         double sum = 0;
         foreach (DataGridViewRow row in PANEL_GRID.Rows)
         {
           if (row.Cells[2].Value != null)
-            sum += Convert.ToDouble(row.Cells[2].Value);
+            sum += ParseAndSumCell(row.Cells[2].Value.ToString());
 
           if (row.Cells[8].Value != null)
-            sum += Convert.ToDouble(row.Cells[8].Value);
+            sum += ParseAndSumCell(row.Cells[8].Value.ToString());
         }
 
         // Update the sum in dataGridView2, row 0, column 1
@@ -247,7 +264,21 @@ namespace AutoCADCommands
       }
 
       object newValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
-      oldValue = null;
+      // oldValue = null;  // Not sure if you use this, so leaving it commented
+    }
+
+    private void PANEL_GRID_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+    {
+      // Check if the current cell is the one being formatted and the DataGridView doesn't have focus
+      if (this.PANEL_GRID.CurrentCell != null
+          && e.RowIndex == this.PANEL_GRID.CurrentCell.RowIndex
+          && e.ColumnIndex == this.PANEL_GRID.CurrentCell.ColumnIndex
+          && !this.PANEL_GRID.Focused)
+      {
+        // Change the back color and fore color to make the current cell less noticeable
+        e.CellStyle.SelectionBackColor = e.CellStyle.BackColor;
+        e.CellStyle.SelectionForeColor = e.CellStyle.ForeColor;
+      }
     }
 
     private void Deselect_Cells()
@@ -264,6 +295,7 @@ namespace AutoCADCommands
       PANEL_LOAD_GRID.DefaultCellStyle.SelectionForeColor = PANEL_LOAD_GRID.DefaultCellStyle.ForeColor;
       FEEDER_AMP_GRID.DefaultCellStyle.SelectionBackColor = FEEDER_AMP_GRID.DefaultCellStyle.BackColor;
       FEEDER_AMP_GRID.DefaultCellStyle.SelectionForeColor = FEEDER_AMP_GRID.DefaultCellStyle.ForeColor;
+      PANEL_GRID.ClearSelection();
     }
 
     private void Set_Default_Form_Values()
@@ -277,8 +309,8 @@ namespace AutoCADCommands
       // Comboboxes
       STATUS_COMBOBOX.SelectedIndex = 0;
       MOUNTING_COMBOBOX.SelectedIndex = 0;
-      WIRE_COMBOBOX.SelectedIndex = 1;
-      PHASE_COMBOBOX.SelectedIndex = 1;
+      WIRE_COMBOBOX.SelectedIndex = 0;
+      PHASE_COMBOBOX.SelectedIndex = 0;
       PHASE_VOLTAGE_COMBOBOX.SelectedIndex = 0;
       LINE_VOLTAGE_COMBOBOX.SelectedIndex = 0;
 
@@ -346,8 +378,7 @@ namespace AutoCADCommands
     private void CREATE_PANEL_BUTTON_CLICK(object sender, EventArgs e)
     {
       List<Dictionary<string, object>> panelDataList = Retrieve_Data_From_Modal();
-      Print_Panels(panelDataList);
-      myCommandsInstance.IMPORTPANEL(panelDataList);
+      myCommandsInstance.Create_Panels(panelDataList);
       this.Close();
     }
 
@@ -367,16 +398,57 @@ namespace AutoCADCommands
       // Create a new panel
       Dictionary<string, object> panel = new Dictionary<string, object>();
 
+      // Get the value from the main input
+      string mainInput = MAIN_INPUT.Text;
+
+      // Check if the value contains the word "amp" or "AMP"
+      if (mainInput.ToLower().Contains("amp"))
+      {
+        mainInput = mainInput.ToUpper().Replace("A ", "AMP ").Replace(" A", " AMP");
+      }
+      // Check if the value is just a number
+      else if (IsDigitsOnly(mainInput.Replace(" ", "")))
+      {
+        mainInput = mainInput + " AMP";
+      }
+      else
+      {
+        string[] parts = mainInput.Split(' ');
+        if (parts.Length > 1 && IsDigitsOnly(parts[0]) && parts[1].ToLower() == "a")
+        {
+          mainInput = parts[0] + " AMP";
+        }
+        // Add any other conditions here if needed
+      }
+
+      // Add the processed main input to the panel dictionary
+      panel.Add("main", mainInput.ToUpper());
+
+      string GetComboBoxValue(ComboBox comboBox)
+      {
+        if (comboBox.SelectedItem != null)
+        {
+          return comboBox.SelectedItem.ToString().ToUpper();
+        }
+        else if (!string.IsNullOrEmpty(comboBox.Text))
+        {
+          return comboBox.Text.ToUpper();
+        }
+        else
+        {
+          return ""; // Default value or you can return null
+        }
+      }
+
       // Add simple values in uppercase
       panel.Add("panel", PANEL_NAME_INPUT.Text.ToUpper());
       panel.Add("location", PANEL_LOCATION_INPUT.Text.ToUpper());
-      panel.Add("main", MAIN_INPUT.Text.ToUpper());
-      panel.Add("voltage1", LINE_VOLTAGE_COMBOBOX.SelectedItem.ToString().ToUpper());
-      panel.Add("voltage2", PHASE_VOLTAGE_COMBOBOX.SelectedItem.ToString().ToUpper());
-      panel.Add("phase", PHASE_COMBOBOX.SelectedItem.ToString().ToUpper());
-      panel.Add("wire", WIRE_COMBOBOX.SelectedItem.ToString().ToUpper());
-      panel.Add("mounting", MOUNTING_COMBOBOX.SelectedItem.ToString().ToUpper());
-      panel.Add("existing", STATUS_COMBOBOX.SelectedItem.ToString().ToUpper());
+      panel.Add("voltage1", GetComboBoxValue(LINE_VOLTAGE_COMBOBOX));
+      panel.Add("voltage2", GetComboBoxValue(PHASE_VOLTAGE_COMBOBOX));
+      panel.Add("phase", GetComboBoxValue(PHASE_COMBOBOX));
+      panel.Add("wire", GetComboBoxValue(WIRE_COMBOBOX));
+      panel.Add("mounting", GetComboBoxValue(MOUNTING_COMBOBOX));
+      panel.Add("existing", GetComboBoxValue(STATUS_COMBOBOX));
 
       // Add datagrid values in uppercase
       // Assuming that these grids are DataGridViews and the specific cells mentioned are not null or empty
@@ -416,41 +488,145 @@ namespace AutoCADCommands
 
       for (int i = 0; i < PANEL_GRID.Rows.Count; i++)
       {
+        string descriptionLeftValue = PANEL_GRID.Rows[i].Cells[DESCRIPTIONLEFT.Name].Value?.ToString().ToUpper() ?? "SPACE";
+        string breakerLeftValue = PANEL_GRID.Rows[i].Cells[BKRLEFT.Name].Value?.ToString().ToUpper() ?? "";
+        string descriptionRightValue = PANEL_GRID.Rows[i].Cells[DESCRIPTIONRIGHT.Name].Value?.ToString().ToUpper() ?? "SPACE";
+        string breakerRightValue = PANEL_GRID.Rows[i].Cells[BRKRIGHT.Name].Value?.ToString().ToUpper() ?? "";
+        string circuitRightValue = PANEL_GRID.Rows[i].Cells[CKTNORIGHT.Name].Value?.ToString().ToUpper() ?? "";
+        string circuitLeftValue = PANEL_GRID.Rows[i].Cells[CKTNOLEFT.Name].Value?.ToString().ToUpper() ?? "";
+        string phaseALeftValue = PANEL_GRID.Rows[i].Cells[PHASEALEFT.Name].Value?.ToString() ?? "0";
+        string phaseBLeftValue = PANEL_GRID.Rows[i].Cells[PHASEBLEFT.Name].Value?.ToString() ?? "0";
+        string phaseARightValue = PANEL_GRID.Rows[i].Cells[PHASEARIGHT.Name].Value?.ToString() ?? "0";
+        string phaseBRightValue = PANEL_GRID.Rows[i].Cells[PHASEBRIGHT.Name].Value?.ToString() ?? "0";
+
+        // Handling Phase A Left
+        if (phaseALeftValue.Contains(","))
+        {
+          var splitValues = phaseALeftValue.Split(',').Select(str => str.Trim()).ToArray();
+          phase_a_left.AddRange(splitValues);
+        }
+        else
+        {
+          phase_a_left.Add(phaseALeftValue);
+          phase_a_left.Add("0"); // Default value
+        }
+
+        // Handling Phase B Left
+        if (phaseBLeftValue.Contains(","))
+        {
+          var splitValues = phaseBLeftValue.Split(',').Select(str => str.Trim()).ToArray();
+          phase_b_left.AddRange(splitValues);
+        }
+        else
+        {
+          phase_b_left.Add(phaseBLeftValue);
+          phase_b_left.Add("0"); // Default value
+        }
+
+        // Handling Phase A Right
+        if (phaseARightValue.Contains(","))
+        {
+          var splitValues = phaseARightValue.Split(',').Select(str => str.Trim()).ToArray();
+          phase_a_right.AddRange(splitValues);
+        }
+        else
+        {
+          phase_a_right.Add(phaseARightValue);
+          phase_a_right.Add("0"); // Default value
+        }
+
+        // Handling Phase B Right
+        if (phaseBRightValue.Contains(","))
+        {
+          var splitValues = phaseBRightValue.Split(',').Select(str => str.Trim()).ToArray();
+          phase_b_right.AddRange(splitValues);
+        }
+        else
+        {
+          phase_b_right.Add(phaseBRightValue);
+          phase_b_right.Add("0"); // Default value
+        }
+
+        if (descriptionLeftValue.Contains(","))
+        {
+          // If it contains a comma, split and add both values
+          var splitValues = descriptionLeftValue.Split(',')
+                                                .Select(str => str.Trim())
+                                                .ToArray();
+          description_left.AddRange(splitValues);
+          circuit_left.Add(circuitLeftValue + "A");
+          circuit_left.Add(circuitLeftValue + "B");
+        }
+        else
+        {
+          description_left.Add(descriptionLeftValue);
+          description_left.Add("SPACE");
+
+          circuit_left.Add(circuitLeftValue);
+          circuit_left.Add("");
+        }
+
+        if (breakerLeftValue.Contains(","))
+        {
+          // If it contains a comma, split and add both values
+          var splitValues = breakerLeftValue.Split(',')
+                                                .Select(str => str.Trim())
+                                                .ToArray();
+          breaker_left.AddRange(splitValues);
+        }
+        else
+        {
+          breaker_left.Add(breakerLeftValue);
+          breaker_left.Add("");
+        }
+
+        if (descriptionRightValue.Contains(","))
+        {
+          // If it contains a comma, split and add both values
+          var splitValues = descriptionRightValue.Split(',')
+                                                .Select(str => str.Trim())
+                                                .ToArray();
+          description_right.AddRange(splitValues);
+          circuit_right.Add(circuitRightValue + "A");
+          circuit_right.Add(circuitRightValue + "B");
+        }
+        else
+        {
+          description_right.Add(descriptionRightValue);
+          description_right.Add("SPACE");
+          circuit_right.Add(circuitRightValue);
+          circuit_right.Add("");
+        }
+
+        if (breakerRightValue.Contains(","))
+        {
+          // If it contains a comma, split and add both values
+          var splitValues = breakerRightValue.Split(',')
+                                                .Select(str => str.Trim())
+                                                .ToArray();
+          breaker_right.AddRange(splitValues);
+        }
+        else
+        {
+          breaker_right.Add(breakerRightValue);
+          breaker_right.Add("");
+        }
+
         // Left Side
-        description_left.Add(PANEL_GRID.Rows[i].Cells[DESCRIPTIONLEFT.Name].Value?.ToString().ToUpper() ?? "SPACE");
         description_left_highlights.Add(false);
-        phase_a_left.Add(int.TryParse(PANEL_GRID.Rows[i].Cells[PHASEALEFT.Name].Value?.ToString(), out int val1) ? val1.ToString() : "0");
-        phase_b_left.Add(int.TryParse(PANEL_GRID.Rows[i].Cells[PHASEBLEFT.Name].Value?.ToString(), out int val2) ? val2.ToString() : "0");
-        breaker_left.Add(PANEL_GRID.Rows[i].Cells[BKRLEFT.Name].Value?.ToString().ToUpper() ?? "");
         breaker_left_highlights.Add(false);
-        circuit_left.Add(PANEL_GRID.Rows[i].Cells[CKTNOLEFT.Name].Value?.ToString().ToUpper() ?? "");
 
         // Right Side
-        description_right.Add(PANEL_GRID.Rows[i].Cells[DESCRIPTIONRIGHT.Name].Value?.ToString().ToUpper() ?? "SPACE");
         description_right_highlights.Add(false);
-        phase_a_right.Add(int.TryParse(PANEL_GRID.Rows[i].Cells[PHASEARIGHT.Name].Value?.ToString(), out int val3) ? val3.ToString() : "0");
-        phase_b_right.Add(int.TryParse(PANEL_GRID.Rows[i].Cells[PHASEBRIGHT.Name].Value?.ToString(), out int val4) ? val4.ToString() : "0");
-        breaker_right.Add(PANEL_GRID.Rows[i].Cells[BRKRIGHT.Name].Value?.ToString().ToUpper() ?? "");
         breaker_right_highlights.Add(false);
-        circuit_right.Add(PANEL_GRID.Rows[i].Cells[CKTNORIGHT.Name].Value?.ToString().ToUpper() ?? "");
 
         // Default Values for Left Side
-        description_left.Add("SPACE");
         description_left_highlights.Add(false);
-        phase_a_left.Add("0");
-        phase_b_left.Add("0");
-        breaker_left.Add("");
         breaker_left_highlights.Add(false);
-        circuit_left.Add("");
 
         // Default Values for Right Side
-        description_right.Add("SPACE");
         description_right_highlights.Add(false);
-        phase_a_right.Add("0");
-        phase_b_right.Add("0");
-        breaker_right.Add("");
         breaker_right_highlights.Add(false);
-        circuit_right.Add("");
       }
 
       panel.Add("description_left_highlights", description_left_highlights);

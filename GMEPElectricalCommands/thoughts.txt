@@ -1,74 +1,115 @@
-Here is the data converted to JSON format:
+Instead of always adding the default value after adding the value from the row in the dataviewgrid, can you check for a comma in the columns description and breaker.
 
-```json
-{
-  "panel": "B",
-  "location": "BREAK ROOM",
-  "bus_rating": "225A",
-  "voltage1": "120",
-  "voltage2": "208",  
-  "phase": "1",
-  "wire": "3",
-  "main": "M.L.O",
-  "mounting": "SURFACE",
-  "subtotal_a": "3750",
-  "subtotal_b": "2910",
-  "subtotal_c": "0",
-  "total_va": "6660",
-  "lcl": "0",
-  "total_other_load": "0", 
-  "kva": "6.66",
-  "feeder_amps": "31.25",
-  "existing": "EXISTING",
-  "description_left_highlights": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-  "description_right_highlights": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-  "breaker_left_highlights": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], 
-  "breaker_right_highlights": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-  "description_left": ["MICROWAVE", "SPACE", "TV", "SPACE", "FAN", "SPACE", "SPARE", "SPACE", "SPARE", "SPACE", "SPARE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE"],
-  "phase_a_left": [900, 0, 0, 0, 300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  "phase_b_left": [0, 0, 360, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  "breaker_left": ["20", "", "20", "", "20", "", "20", "", "20", "", "20", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-  "circuit_left": ["1", "", "3", "", "5", "", "7", "", "9", "", "11", "", "13", "", "15", "", "17", "", "19", "", "21", "", "23", "", "25", "", "27", "", "29", "", "31", "", "33", "", "35", "", "37", "", "39", "", "41"], 
-  "circuit_right": ["2", "", "4", "", "6", "", "8", "", "10", "", "12", "", "14", "", "16", "", "18", "", "20", "", "22", "", "24", "", "26", "", "28", "", "30", "", "32", "", "34", "", "36", "", "38", "", "40", "", "42"],
-  "breaker_right": ["20", "", "2", "", "30", "", "2", "", "20", "", "20", "", "20", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-  "phase_a_right": [250, 0, 0, 0, 2300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  "phase_b_right": [0, 0, 250, 0, 0, 0, 2300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  "description_right": ["EVAP COIL", "SPACE", "SPACE", "SPACE", "CONDENSER", "SPACE", "SPACE", "SPACE", "SPARE", "SPACE", "SPARE", "SPACE", "SPARE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE", "SPACE"]
-}
-```
+If they have a comma, can you split at the comma and add both of those values to the list instead of adding the default value?
 
-Here is my data formatted into JSON:
+"private List<Dictionary<string, object>> Retrieve_Data_From_Modal()
+    {
+      List<Dictionary<string, object>> panels = new List<Dictionary<string, object>>();
 
-"{
-  "panel": "A",
-  "location": "ELECTRIC ROOM",
-  "voltage1": "120",
-  "voltage2": "208",
-  "phase": "3",
-  "wire": "4",
-  "mounting": "SURFACE",
-  "existing": "NEW",
-  "subtotal_a": "400",
-  "subtotal_b": "400",
-  "subtotal_c": "0",
-  "total_va": "800",  
-  "lcl": "0",
-  "total_other_load": "0",
-  "kva": "0.8",
-  "feeder_amps": "3.3",
-  "bus_rating": "100A",
-  "description_left_highlights": [false, false, ...],
-  "description_right_highlights": [false, false, ...],
-  "breaker_left_highlights": [false, false, ...],
-  "breaker_right_highlights": [false, false, ...],
-  "description_left": ["TV", "SPACE", ...],
-  "description_right": ["SPACE", "SPACE", ...],
-  "phase_a_left": [400, 0, ...],
-  "phase_b_left": [0, 400, ...],
-  "phase_a_right": [0, 0, ...],
-  "phase_b_right": [0, 0, ...],
-  "breaker_left": ["20", "", ...],
-  "breaker_right": ["20", "", ...],
-  "circuit_left": ["1", "", ...],
-  "circuit_right": ["2", "", ...]
-}"
+      // Create a new panel
+      Dictionary<string, object> panel = new Dictionary<string, object>();
+
+      // Add simple values in uppercase
+      panel.Add("panel", PANEL_NAME_INPUT.Text.ToUpper());
+      panel.Add("location", PANEL_LOCATION_INPUT.Text.ToUpper());
+      panel.Add("main", MAIN_INPUT.Text.ToUpper());
+      panel.Add("voltage1", LINE_VOLTAGE_COMBOBOX.SelectedItem.ToString().ToUpper());
+      panel.Add("voltage2", PHASE_VOLTAGE_COMBOBOX.SelectedItem.ToString().ToUpper());
+      panel.Add("phase", PHASE_COMBOBOX.SelectedItem.ToString().ToUpper());
+      panel.Add("wire", WIRE_COMBOBOX.SelectedItem.ToString().ToUpper());
+      panel.Add("mounting", MOUNTING_COMBOBOX.SelectedItem.ToString().ToUpper());
+      panel.Add("existing", STATUS_COMBOBOX.SelectedItem.ToString().ToUpper());
+
+      // Add datagrid values in uppercase
+      // Assuming that these grids are DataGridViews and the specific cells mentioned are not null or empty
+      panel.Add("subtotal_a", PHASE_SUM_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("subtotal_b", PHASE_SUM_GRID.Rows[0].Cells[1].Value.ToString().ToUpper());
+      panel.Add("subtotal_c", "0"); // Set to "0" as per the requirement, no need to convert
+      panel.Add("total_va", TOTAL_VA_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("lcl", LCL_GRID.Rows[0].Cells[1].Value.ToString().ToUpper());
+      panel.Add("lcl_125", LCL_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("total_other_load", TOTAL_OTHER_LOAD_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("kva", PANEL_LOAD_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("feeder_amps", FEEDER_AMP_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+
+      // Add "A" to the bus rating value if it consists of digits only, then convert to uppercase
+      string busRatingInput = BUS_RATING_INPUT.Text;
+      if (IsDigitsOnly(busRatingInput))
+      {
+        busRatingInput += "A"; // append "A" if the input is numeric
+      }
+      panel.Add("bus_rating", busRatingInput.ToUpper());
+
+      List<bool> description_left_highlights = new List<bool>();
+      List<bool> description_right_highlights = new List<bool>();
+      List<bool> breaker_left_highlights = new List<bool>();
+      List<bool> breaker_right_highlights = new List<bool>();
+
+      List<string> description_left = new List<string>();
+      List<string> description_right = new List<string>();
+      List<string> phase_a_left = new List<string>();
+      List<string> phase_b_left = new List<string>();
+      List<string> phase_a_right = new List<string>();
+      List<string> phase_b_right = new List<string>();
+      List<string> breaker_left = new List<string>();
+      List<string> breaker_right = new List<string>();
+      List<string> circuit_left = new List<string>();
+      List<string> circuit_right = new List<string>();
+
+      for (int i = 0; i < PANEL_GRID.Rows.Count; i++)
+      {
+        // Left Side
+        description_left.Add(PANEL_GRID.Rows[i].Cells[DESCRIPTIONLEFT.Name].Value?.ToString().ToUpper() ?? "SPACE");
+        description_left_highlights.Add(false);
+        phase_a_left.Add(int.TryParse(PANEL_GRID.Rows[i].Cells[PHASEALEFT.Name].Value?.ToString(), out int val1) ? val1.ToString() : "0");
+        phase_b_left.Add(int.TryParse(PANEL_GRID.Rows[i].Cells[PHASEBLEFT.Name].Value?.ToString(), out int val2) ? val2.ToString() : "0");
+        breaker_left.Add(PANEL_GRID.Rows[i].Cells[BKRLEFT.Name].Value?.ToString().ToUpper() ?? "");
+        breaker_left_highlights.Add(false);
+        circuit_left.Add(PANEL_GRID.Rows[i].Cells[CKTNOLEFT.Name].Value?.ToString().ToUpper() ?? "");
+
+        // Right Side
+        description_right.Add(PANEL_GRID.Rows[i].Cells[DESCRIPTIONRIGHT.Name].Value?.ToString().ToUpper() ?? "SPACE");
+        description_right_highlights.Add(false);
+        phase_a_right.Add(int.TryParse(PANEL_GRID.Rows[i].Cells[PHASEARIGHT.Name].Value?.ToString(), out int val3) ? val3.ToString() : "0");
+        phase_b_right.Add(int.TryParse(PANEL_GRID.Rows[i].Cells[PHASEBRIGHT.Name].Value?.ToString(), out int val4) ? val4.ToString() : "0");
+        breaker_right.Add(PANEL_GRID.Rows[i].Cells[BRKRIGHT.Name].Value?.ToString().ToUpper() ?? "");
+        breaker_right_highlights.Add(false);
+        circuit_right.Add(PANEL_GRID.Rows[i].Cells[CKTNORIGHT.Name].Value?.ToString().ToUpper() ?? "");
+
+        // Default Values for Left Side
+        description_left.Add("SPACE");
+        description_left_highlights.Add(false);
+        phase_a_left.Add("0");
+        phase_b_left.Add("0");
+        breaker_left.Add("");
+        breaker_left_highlights.Add(false);
+        circuit_left.Add("");
+
+        // Default Values for Right Side
+        description_right.Add("SPACE");
+        description_right_highlights.Add(false);
+        phase_a_right.Add("0");
+        phase_b_right.Add("0");
+        breaker_right.Add("");
+        breaker_right_highlights.Add(false);
+        circuit_right.Add("");
+      }
+
+      panel.Add("description_left_highlights", description_left_highlights);
+      panel.Add("description_right_highlights", description_right_highlights);
+      panel.Add("breaker_left_highlights", breaker_left_highlights);
+      panel.Add("breaker_right_highlights", breaker_right_highlights);
+      panel.Add("description_left", description_left);
+      panel.Add("description_right", description_right);
+      panel.Add("phase_a_left", phase_a_left);
+      panel.Add("phase_b_left", phase_b_left);
+      panel.Add("phase_a_right", phase_a_right);
+      panel.Add("phase_b_right", phase_b_right);
+      panel.Add("breaker_left", breaker_left);
+      panel.Add("breaker_right", breaker_right);
+      panel.Add("circuit_left", circuit_left);
+      panel.Add("circuit_right", circuit_right);
+
+      panels.Add(panel);
+      return panels;
+    }"

@@ -167,8 +167,8 @@ namespace AutoCADCommands
       dialog.ShowDialog();
     }
 
-    [CommandMethod("ShowMyForm")]
-    public void ShowFormCommand()
+    [CommandMethod("SinglePhasePanel")]
+    public void SinglePhasePanel()
     {
       Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Editor ed = doc.Editor;
@@ -353,8 +353,13 @@ namespace AutoCADCommands
       }
     }
 
-    [CommandMethod("IMPORTPANEL")]
-    public void IMPORTPANEL(List<Dictionary<string, object>> panelDataList)
+    [CommandMethod("IMPORTPANELS")]
+    public void IMPORTPANELS()
+    {
+      Create_Panels(null);
+    }
+
+    public void Create_Panels(List<Dictionary<string, object>> panelDataList)
     {
       var (doc, db, ed) = MyCommands.GetGlobals();
 
@@ -579,6 +584,7 @@ namespace AutoCADCommands
         ["subtotal_c"] = selectedWorksheet.Cells[row + 2, col + 19].Value?.ToString() ?? "0",
         ["total_va"] = selectedWorksheet.Cells[row + 4, col + 17].Value?.ToString() ?? "0",
         ["lcl"] = selectedWorksheet.Cells[row + 7, col + 17].Value?.ToString() ?? "0",
+        ["lcl_125"] = "0",
         ["total_other_load"] = selectedWorksheet.Cells[row + 10, col + 17].Value?.ToString() ?? "0",
         ["kva"] = selectedWorksheet.Cells[row + 13, col + 17].Value?.ToString() ?? "0",
         ["feeder_amps"] = selectedWorksheet.Cells[row + 16, col + 17].Value?.ToString() ?? "0",
@@ -691,6 +697,7 @@ namespace AutoCADCommands
         ["subtotal_c"] = selectedWorksheet.Cells[row + 2, col + 19].Value?.ToString() ?? "0",
         ["total_va"] = selectedWorksheet.Cells[row + 4, col + 17].Value?.ToString() ?? "0",
         ["lcl"] = selectedWorksheet.Cells[row + 7, col + 17].Value?.ToString() ?? "0",
+        ["lcl_125"] = "0",
         ["total_other_load"] = selectedWorksheet.Cells[row + 10, col + 17].Value?.ToString() ?? "0",
         ["kva"] = selectedWorksheet.Cells[row + 13, col + 17].Value?.ToString() ?? "0",
         ["feeder_amps"] = selectedWorksheet.Cells[row + 16, col + 17].Value?.ToString() ?? "0",
@@ -1531,6 +1538,7 @@ namespace AutoCADCommands
       double phaseX = GetPhaseX(i, startPoint, left);
       double breakerX = GetBreakerX(startPoint, left);
       double circuitX = GetCircuitX(startPoint, left);
+      double textHeight = 0.0725;
 
       string circuit = circuits[i];
 
@@ -1540,12 +1548,12 @@ namespace AutoCADCommands
         string breaker = breakers[j] + "-1";
         string phase = phaseList[j];
         circuit = circuits[j];
-        double height = startPoint.Y + (-0.816333638994546 - ((double)j / 2 * 0.1872));
+        double height = startPoint.Y + (-0.831333638994546 - ((double)j / 2 * 0.1872));
 
-        CreateAndPositionText(tr, description, "ROMANS", 0.046875, 1.0, 2, "0", new Point3d(descriptionX, height, 0));
-        if (phase != "0") CreateAndPositionCenteredText(tr, phase, "ROMANS", 0.046875, 1.0, 2, "0", new Point3d(phaseX, height, 0));
-        CreateAndPositionText(tr, breaker, "ROMANS", 0.046875, 1.0, 2, "0", new Point3d(breakerX, height, 0));
-        CreateAndPositionText(tr, circuit, "ROMANS", 0.046875, 1.0, 7, "0", new Point3d(circuitX, height, 0));
+        CreateAndPositionText(tr, description, "ROMANS", textHeight, 1.0, 2, "0", new Point3d(descriptionX, height, 0));
+        if (phase != "0") CreateAndPositionCenteredText(tr, phase, "ROMANS", textHeight, 1.0, 2, "0", new Point3d(phaseX, height, 0));
+        CreateAndPositionText(tr, breaker, "ROMANS", textHeight, 1.0, 2, "0", new Point3d(breakerX, height, 0));
+        CreateAndPositionText(tr, circuit, "ROMANS", textHeight, 1.0, 7, "0", new Point3d(circuitX, height, 0));
       }
 
       CreateHorizontalLine(startPoint.X, startPoint.Y, circuit, left, tr, btr);
@@ -1559,6 +1567,7 @@ namespace AutoCADCommands
       double phaseX = GetPhaseX2P(i, startPoint, left);
       double breakerX = GetBreakerX(startPoint, left);
       double circuitX = GetCircuitX(startPoint, left);
+      double textHeight = 0.0725;
 
       string circuit = circuits[i];
 
@@ -1568,12 +1577,12 @@ namespace AutoCADCommands
         string breaker = breakers[j] + "-1";
         string phase = phaseList[j];
         circuit = circuits[j];
-        double height = startPoint.Y + (-0.816333638994546 - ((double)j / 2 * 0.1872));
+        double height = startPoint.Y + (-0.831333638994546 - ((double)j / 2 * 0.1872));
 
-        CreateAndPositionText(tr, description, "ROMANS", 0.046875, 1.0, 2, "0", new Point3d(descriptionX, height, 0));
-        if (phase != "0") CreateAndPositionCenteredText(tr, phase, "ROMANS", 0.046875, 1.0, 2, "0", new Point3d(phaseX, height, 0));
-        CreateAndPositionText(tr, breaker, "ROMANS", 0.046875, 1.0, 2, "0", new Point3d(breakerX, height, 0));
-        CreateAndPositionText(tr, circuit, "ROMANS", 0.046875, 1.0, 7, "0", new Point3d(circuitX, height, 0));
+        CreateAndPositionText(tr, description, "ROMANS", textHeight, 1.0, 2, "0", new Point3d(descriptionX, height, 0));
+        if (phase != "0") CreateAndPositionCenteredText(tr, phase, "ROMANS", textHeight, 1.0, 2, "0", new Point3d(phaseX, height, 0));
+        CreateAndPositionText(tr, breaker, "ROMANS", textHeight, 1.0, 2, "0", new Point3d(breakerX, height, 0));
+        CreateAndPositionText(tr, circuit, "ROMANS", textHeight, 1.0, 7, "0", new Point3d(circuitX, height, 0));
       }
 
       CreateHorizontalLine(startPoint.X, startPoint.Y, circuit, left, tr, btr);
