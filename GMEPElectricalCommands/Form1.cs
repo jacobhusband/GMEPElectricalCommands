@@ -25,6 +25,7 @@ namespace AutoCADCommands
       myCommandsInstance = myCommands;
 
       InitializeComponent();
+      Load_Panel_Data();
       Listen_For_New_Rows();
       Remove_Column_Header_Sorting();
 
@@ -38,6 +39,17 @@ namespace AutoCADCommands
 
       Set_Default_Form_Values();
       Deselect_Cells();
+    }
+
+    private void Load_Panel_Data()
+    {
+      List<Dictionary<string, object>> saveData = Retrieve_Saved_Data();
+
+      foreach (Dictionary<string, object> panel in saveData)
+      {
+        string panelName = panel["panel"].ToString();
+        LOAD_PANEL_COMBOBOX.Items.Add(panelName);
+      }
     }
 
     private List<Dictionary<string, object>> Retrieve_Saved_Data()
@@ -549,16 +561,16 @@ namespace AutoCADCommands
 
       for (int i = 0; i < PANEL_GRID.Rows.Count; i++)
       {
-        string descriptionLeftValue = PANEL_GRID.Rows[i].Cells[DESCRIPTIONLEFT.Name].Value?.ToString().ToUpper() ?? "SPACE";
-        string breakerLeftValue = PANEL_GRID.Rows[i].Cells[BKRLEFT.Name].Value?.ToString().ToUpper() ?? "";
-        string descriptionRightValue = PANEL_GRID.Rows[i].Cells[DESCRIPTIONRIGHT.Name].Value?.ToString().ToUpper() ?? "SPACE";
-        string breakerRightValue = PANEL_GRID.Rows[i].Cells[BRKRIGHT.Name].Value?.ToString().ToUpper() ?? "";
-        string circuitRightValue = PANEL_GRID.Rows[i].Cells[CKTNORIGHT.Name].Value?.ToString().ToUpper() ?? "";
-        string circuitLeftValue = PANEL_GRID.Rows[i].Cells[CKTNOLEFT.Name].Value?.ToString().ToUpper() ?? "";
-        string phaseALeftValue = PANEL_GRID.Rows[i].Cells[PHASEALEFT.Name].Value?.ToString() ?? "0";
-        string phaseBLeftValue = PANEL_GRID.Rows[i].Cells[PHASEBLEFT.Name].Value?.ToString() ?? "0";
-        string phaseARightValue = PANEL_GRID.Rows[i].Cells[PHASEARIGHT.Name].Value?.ToString() ?? "0";
-        string phaseBRightValue = PANEL_GRID.Rows[i].Cells[PHASEBRIGHT.Name].Value?.ToString() ?? "0";
+        string descriptionLeftValue = PANEL_GRID.Rows[i].Cells["description_left"].Value?.ToString().ToUpper() ?? "SPACE";
+        string breakerLeftValue = PANEL_GRID.Rows[i].Cells["breaker_left"].Value?.ToString().ToUpper() ?? "";
+        string descriptionRightValue = PANEL_GRID.Rows[i].Cells["description_right"].Value?.ToString().ToUpper() ?? "SPACE";
+        string breakerRightValue = PANEL_GRID.Rows[i].Cells["breaker_right"].Value?.ToString().ToUpper() ?? "";
+        string circuitRightValue = PANEL_GRID.Rows[i].Cells["circuit_right"].Value?.ToString().ToUpper() ?? "";
+        string circuitLeftValue = PANEL_GRID.Rows[i].Cells["circuit_left"].Value?.ToString().ToUpper() ?? "";
+        string phaseALeftValue = PANEL_GRID.Rows[i].Cells["phase_a_left"].Value?.ToString() ?? "0";
+        string phaseBLeftValue = PANEL_GRID.Rows[i].Cells["phase_b_left"].Value?.ToString() ?? "0";
+        string phaseARightValue = PANEL_GRID.Rows[i].Cells["phase_a_right"].Value?.ToString() ?? "0";
+        string phaseBRightValue = PANEL_GRID.Rows[i].Cells["phase_b_right"].Value?.ToString() ?? "0";
 
         // Handling Phase A Left
         if (phaseALeftValue.Contains(","))
@@ -792,6 +804,11 @@ namespace AutoCADCommands
 
     private void SAVE_PANEL_BUTTON_Click(object sender, EventArgs e)
     {
+      save_panel_data();
+    }
+
+    private void save_panel_data()
+    {
       string formattedPanelName = $"'{PANEL_NAME_INPUT.Text.ToUpper()}'";
 
       if (string.IsNullOrEmpty(PANEL_NAME_INPUT.Text))
@@ -838,7 +855,135 @@ namespace AutoCADCommands
 
     private void LOAD_PANEL_BUTTON_click(object sender, EventArgs e)
     {
-      Print_Panels(Retrieve_Saved_Data());
+      List<Dictionary<string, object>> saveData = Retrieve_Saved_Data();
+
+      if (LOAD_PANEL_COMBOBOX.SelectedItem != null)
+      {
+        string selectedPanelName = LOAD_PANEL_COMBOBOX.SelectedItem.ToString();
+        Dictionary<string, object> selectedPanelData = saveData.First(dict => dict["panel"].ToString() == selectedPanelName);
+
+        // prompt the user if they would like to save the current panel
+        DialogResult result = MessageBox.Show("Would you like to save the current panel?", "Confirm", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+        if (result == DialogResult.Yes)
+        {
+          save_panel_data();
+        }
+        else if (result == DialogResult.Cancel)
+        {
+          return;
+        }
+
+        // Set the values in the modal
+        Set_Modal_Values(selectedPanelData);
+      }
+    }
+
+    private void Set_Modal_Values(Dictionary<string, object> selectedPanelData)
+    {
+      clear_current_modal_data();
+
+      populate_modal_with_panel_data(selectedPanelData);
+    }
+
+    private void populate_modal_with_panel_data(Dictionary<string, object> selectedPanelData)
+    {
+      // Set TextBoxes
+      MAIN_INPUT.Text = selectedPanelData["main"].ToString();
+      PANEL_NAME_INPUT.Text = selectedPanelData["panel"].ToString().Replace("'", "");
+      PANEL_LOCATION_INPUT.Text = selectedPanelData["location"].ToString();
+      BUS_RATING_INPUT.Text = selectedPanelData["bus_rating"].ToString().Replace("A", "");
+
+      // Set ComboBoxes
+      STATUS_COMBOBOX.SelectedItem = selectedPanelData["existing"].ToString();
+      MOUNTING_COMBOBOX.SelectedItem = selectedPanelData["mounting"].ToString();
+      WIRE_COMBOBOX.SelectedItem = selectedPanelData["wire"].ToString();
+      PHASE_COMBOBOX.SelectedItem = selectedPanelData["phase"].ToString();
+      PHASE_VOLTAGE_COMBOBOX.SelectedItem = selectedPanelData["voltage2"].ToString();
+      LINE_VOLTAGE_COMBOBOX.SelectedItem = selectedPanelData["voltage1"].ToString();
+
+      // Set DataGridViews
+      PHASE_SUM_GRID.Rows[0].Cells[0].Value = selectedPanelData["subtotal_a"].ToString();
+      PHASE_SUM_GRID.Rows[0].Cells[1].Value = selectedPanelData["subtotal_b"].ToString();
+      TOTAL_VA_GRID.Rows[0].Cells[0].Value = selectedPanelData["total_va"].ToString();
+      LCL_GRID.Rows[0].Cells[0].Value = selectedPanelData["lcl_125"].ToString();
+      LCL_GRID.Rows[0].Cells[1].Value = selectedPanelData["lcl"].ToString();
+      TOTAL_OTHER_LOAD_GRID.Rows[0].Cells[0].Value = selectedPanelData["total_other_load"].ToString();
+      PANEL_LOAD_GRID.Rows[0].Cells[0].Value = selectedPanelData["kva"].ToString();
+      FEEDER_AMP_GRID.Rows[0].Cells[0].Value = selectedPanelData["feeder_amps"].ToString();
+
+      List<string> multi_row_datagrid_keys = new List<string> { "description_left", "description_right", "phase_a_left", "phase_b_left", "phase_a_right", "phase_b_right", "breaker_left", "breaker_right", "circuit_left", "circuit_right" };
+
+      for (int i = 0; i < PANEL_GRID.Rows.Count * 2; i += 2)
+      {
+        foreach (string key in multi_row_datagrid_keys)
+        {
+          if (selectedPanelData[key] is Newtonsoft.Json.Linq.JArray)
+          {
+            List<string> values = ((Newtonsoft.Json.Linq.JArray)selectedPanelData[key]).ToObject<List<string>>();
+
+            if (key.Contains("description") && values[i] == "SPACE")
+            {
+              continue; // skip this iteration if the value is "SPACE" for descriptions
+            }
+
+            if (key.Contains("phase") && values[i] == "0")
+            {
+              continue; // skip this iteration if the value is "0" for phases
+            }
+
+            PANEL_GRID.Rows[i / 2].Cells[key].Value = values[i];
+          }
+          else
+          {
+            // Log or handle the unexpected type
+            Console.WriteLine($"Warning: Value for key {key} is not a JArray");
+          }
+        }
+      }
+    }
+
+    private void clear_current_modal_data()
+    {
+      // Clear TextBoxes
+      BUS_RATING_INPUT.Text = string.Empty;
+      MAIN_INPUT.Text = string.Empty;
+      PANEL_LOCATION_INPUT.Text = string.Empty;
+      PANEL_NAME_INPUT.Text = string.Empty;
+      LARGEST_LCL_INPUT.Text = string.Empty;
+
+      // Clear ComboBoxes
+      STATUS_COMBOBOX.SelectedIndex = -1; // This will unselect all items
+      MOUNTING_COMBOBOX.SelectedIndex = -1;
+      WIRE_COMBOBOX.SelectedIndex = -1;
+      PHASE_COMBOBOX.SelectedIndex = -1;
+      PHASE_VOLTAGE_COMBOBOX.SelectedIndex = -1;
+      LINE_VOLTAGE_COMBOBOX.SelectedIndex = -1;
+      LOAD_PANEL_COMBOBOX.SelectedIndex = -1;
+
+      // Clear DataGridViews
+      PHASE_SUM_GRID.Rows[0].Cells[0].Value = "0";
+      PHASE_SUM_GRID.Rows[0].Cells[1].Value = "0";
+      TOTAL_VA_GRID.Rows[0].Cells[0].Value = "0";
+      LCL_GRID.Rows[0].Cells[0].Value = "0";
+      LCL_GRID.Rows[0].Cells[1].Value = "0";
+      TOTAL_OTHER_LOAD_GRID.Rows[0].Cells[0].Value = "0";
+      PANEL_LOAD_GRID.Rows[0].Cells[0].Value = "0";
+      FEEDER_AMP_GRID.Rows[0].Cells[0].Value = "0";
+
+      // Clear DataGridViews
+      for (int i = 0; i < PANEL_GRID.Rows.Count; i++)
+      {
+        PANEL_GRID.Rows[i].Cells["description_left"].Value = string.Empty;
+        PANEL_GRID.Rows[i].Cells["description_right"].Value = string.Empty;
+        PANEL_GRID.Rows[i].Cells["phase_a_left"].Value = string.Empty;
+        PANEL_GRID.Rows[i].Cells["phase_b_left"].Value = string.Empty;
+        PANEL_GRID.Rows[i].Cells["phase_a_right"].Value = string.Empty;
+        PANEL_GRID.Rows[i].Cells["phase_b_right"].Value = string.Empty;
+        PANEL_GRID.Rows[i].Cells["breaker_left"].Value = string.Empty;
+        PANEL_GRID.Rows[i].Cells["breaker_right"].Value = string.Empty;
+        PANEL_GRID.Rows[i].Cells["circuit_left"].Value = string.Empty;
+        PANEL_GRID.Rows[i].Cells["circuit_right"].Value = string.Empty;
+      }
     }
   }
 }

@@ -31,16 +31,6 @@ namespace AutoCADCommands
     private void InitializeComponent()
     {
       this.PANEL_GRID = new System.Windows.Forms.DataGridView();
-      this.DESCRIPTIONLEFT = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.PHASEALEFT = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.PHASEBLEFT = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.BKRLEFT = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.CKTNOLEFT = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.CKTNORIGHT = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.BRKRIGHT = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.PHASEARIGHT = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.PHASEBRIGHT = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.DESCRIPTIONRIGHT = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.BUS_RATING_INPUT = new System.Windows.Forms.TextBox();
       this.MAIN_INPUT = new System.Windows.Forms.TextBox();
       this.PANEL_LOCATION_INPUT = new System.Windows.Forms.TextBox();
@@ -86,6 +76,16 @@ namespace AutoCADCommands
       this.SAVE_PANEL_BUTTON = new System.Windows.Forms.Button();
       this.NEW_PANEL_BUTTON = new System.Windows.Forms.Button();
       this.LOAD_PANEL_BUTTON = new System.Windows.Forms.Button();
+      this.description_left = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.phase_a_left = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.phase_b_left = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.breaker_left = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.circuit_left = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.circuit_right = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.breaker_right = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.phase_a_right = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.phase_b_right = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.description_right = new System.Windows.Forms.DataGridViewTextBoxColumn();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PHASE_SUM_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.TOTAL_VA_GRID)).BeginInit();
@@ -99,70 +99,20 @@ namespace AutoCADCommands
       // 
       this.PANEL_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.PANEL_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.DESCRIPTIONLEFT,
-            this.PHASEALEFT,
-            this.PHASEBLEFT,
-            this.BKRLEFT,
-            this.CKTNOLEFT,
-            this.CKTNORIGHT,
-            this.BRKRIGHT,
-            this.PHASEARIGHT,
-            this.PHASEBRIGHT,
-            this.DESCRIPTIONRIGHT});
+            this.description_left,
+            this.phase_a_left,
+            this.phase_b_left,
+            this.breaker_left,
+            this.circuit_left,
+            this.circuit_right,
+            this.breaker_right,
+            this.phase_a_right,
+            this.phase_b_right,
+            this.description_right});
       this.PANEL_GRID.Location = new System.Drawing.Point(325, 58);
       this.PANEL_GRID.Name = "PANEL_GRID";
       this.PANEL_GRID.Size = new System.Drawing.Size(1047, 489);
       this.PANEL_GRID.TabIndex = 10;
-      // 
-      // DESCRIPTIONLEFT
-      // 
-      this.DESCRIPTIONLEFT.HeaderText = "DESCRIPTION";
-      this.DESCRIPTIONLEFT.Name = "DESCRIPTIONLEFT";
-      // 
-      // PHASEALEFT
-      // 
-      this.PHASEALEFT.HeaderText = "PH A";
-      this.PHASEALEFT.Name = "PHASEALEFT";
-      // 
-      // PHASEBLEFT
-      // 
-      this.PHASEBLEFT.HeaderText = "PH B";
-      this.PHASEBLEFT.Name = "PHASEBLEFT";
-      // 
-      // BKRLEFT
-      // 
-      this.BKRLEFT.HeaderText = "BKR";
-      this.BKRLEFT.Name = "BKRLEFT";
-      // 
-      // CKTNOLEFT
-      // 
-      this.CKTNOLEFT.HeaderText = "CKT NO";
-      this.CKTNOLEFT.Name = "CKTNOLEFT";
-      // 
-      // CKTNORIGHT
-      // 
-      this.CKTNORIGHT.HeaderText = "CKT NO";
-      this.CKTNORIGHT.Name = "CKTNORIGHT";
-      // 
-      // BRKRIGHT
-      // 
-      this.BRKRIGHT.HeaderText = "BKR";
-      this.BRKRIGHT.Name = "BRKRIGHT";
-      // 
-      // PHASEARIGHT
-      // 
-      this.PHASEARIGHT.HeaderText = "PH A";
-      this.PHASEARIGHT.Name = "PHASEARIGHT";
-      // 
-      // PHASEBRIGHT
-      // 
-      this.PHASEBRIGHT.HeaderText = "PH B";
-      this.PHASEBRIGHT.Name = "PHASEBRIGHT";
-      // 
-      // DESCRIPTIONRIGHT
-      // 
-      this.DESCRIPTIONRIGHT.HeaderText = "DESCRIPTION";
-      this.DESCRIPTIONRIGHT.Name = "DESCRIPTIONRIGHT";
       // 
       // BUS_RATING_INPUT
       // 
@@ -591,6 +541,56 @@ namespace AutoCADCommands
       this.LOAD_PANEL_BUTTON.UseVisualStyleBackColor = true;
       this.LOAD_PANEL_BUTTON.Click += new System.EventHandler(this.LOAD_PANEL_BUTTON_click);
       // 
+      // description_left
+      // 
+      this.description_left.HeaderText = "DESCRIPTION";
+      this.description_left.Name = "description_left";
+      // 
+      // phase_a_left
+      // 
+      this.phase_a_left.HeaderText = "PH A";
+      this.phase_a_left.Name = "phase_a_left";
+      // 
+      // phase_b_left
+      // 
+      this.phase_b_left.HeaderText = "PH B";
+      this.phase_b_left.Name = "phase_b_left";
+      // 
+      // breaker_left
+      // 
+      this.breaker_left.HeaderText = "BKR";
+      this.breaker_left.Name = "breaker_left";
+      // 
+      // circuit_left
+      // 
+      this.circuit_left.HeaderText = "CKT NO";
+      this.circuit_left.Name = "circuit_left";
+      // 
+      // circuit_right
+      // 
+      this.circuit_right.HeaderText = "CKT NO";
+      this.circuit_right.Name = "circuit_right";
+      // 
+      // breaker_right
+      // 
+      this.breaker_right.HeaderText = "BKR";
+      this.breaker_right.Name = "breaker_right";
+      // 
+      // phase_a_right
+      // 
+      this.phase_a_right.HeaderText = "PH A";
+      this.phase_a_right.Name = "phase_a_right";
+      // 
+      // phase_b_right
+      // 
+      this.phase_b_right.HeaderText = "PH B";
+      this.phase_b_right.Name = "phase_b_right";
+      // 
+      // description_right
+      // 
+      this.description_right.HeaderText = "DESCRIPTION";
+      this.description_right.Name = "description_right";
+      // 
       // Form1
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -651,16 +651,6 @@ namespace AutoCADCommands
     #endregion
 
     private System.Windows.Forms.DataGridView PANEL_GRID;
-    private System.Windows.Forms.DataGridViewTextBoxColumn DESCRIPTIONLEFT;
-    private System.Windows.Forms.DataGridViewTextBoxColumn PHASEALEFT;
-    private System.Windows.Forms.DataGridViewTextBoxColumn PHASEBLEFT;
-    private System.Windows.Forms.DataGridViewTextBoxColumn BKRLEFT;
-    private System.Windows.Forms.DataGridViewTextBoxColumn CKTNOLEFT;
-    private System.Windows.Forms.DataGridViewTextBoxColumn CKTNORIGHT;
-    private System.Windows.Forms.DataGridViewTextBoxColumn BRKRIGHT;
-    private System.Windows.Forms.DataGridViewTextBoxColumn PHASEARIGHT;
-    private System.Windows.Forms.DataGridViewTextBoxColumn PHASEBRIGHT;
-    private System.Windows.Forms.DataGridViewTextBoxColumn DESCRIPTIONRIGHT;
     private System.Windows.Forms.TextBox BUS_RATING_INPUT;
     private System.Windows.Forms.TextBox MAIN_INPUT;
     private System.Windows.Forms.TextBox PANEL_LOCATION_INPUT;
@@ -706,6 +696,16 @@ namespace AutoCADCommands
     private System.Windows.Forms.Button SAVE_PANEL_BUTTON;
     private System.Windows.Forms.Button NEW_PANEL_BUTTON;
     private System.Windows.Forms.Button LOAD_PANEL_BUTTON;
+    private System.Windows.Forms.DataGridViewTextBoxColumn description_left;
+    private System.Windows.Forms.DataGridViewTextBoxColumn phase_a_left;
+    private System.Windows.Forms.DataGridViewTextBoxColumn phase_b_left;
+    private System.Windows.Forms.DataGridViewTextBoxColumn breaker_left;
+    private System.Windows.Forms.DataGridViewTextBoxColumn circuit_left;
+    private System.Windows.Forms.DataGridViewTextBoxColumn circuit_right;
+    private System.Windows.Forms.DataGridViewTextBoxColumn breaker_right;
+    private System.Windows.Forms.DataGridViewTextBoxColumn phase_a_right;
+    private System.Windows.Forms.DataGridViewTextBoxColumn phase_b_right;
+    private System.Windows.Forms.DataGridViewTextBoxColumn description_right;
   }
 }
 
