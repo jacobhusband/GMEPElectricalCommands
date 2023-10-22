@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 using static OfficeOpenXml.ExcelErrorValue;
+using Autodesk.AutoCAD.GraphicsInterface;
 
 namespace AutoCADCommands
 {
@@ -22,6 +23,7 @@ namespace AutoCADCommands
     public Form1(MyCommands myCommands)
     {
       myCommandsInstance = myCommands;
+
       InitializeComponent();
       Listen_For_New_Rows();
       Remove_Column_Header_Sorting();
@@ -36,6 +38,67 @@ namespace AutoCADCommands
 
       Set_Default_Form_Values();
       Deselect_Cells();
+    }
+
+    private List<Dictionary<string, object>> Retrieve_Saved_Data()
+    {
+      List<Dictionary<string, object>> saveData = new List<Dictionary<string, object>>();
+
+      Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      Autodesk.AutoCAD.DatabaseServices.Database acCurDb = acDoc.Database;
+      string jsonDataKey = "JsonSaveData";
+
+      using (Autodesk.AutoCAD.DatabaseServices.Transaction tr = acCurDb.TransactionManager.StartTransaction())
+      {
+        Autodesk.AutoCAD.DatabaseServices.DBDictionary nod = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(acCurDb.NamedObjectsDictionaryId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
+
+        if (nod.Contains(jsonDataKey))
+        {
+          Autodesk.AutoCAD.DatabaseServices.DBDictionary userDict = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(nod.GetAt(jsonDataKey), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
+          Autodesk.AutoCAD.DatabaseServices.Xrecord xRecord = (Autodesk.AutoCAD.DatabaseServices.Xrecord)tr.GetObject(userDict.GetAt("SaveData"), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
+          Autodesk.AutoCAD.DatabaseServices.ResultBuffer rb = xRecord.Data;
+          if (rb != null)
+          {
+            foreach (Autodesk.AutoCAD.DatabaseServices.TypedValue tv in rb)
+            {
+              if (tv.TypeCode == (int)Autodesk.AutoCAD.DatabaseServices.DxfCode.Text)
+              {
+                saveData = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(tv.Value.ToString());
+              }
+            }
+          }
+        }
+      }
+
+      return saveData;
+    }
+
+    private void Store_Data(List<Dictionary<string, object>> saveData)
+    {
+      Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      Autodesk.AutoCAD.DatabaseServices.Database acCurDb = acDoc.Database;
+      string jsonDataKey = "JsonSaveData";
+
+      using (Autodesk.AutoCAD.DatabaseServices.Transaction tr = acCurDb.TransactionManager.StartTransaction())
+      {
+        Autodesk.AutoCAD.DatabaseServices.DBDictionary nod = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(acCurDb.NamedObjectsDictionaryId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
+
+        if (!nod.Contains(jsonDataKey))
+        {
+          Autodesk.AutoCAD.DatabaseServices.DBDictionary userDict = new Autodesk.AutoCAD.DatabaseServices.DBDictionary();
+          nod.UpgradeOpen();
+          nod.SetAt(jsonDataKey, userDict);
+          tr.AddNewlyCreatedDBObject(userDict, true);
+
+          Autodesk.AutoCAD.DatabaseServices.Xrecord xRecord = new Autodesk.AutoCAD.DatabaseServices.Xrecord();
+          Autodesk.AutoCAD.DatabaseServices.ResultBuffer rb = new Autodesk.AutoCAD.DatabaseServices.ResultBuffer(new Autodesk.AutoCAD.DatabaseServices.TypedValue((int)Autodesk.AutoCAD.DatabaseServices.DxfCode.Text, JsonConvert.SerializeObject(saveData, Formatting.Indented)));
+          xRecord.Data = rb;
+          userDict.SetAt("SaveData", xRecord);
+          tr.AddNewlyCreatedDBObject(xRecord, true);
+        }
+
+        tr.Commit();
+      }
     }
 
     private object oldValue;
@@ -377,8 +440,8 @@ namespace AutoCADCommands
 
     private void CREATE_PANEL_BUTTON_CLICK(object sender, EventArgs e)
     {
-      List<Dictionary<string, object>> panelDataList = Retrieve_Data_From_Modal();
-      myCommandsInstance.Create_Panels(panelDataList);
+      Dictionary<string, object> panelDataList = Retrieve_Data_From_Modal();
+      myCommandsInstance.Create_Panel(panelDataList);
       this.Close();
     }
 
@@ -391,10 +454,8 @@ namespace AutoCADCommands
       }
     }
 
-    private List<Dictionary<string, object>> Retrieve_Data_From_Modal()
+    private Dictionary<string, object> Retrieve_Data_From_Modal()
     {
-      List<Dictionary<string, object>> panels = new List<Dictionary<string, object>>();
-
       // Create a new panel
       Dictionary<string, object> panel = new Dictionary<string, object>();
 
@@ -441,7 +502,7 @@ namespace AutoCADCommands
       }
 
       // Add simple values in uppercase
-      panel.Add("panel", PANEL_NAME_INPUT.Text.ToUpper());
+      panel.Add("panel", "'" + PANEL_NAME_INPUT.Text.ToUpper() + "'");
       panel.Add("location", PANEL_LOCATION_INPUT.Text.ToUpper());
       panel.Add("voltage1", GetComboBoxValue(LINE_VOLTAGE_COMBOBOX));
       panel.Add("voltage2", GetComboBoxValue(PHASE_VOLTAGE_COMBOBOX));
@@ -644,8 +705,7 @@ namespace AutoCADCommands
       panel.Add("circuit_left", circuit_left);
       panel.Add("circuit_right", circuit_right);
 
-      panels.Add(panel);
-      return panels;
+      return panel;
     }
 
     private bool IsDigitsOnly(string str)
@@ -728,6 +788,57 @@ namespace AutoCADCommands
 
         calculate_totalva_panelload_feederamps_regular(value1, value2, sum);
       }
+    }
+
+    private void SAVE_PANEL_BUTTON_Click(object sender, EventArgs e)
+    {
+      string formattedPanelName = $"'{PANEL_NAME_INPUT.Text.ToUpper()}'";
+
+      if (string.IsNullOrEmpty(PANEL_NAME_INPUT.Text))
+      {
+        MessageBox.Show("Please enter a value before proceeding.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        return;
+      }
+
+      List<Dictionary<string, object>> saveData = Retrieve_Saved_Data();
+      Dictionary<string, object> currentPanelData = Retrieve_Data_From_Modal();
+
+      bool panelExists = saveData.Any(dict => dict["panel"].ToString() == formattedPanelName);
+
+      if (panelExists)
+      {
+        DialogResult result = MessageBox.Show("The panel name already exists. Do you want to overwrite the existing panel?", "Confirm", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+
+        switch (result)
+        {
+          case DialogResult.Yes:
+            // Find and remove the existing panel data
+            Dictionary<string, object> existingPanel = saveData.First(dict => dict["panel"].ToString() == formattedPanelName);
+            saveData.Remove(existingPanel);
+            saveData.Add(currentPanelData);
+            break;
+
+          case DialogResult.No:
+            // Do nothing and return
+            return;
+
+          case DialogResult.Cancel:
+            // Do nothing and return
+            return;
+        }
+      }
+      else
+      {
+        saveData.Add(currentPanelData);
+        LOAD_PANEL_COMBOBOX.Items.Add(formattedPanelName); // Adding the formatted panel name to the ComboBox
+      }
+
+      Store_Data(saveData);
+    }
+
+    private void LOAD_PANEL_BUTTON_click(object sender, EventArgs e)
+    {
+      Print_Panels(Retrieve_Saved_Data());
     }
   }
 }

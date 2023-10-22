@@ -359,6 +359,13 @@ namespace AutoCADCommands
       Create_Panels(null);
     }
 
+    public void Create_Panel(Dictionary<string, object> panelData)
+    {
+      List<Dictionary<string, object>> panels = new List<Dictionary<string, object>>();
+      panels.Add(panelData);
+      Create_Panels(panels);
+    }
+
     public void Create_Panels(List<Dictionary<string, object>> panelDataList)
     {
       var (doc, db, ed) = MyCommands.GetGlobals();
