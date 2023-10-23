@@ -530,6 +530,7 @@ namespace AutoCADCommands
       this.NEW_PANEL_BUTTON.TabIndex = 75;
       this.NEW_PANEL_BUTTON.Text = "NEW PANEL";
       this.NEW_PANEL_BUTTON.UseVisualStyleBackColor = true;
+      this.NEW_PANEL_BUTTON.Click += new System.EventHandler(this.NEW_PANEL_BUTTON_Click);
       // 
       // LOAD_PANEL_BUTTON
       // 

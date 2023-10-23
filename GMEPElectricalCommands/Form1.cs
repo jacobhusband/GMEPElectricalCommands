@@ -37,8 +37,20 @@ namespace AutoCADCommands
       PHASE_SUM_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PHASE_SUM_GRID_CellValueChanged);
       PANEL_GRID.CellFormatting += PANEL_GRID_CellFormatting;
 
+      Add_Rows_To_DataGrids();
       Set_Default_Form_Values();
       Deselect_Cells();
+    }
+
+    private void Add_Rows_To_DataGrids()
+    {
+      // Datagrids
+      PHASE_SUM_GRID.Rows.Add("0", "0");
+      TOTAL_VA_GRID.Rows.Add("0");
+      LCL_GRID.Rows.Add("0", "0");
+      TOTAL_OTHER_LOAD_GRID.Rows.Add("0");
+      PANEL_LOAD_GRID.Rows.Add("0");
+      FEEDER_AMP_GRID.Rows.Add("0");
     }
 
     private void Load_Panel_Data()
@@ -390,12 +402,14 @@ namespace AutoCADCommands
       LINE_VOLTAGE_COMBOBOX.SelectedIndex = 0;
 
       // Datagrids
-      PHASE_SUM_GRID.Rows.Add("0", "0");
-      TOTAL_VA_GRID.Rows.Add("0");
-      LCL_GRID.Rows.Add("0", "0");
-      TOTAL_OTHER_LOAD_GRID.Rows.Add("0");
-      PANEL_LOAD_GRID.Rows.Add("0");
-      FEEDER_AMP_GRID.Rows.Add("0");
+      PHASE_SUM_GRID.Rows[0].Cells[0].Value = "0";
+      PHASE_SUM_GRID.Rows[0].Cells[1].Value = "0";
+      TOTAL_VA_GRID.Rows[0].Cells[0].Value = "0";
+      LCL_GRID.Rows[0].Cells[0].Value = "0";
+      LCL_GRID.Rows[0].Cells[1].Value = "0";
+      TOTAL_OTHER_LOAD_GRID.Rows[0].Cells[0].Value = "0";
+      PANEL_LOAD_GRID.Rows[0].Cells[0].Value = "0";
+      FEEDER_AMP_GRID.Rows[0].Cells[0].Value = "0";
     }
 
     private void Remove_Column_Header_Sorting()
@@ -572,6 +586,14 @@ namespace AutoCADCommands
         string phaseARightValue = PANEL_GRID.Rows[i].Cells["phase_a_right"].Value?.ToString() ?? "0";
         string phaseBRightValue = PANEL_GRID.Rows[i].Cells["phase_b_right"].Value?.ToString() ?? "0";
 
+        // Checks for Left Side
+        bool hasCommaInPhaseLeft = phaseALeftValue.Contains(",") || phaseBLeftValue.Contains(",");
+        bool shouldDuplicateLeft = hasCommaInPhaseLeft;
+
+        // Checks for Right Side
+        bool hasCommaInPhaseRight = phaseARightValue.Contains(",") || phaseBRightValue.Contains(",");
+        bool shouldDuplicateRight = hasCommaInPhaseRight;
+
         // Handling Phase A Left
         if (phaseALeftValue.Contains(","))
         {
@@ -633,10 +655,18 @@ namespace AutoCADCommands
         else
         {
           description_left.Add(descriptionLeftValue);
-          description_left.Add("SPACE");
+          description_left.Add(shouldDuplicateLeft ? descriptionLeftValue : "SPACE");
 
-          circuit_left.Add(circuitLeftValue);
-          circuit_left.Add("");
+          if (shouldDuplicateLeft)
+          {
+            circuit_left.Add(circuitLeftValue + "A");
+            circuit_left.Add(circuitLeftValue + "B");
+          }
+          else
+          {
+            circuit_left.Add(circuitLeftValue);
+            circuit_left.Add("");
+          }
         }
 
         if (breakerLeftValue.Contains(","))
@@ -650,7 +680,7 @@ namespace AutoCADCommands
         else
         {
           breaker_left.Add(breakerLeftValue);
-          breaker_left.Add("");
+          breaker_left.Add(shouldDuplicateLeft ? breakerLeftValue : "");
         }
 
         if (descriptionRightValue.Contains(","))
@@ -666,9 +696,18 @@ namespace AutoCADCommands
         else
         {
           description_right.Add(descriptionRightValue);
-          description_right.Add("SPACE");
-          circuit_right.Add(circuitRightValue);
-          circuit_right.Add("");
+          description_right.Add(shouldDuplicateRight ? descriptionRightValue : "SPACE");
+
+          if (shouldDuplicateRight)
+          {
+            circuit_right.Add(circuitRightValue + "A");
+            circuit_right.Add(circuitRightValue + "B");
+          }
+          else
+          {
+            circuit_right.Add(circuitRightValue);
+            circuit_right.Add("");
+          }
         }
 
         if (breakerRightValue.Contains(","))
@@ -682,7 +721,7 @@ namespace AutoCADCommands
         else
         {
           breaker_right.Add(breakerRightValue);
-          breaker_right.Add("");
+          breaker_right.Add(shouldDuplicateRight ? breakerRightValue : "");
         }
 
         // Left Side
@@ -913,7 +952,9 @@ namespace AutoCADCommands
 
       List<string> multi_row_datagrid_keys = new List<string> { "description_left", "description_right", "phase_a_left", "phase_b_left", "phase_a_right", "phase_b_right", "breaker_left", "breaker_right", "circuit_left", "circuit_right" };
 
-      for (int i = 0; i < PANEL_GRID.Rows.Count * 2; i += 2)
+      int length = ((Newtonsoft.Json.Linq.JArray)selectedPanelData["description_left"]).ToObject<List<string>>().Count;
+
+      for (int i = 0; i < length * 2; i += 2)
       {
         foreach (string key in multi_row_datagrid_keys)
         {
@@ -921,17 +962,43 @@ namespace AutoCADCommands
           {
             List<string> values = ((Newtonsoft.Json.Linq.JArray)selectedPanelData[key]).ToObject<List<string>>();
 
-            if (key.Contains("description") && values[i] == "SPACE")
+            if (i < values.Count)
             {
-              continue; // skip this iteration if the value is "SPACE" for descriptions
-            }
+              string currentValue = values[i];
+              string nextValue = i + 1 < values.Count ? values[i + 1] : null;
 
-            if (key.Contains("phase") && values[i] == "0")
-            {
-              continue; // skip this iteration if the value is "0" for phases
-            }
+              if (key.Contains("description") && currentValue == "SPACE")
+              {
+                continue; // skip this iteration if the value is "SPACE" for descriptions
+              }
 
-            PANEL_GRID.Rows[i / 2].Cells[key].Value = values[i];
+              if (key.Contains("phase") && currentValue == "0")
+              {
+                continue; // skip this iteration if the value is "0" for phases
+              }
+
+              if (nextValue != null)
+              {
+                if (key.Contains("phase") && nextValue != "0")
+                {
+                  currentValue = $"{currentValue},{nextValue}";
+                }
+                else if (key.Contains("description") && nextValue != "SPACE")
+                {
+                  currentValue = $"{currentValue},{nextValue}";
+                }
+                else if (key.Contains("circuit"))
+                {
+                  currentValue = currentValue.Replace("A", "");
+                }
+                else if (key.Contains("breaker") && nextValue != "")
+                {
+                  currentValue = $"{currentValue},{nextValue}";
+                }
+              }
+
+              PANEL_GRID.Rows[i / 2].Cells[key].Value = currentValue;
+            }
           }
           else
           {
@@ -983,6 +1050,34 @@ namespace AutoCADCommands
         PANEL_GRID.Rows[i].Cells["breaker_right"].Value = string.Empty;
         PANEL_GRID.Rows[i].Cells["circuit_left"].Value = string.Empty;
         PANEL_GRID.Rows[i].Cells["circuit_right"].Value = string.Empty;
+      }
+    }
+
+    private void NEW_PANEL_BUTTON_Click(object sender, EventArgs e)
+    {
+      // prompt the user if they would like to save the current panel
+      DialogResult result = MessageBox.Show("Would you like to save the current panel?", "Confirm", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+      if (result == DialogResult.Yes)
+      {
+        save_panel_data();
+      }
+      else if (result == DialogResult.Cancel)
+      {
+        return;
+      }
+
+      clear_current_modal_data();
+
+      // Set default values
+      Set_Default_Form_Values();
+
+      // remove all rows from PANEL_GRID
+      PANEL_GRID.Rows.Clear();
+
+      // add 21 rows to PANEL_GRID
+      for (int i = 0; i < 21; i++)
+      {
+        PANEL_GRID.Rows.Add();
       }
     }
   }
