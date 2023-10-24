@@ -240,23 +240,31 @@ namespace AutoCADCommands
 
     private void PHASE_SUM_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
     {
-      // Check if the modified cell is in row 0 and column 0 or 1
-      if (e.RowIndex == 0 && (e.ColumnIndex == 0 || e.ColumnIndex == 1))
+      // Check if the modified cell is in row 0 and column 0, 1, or 2
+      if (e.RowIndex == 0 && (e.ColumnIndex == 0 || e.ColumnIndex == 1 || e.ColumnIndex == 2))
       {
         // Retrieve the values from PHASE_SUM_GRID, row 0, column 0 and 1
-        double value1 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[0].Value);
-        double value2 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[1].Value);
+        double value1 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[0].Value ?? 0); // Using null-coalescing operator for safety
+        double value2 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[1].Value ?? 0); // Using null-coalescing operator for safety
+        double value3 = 0;
+        double sum = value1 + value2; // Sum of first two columns
 
-        // Perform the sum (checking for null values)
-        double sum = value1 + value2;
+        // If the "three-phase" checkbox is checked, include the value from column 2
+        if (THREE_PHASE_CHECKBOX.Checked)
+        {
+          value3 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[2].Value ?? 0); // Using null-coalescing operator for safety
+          sum += value3; // Adding value of the third column if three-phase is checked
+        }
 
+        // Conditional execution based on the state of LARGEST_LCL_CHECKBOX and the presence of a value in TOTAL_OTHER_LOAD_GRID
         if (LARGEST_LCL_CHECKBOX.Checked && TOTAL_OTHER_LOAD_GRID[0, 0].Value != null)
         {
           calculate_totalva_panelload_feederamps_lcl(sum);
         }
         else
         {
-          calculate_totalva_panelload_feederamps_regular(value1, value2, sum);
+          // You might need to adjust the parameters passed to this function based on your needs
+          calculate_totalva_panelload_feederamps_regular(value1, value2, value3, sum);
         }
       }
     }
@@ -275,14 +283,14 @@ namespace AutoCADCommands
       FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(panelLoadValue, 1); // Rounded to 1 decimal place
     }
 
-    private void calculate_totalva_panelload_feederamps_regular(double value1, double value2, double sum)
+    private void calculate_totalva_panelload_feederamps_regular(double value1, double value2, double value3, double sum)
     {
       // Update total VA and panel load without other loads
       TOTAL_VA_GRID.Rows[0].Cells[0].Value = Math.Round(sum, 0); // Rounded to 1 decimal place
       PANEL_LOAD_GRID.Rows[0].Cells[0].Value = Math.Round(sum / 1000, 1); // Rounded to 1 decimal place
 
       // Update feeder amps
-      double maxVal = Math.Max(Convert.ToDouble(value1), Convert.ToDouble(value2));
+      double maxVal = Math.Max(Math.Max(Convert.ToDouble(value1), Convert.ToDouble(value2)), Convert.ToDouble(value3));
 
       object lineVoltageObj = LINE_VOLTAGE_COMBOBOX.SelectedItem;
       if (lineVoltageObj != null)
@@ -297,6 +305,90 @@ namespace AutoCADCommands
     }
 
     private void PANEL_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+    {
+      if (THREE_PHASE_CHECKBOX.Checked)
+      {
+        panel_cell_changed_3P(e);
+      }
+      else
+      {
+        panel_cell_changed_2P(e);
+      }
+    }
+
+    private void panel_cell_changed_3P(DataGridViewCellEventArgs e)
+    {
+      // Function to parse and sum a cell's value
+      double ParseAndSumCell(string cellValue)
+      {
+        double sum = 0;
+        if (!string.IsNullOrEmpty(cellValue))
+        {
+          var parts = cellValue.Split(',');
+          foreach (var part in parts)
+          {
+            if (double.TryParse(part, out double value))
+            {
+              sum += value;
+            }
+          }
+        }
+        return sum;
+      }
+
+      if (e.ColumnIndex == 1 || e.ColumnIndex == 8)
+      {
+        double sum = 0;
+        foreach (DataGridViewRow row in PANEL_GRID.Rows)
+        {
+          if (row.Cells[1].Value != null)
+            sum += ParseAndSumCell(row.Cells[1].Value.ToString());
+
+          if (row.Cells[8].Value != null)
+            sum += ParseAndSumCell(row.Cells[8].Value.ToString());
+        }
+
+        // Update the sum in dataGridView2, row 0, column 0
+        PHASE_SUM_GRID.Rows[0].Cells[0].Value = sum;
+      }
+
+      if (e.ColumnIndex == 2 || e.ColumnIndex == 9)
+      {
+        double sum = 0;
+        foreach (DataGridViewRow row in PANEL_GRID.Rows)
+        {
+          if (row.Cells[2].Value != null)
+            sum += ParseAndSumCell(row.Cells[2].Value.ToString());
+
+          if (row.Cells[9].Value != null)
+            sum += ParseAndSumCell(row.Cells[9].Value.ToString());
+        }
+
+        // Update the sum in dataGridView2, row 0, column 1
+        PHASE_SUM_GRID.Rows[0].Cells[1].Value = sum;
+      }
+
+      if (e.ColumnIndex == 3 || e.ColumnIndex == 10)
+      {
+        double sum = 0;
+        foreach (DataGridViewRow row in PANEL_GRID.Rows)
+        {
+          if (row.Cells[3].Value != null)
+            sum += ParseAndSumCell(row.Cells[3].Value.ToString());
+
+          if (row.Cells[10].Value != null)
+            sum += ParseAndSumCell(row.Cells[10].Value.ToString());
+        }
+
+        // Update the sum in dataGridView2, row 0, column 2
+        PHASE_SUM_GRID.Rows[0].Cells[2].Value = sum;
+      }
+
+      // Capture the new value for potential further use
+      object newValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+    }
+
+    private void panel_cell_changed_2P(DataGridViewCellEventArgs e)
     {
       // Function to parse and sum a cell's value
       double ParseAndSumCell(string cellValue)
@@ -351,7 +443,6 @@ namespace AutoCADCommands
       }
 
       object newValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
-      // oldValue = null;  // Not sure if you use this, so leaving it commented
     }
 
     private void PANEL_GRID_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -396,8 +487,16 @@ namespace AutoCADCommands
       // Comboboxes
       STATUS_COMBOBOX.SelectedIndex = 0;
       MOUNTING_COMBOBOX.SelectedIndex = 0;
-      WIRE_COMBOBOX.SelectedIndex = 0;
-      PHASE_COMBOBOX.SelectedIndex = 0;
+      if (THREE_PHASE_CHECKBOX.Checked)
+      {
+        WIRE_COMBOBOX.SelectedIndex = 1;
+        PHASE_COMBOBOX.SelectedIndex = 1;
+      }
+      else
+      {
+        WIRE_COMBOBOX.SelectedIndex = 0;
+        PHASE_COMBOBOX.SelectedIndex = 0;
+      }
       PHASE_VOLTAGE_COMBOBOX.SelectedIndex = 0;
       LINE_VOLTAGE_COMBOBOX.SelectedIndex = 0;
 
@@ -410,6 +509,8 @@ namespace AutoCADCommands
       TOTAL_OTHER_LOAD_GRID.Rows[0].Cells[0].Value = "0";
       PANEL_LOAD_GRID.Rows[0].Cells[0].Value = "0";
       FEEDER_AMP_GRID.Rows[0].Cells[0].Value = "0";
+
+      if (THREE_PHASE_CHECKBOX.Checked) PHASE_SUM_GRID.Rows[0].Cells[2].Value = "0";
     }
 
     private void Remove_Column_Header_Sorting()
@@ -426,6 +527,67 @@ namespace AutoCADCommands
     }
 
     private void PANEL_GRID_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
+    {
+      // if the three pole checkbox is checked, then call the listen_for_3P_rows_added function instead of 2P
+      if (THREE_PHASE_CHECKBOX.Checked)
+      {
+        listen_for_3P_rows_added(e);
+      }
+      else
+      {
+        listen_for_2P_rows_added(e);
+      }
+    }
+
+    private void listen_for_3P_rows_added(DataGridViewRowsAddedEventArgs e)
+    {
+      // Define the gray color
+      Color grayColor = Color.LightGray; // Replace with the specific gray color code if necessary
+
+      for (int i = 0; i < e.RowCount; i++)
+      {
+        int rowIndex = e.RowIndex + i;
+
+        // Set common column values
+        PANEL_GRID.Rows[rowIndex].Cells[4].Value = "20";
+        PANEL_GRID.Rows[rowIndex].Cells[5].Value = ((rowIndex + 1) * 2) - 1;
+        PANEL_GRID.Rows[rowIndex].Cells[6].Value = (rowIndex + 1) * 2;
+        PANEL_GRID.Rows[rowIndex].Cells[7].Value = "20";
+
+        // Determine the row pattern (zig-zag) for gray background
+        int pattern = rowIndex % 3; // Assuming a repeated pattern every 3 rows
+
+        // Apply pattern for columns 2, 3, 4 based on the row pattern
+        if (pattern == 0) // First row in pattern
+        {
+          PANEL_GRID.Rows[rowIndex].Cells[1].Style.BackColor = grayColor;
+        }
+        else if (pattern == 1) // Second row in pattern
+        {
+          PANEL_GRID.Rows[rowIndex].Cells[2].Style.BackColor = grayColor;
+        }
+        else // Third row in pattern
+        {
+          PANEL_GRID.Rows[rowIndex].Cells[3].Style.BackColor = grayColor;
+        }
+
+        // Apply the same pattern for columns 8, 9, 10
+        if (pattern == 0) // First row in pattern
+        {
+          PANEL_GRID.Rows[rowIndex].Cells[8].Style.BackColor = grayColor;
+        }
+        else if (pattern == 1) // Second row in pattern
+        {
+          PANEL_GRID.Rows[rowIndex].Cells[9].Style.BackColor = grayColor;
+        }
+        else // Third row in pattern
+        {
+          PANEL_GRID.Rows[rowIndex].Cells[10].Style.BackColor = grayColor;
+        }
+      }
+    }
+
+    private void listen_for_2P_rows_added(DataGridViewRowsAddedEventArgs e)
     {
       for (int i = 0; i < e.RowCount; i++)
       {
@@ -833,11 +995,17 @@ namespace AutoCADCommands
         // Retrieve the values from PHASE_SUM_GRID, row 0, column 0 and 1
         double value1 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[0].Value);
         double value2 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[1].Value);
+        double value3 = 0;
+
+        if (THREE_PHASE_CHECKBOX.Checked)
+        {
+          value3 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[2].Value);
+        }
 
         // Perform the sum (checking for null values)
-        double sum = value1 + value2;
+        double sum = value1 + value2 + value3;
 
-        calculate_totalva_panelload_feederamps_regular(value1, value2, sum);
+        calculate_totalva_panelload_feederamps_regular(value1, value2, value3, sum);
       }
     }
 
@@ -1074,6 +1242,136 @@ namespace AutoCADCommands
       // remove all rows from PANEL_GRID
       PANEL_GRID.Rows.Clear();
 
+      // add 21 rows to PANEL_GRID
+      for (int i = 0; i < 21; i++)
+      {
+        PANEL_GRID.Rows.Add();
+      }
+    }
+
+    private void THREE_PHASE_CHECKBOX_CheckedChanged(object sender, EventArgs e)
+    {
+      clear_and_save_panel_on_2P_to_3P();
+      add_or_remove_panel_grid_columns();
+      add_rows_to_panel_grid();
+      change_size_of_phase_columns();
+      add_phase_sum_column();
+      Set_Default_Form_Values();
+    }
+
+    private void add_phase_sum_column()
+    {
+      if (THREE_PHASE_CHECKBOX.Checked)
+      {
+        PHASE_SUM_GRID.Columns.Add(PHASE_SUM_GRID.Columns[0].Clone() as DataGridViewColumn);
+        PHASE_SUM_GRID.Columns[2].HeaderText = "PH C (VA)";
+        PHASE_SUM_GRID.Columns[2].Name = "TOTAL_PH_C";
+
+        // Set the width of the new column
+        PHASE_SUM_GRID.Columns[2].Width = 80;
+
+        // Set the width of the other columns
+        PHASE_SUM_GRID.Columns[0].Width = 80;
+        PHASE_SUM_GRID.Columns[1].Width = 80;
+
+        // set the width of the grid
+        PHASE_SUM_GRID.Width = 285;
+        PHASE_SUM_GRID.Location = new System.Drawing.Point(21, 334);
+      }
+      else
+      {
+        PHASE_SUM_GRID.Columns.Remove("TOTAL_PH_C");
+
+        // Set the width of the other columns
+        PHASE_SUM_GRID.Columns[0].Width = 100;
+        PHASE_SUM_GRID.Columns[1].Width = 100;
+
+        // set the width of the grid
+        PHASE_SUM_GRID.Width = 245;
+        PHASE_SUM_GRID.Location = new System.Drawing.Point(61, 334);
+      }
+    }
+
+    private void change_size_of_phase_columns()
+    {
+      // when phase c is added, reduce the size of phase a and phase b, and increase the size of phase c until the 3 columns are equal in size and match the width of phase a and phase b combined
+      if (THREE_PHASE_CHECKBOX.Checked)
+      {
+        // Left Side
+        PANEL_GRID.Columns["phase_a_left"].Width = 67;
+        PANEL_GRID.Columns["phase_b_left"].Width = 67;
+        PANEL_GRID.Columns["phase_c_left"].Width = 67;
+
+        // Right Side
+        PANEL_GRID.Columns["phase_a_right"].Width = 67;
+        PANEL_GRID.Columns["phase_b_right"].Width = 67;
+        PANEL_GRID.Columns["phase_c_right"].Width = 67;
+      }
+      else
+      {
+        // Left Side
+        PANEL_GRID.Columns["phase_a_left"].Width = 100;
+        PANEL_GRID.Columns["phase_b_left"].Width = 100;
+
+        // Right Side
+        PANEL_GRID.Columns["phase_a_right"].Width = 100;
+        PANEL_GRID.Columns["phase_b_right"].Width = 100;
+      }
+    }
+
+    private void add_or_remove_panel_grid_columns()
+    {
+      // insert a column with the text "PH C" into PANEL_GRID after phase b on the left and right side if the checkbox is checked
+      // give the column the name "phase_c_left" and "phase_c_right"
+      if (THREE_PHASE_CHECKBOX.Checked)
+      {
+        // Left Side
+        DataGridViewTextBoxColumn phase_c_left = new DataGridViewTextBoxColumn();
+        phase_c_left.HeaderText = "PH C";
+        phase_c_left.Name = "phase_c_left";
+        phase_c_left.Width = 50;
+        PANEL_GRID.Columns.Insert(3, phase_c_left);
+
+        // Right Side
+        DataGridViewTextBoxColumn phase_c_right = new DataGridViewTextBoxColumn();
+        phase_c_right.HeaderText = "PH C";
+        phase_c_right.Name = "phase_c_right";
+        phase_c_right.Width = 50;
+        PANEL_GRID.Columns.Insert(10, phase_c_right);
+      }
+      else
+      {
+        // Left Side
+        PANEL_GRID.Columns.Remove("phase_c_left");
+
+        // Right Side
+        PANEL_GRID.Columns.Remove("phase_c_right");
+      }
+    }
+
+    private void clear_and_save_panel_on_2P_to_3P()
+    {
+      // Prompt the user if they want to save before removing all the data
+      DialogResult result = MessageBox.Show("Do you want to save the current panel before the data is removed?", "Confirm", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+
+      if (result == DialogResult.Yes)
+      {
+        // If the user wants to save, then save the panel data
+        save_panel_data();
+        // After saving, remove all rows from PANEL_GRID
+        PANEL_GRID.Rows.Clear();
+      }
+      else if (result == DialogResult.No)
+      {
+        // If the user chooses not to save, then just remove all rows from PANEL_GRID
+        PANEL_GRID.Rows.Clear();
+      }
+      // If the user clicks 'Cancel', do nothing and return
+      // The 'else if' for DialogResult.Cancel is not needed here as doing nothing (returning) is the default action if neither 'Yes' nor 'No' is selected
+    }
+
+    private void add_rows_to_panel_grid()
+    {
       // add 21 rows to PANEL_GRID
       for (int i = 0; i < 21; i++)
       {
