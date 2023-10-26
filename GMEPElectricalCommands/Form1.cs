@@ -57,6 +57,8 @@ namespace AutoCADCommands
     {
       List<Dictionary<string, object>> saveData = Retrieve_Saved_Data();
 
+      // check if sum phase c has a value other than 0
+
       foreach (Dictionary<string, object> panel in saveData)
       {
         string panelName = panel["panel"].ToString();
@@ -703,7 +705,15 @@ namespace AutoCADCommands
       // Assuming that these grids are DataGridViews and the specific cells mentioned are not null or empty
       panel.Add("subtotal_a", PHASE_SUM_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
       panel.Add("subtotal_b", PHASE_SUM_GRID.Rows[0].Cells[1].Value.ToString().ToUpper());
-      panel.Add("subtotal_c", "0"); // Set to "0" as per the requirement, no need to convert
+      // if PHASE_SUM_GRID has the column "subtotal_c"
+      if (PHASE_SUM_GRID.Columns.Count > 2)
+      {
+        panel.Add("subtotal_c", PHASE_SUM_GRID.Rows[0].Cells[2].Value.ToString().ToUpper());
+      }
+      else
+      {
+        panel.Add("subtotal_c", "0");
+      }
       panel.Add("total_va", TOTAL_VA_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
       panel.Add("lcl", LCL_GRID.Rows[0].Cells[1].Value.ToString().ToUpper());
       panel.Add("lcl_125", LCL_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
@@ -730,6 +740,8 @@ namespace AutoCADCommands
       List<string> phase_b_left = new List<string>();
       List<string> phase_a_right = new List<string>();
       List<string> phase_b_right = new List<string>();
+      List<string> phase_c_left = new List<string>();
+      List<string> phase_c_right = new List<string>();
       List<string> breaker_left = new List<string>();
       List<string> breaker_right = new List<string>();
       List<string> circuit_left = new List<string>();
@@ -747,13 +759,21 @@ namespace AutoCADCommands
         string phaseBLeftValue = PANEL_GRID.Rows[i].Cells["phase_b_left"].Value?.ToString() ?? "0";
         string phaseARightValue = PANEL_GRID.Rows[i].Cells["phase_a_right"].Value?.ToString() ?? "0";
         string phaseBRightValue = PANEL_GRID.Rows[i].Cells["phase_b_right"].Value?.ToString() ?? "0";
+        string phaseCLeftValue = "0";
+        string phaseCRightValue = "0";
+
+        if (PHASE_SUM_GRID.Columns.Count > 2)
+        {
+          phaseCLeftValue = PANEL_GRID.Rows[i].Cells["phase_c_left"].Value?.ToString() ?? "0";
+          phaseCRightValue = PANEL_GRID.Rows[i].Cells["phase_c_right"].Value?.ToString() ?? "0";
+        }
 
         // Checks for Left Side
-        bool hasCommaInPhaseLeft = phaseALeftValue.Contains(",") || phaseBLeftValue.Contains(",");
+        bool hasCommaInPhaseLeft = phaseALeftValue.Contains(",") || phaseBLeftValue.Contains(",") || phaseCLeftValue.Contains(",");
         bool shouldDuplicateLeft = hasCommaInPhaseLeft;
 
         // Checks for Right Side
-        bool hasCommaInPhaseRight = phaseARightValue.Contains(",") || phaseBRightValue.Contains(",");
+        bool hasCommaInPhaseRight = phaseARightValue.Contains(",") || phaseBRightValue.Contains(",") || phaseCRightValue.Contains(",");
         bool shouldDuplicateRight = hasCommaInPhaseRight;
 
         // Handling Phase A Left
@@ -802,6 +822,33 @@ namespace AutoCADCommands
         {
           phase_b_right.Add(phaseBRightValue);
           phase_b_right.Add("0"); // Default value
+        }
+
+        if (PHASE_SUM_GRID.Columns.Count > 2)
+        {
+          // Handling Phase C Left
+          if (phaseCLeftValue.Contains(","))
+          {
+            var splitValues = phaseCLeftValue.Split(',').Select(str => str.Trim()).ToArray();
+            phase_c_left.AddRange(splitValues);
+          }
+          else
+          {
+            phase_c_left.Add(phaseCLeftValue);
+            phase_c_left.Add("0"); // Default value
+          }
+
+          // Handling Phase C Right
+          if (phaseCRightValue.Contains(","))
+          {
+            var splitValues = phaseCRightValue.Split(',').Select(str => str.Trim()).ToArray();
+            phase_c_right.AddRange(splitValues);
+          }
+          else
+          {
+            phase_c_right.Add(phaseCRightValue);
+            phase_c_right.Add("0"); // Default value
+          }
         }
 
         if (descriptionLeftValue.Contains(","))
@@ -913,6 +960,11 @@ namespace AutoCADCommands
       panel.Add("phase_b_left", phase_b_left);
       panel.Add("phase_a_right", phase_a_right);
       panel.Add("phase_b_right", phase_b_right);
+      if (PHASE_SUM_GRID.Columns.Count > 2)
+      {
+        panel.Add("phase_c_left", phase_c_left);
+        panel.Add("phase_c_right", phase_c_right);
+      }
       panel.Add("breaker_left", breaker_left);
       panel.Add("breaker_right", breaker_right);
       panel.Add("circuit_left", circuit_left);
@@ -1063,26 +1115,44 @@ namespace AutoCADCommands
     private void LOAD_PANEL_BUTTON_click(object sender, EventArgs e)
     {
       List<Dictionary<string, object>> saveData = Retrieve_Saved_Data();
-
+      // check the panel data contains the key "phase_c_left"
       if (LOAD_PANEL_COMBOBOX.SelectedItem != null)
       {
         string selectedPanelName = LOAD_PANEL_COMBOBOX.SelectedItem.ToString();
         Dictionary<string, object> selectedPanelData = saveData.First(dict => dict["panel"].ToString() == selectedPanelName);
-
-        // prompt the user if they would like to save the current panel
-        DialogResult result = MessageBox.Show("Would you like to save the current panel?", "Confirm", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-        if (result == DialogResult.Yes)
+        bool phase = THREE_PHASE_CHECKBOX.Checked;
+        if (saveData.Count > 0 && saveData[0].ContainsKey("phase_c_left"))
         {
-          save_panel_data();
+          THREE_PHASE_CHECKBOX.Checked = true;
         }
-        else if (result == DialogResult.Cancel)
+        else
         {
-          return;
+          THREE_PHASE_CHECKBOX.Checked = false;
         }
-
-        // Set the values in the modal
-        Set_Modal_Values(selectedPanelData);
+        if (phase != THREE_PHASE_CHECKBOX.Checked)
+        {
+          load_panel_from_data(selectedPanelData);
+        }
+        else
+        {
+          // prompt the user if they would like to save the current panel
+          DialogResult result = MessageBox.Show("Would you like to save the current panel?", "Confirm", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+          if (result == DialogResult.Yes)
+          {
+            save_panel_data();
+          }
+          else if (result == DialogResult.Cancel)
+          {
+            return;
+          }
+          load_panel_from_data(selectedPanelData);
+        }
       }
+    }
+
+    private void load_panel_from_data(Dictionary<string, object> selectedPanelData)
+    {
+      Set_Modal_Values(selectedPanelData);
     }
 
     private void Set_Modal_Values(Dictionary<string, object> selectedPanelData)
@@ -1251,12 +1321,15 @@ namespace AutoCADCommands
 
     private void THREE_PHASE_CHECKBOX_CheckedChanged(object sender, EventArgs e)
     {
-      clear_and_save_panel_on_2P_to_3P();
-      add_or_remove_panel_grid_columns();
-      add_rows_to_panel_grid();
-      change_size_of_phase_columns();
-      add_phase_sum_column();
-      Set_Default_Form_Values();
+      bool doTheRest = clear_and_save_panel_on_2P_to_3P();
+      if (doTheRest)
+      {
+        add_or_remove_panel_grid_columns();
+        add_rows_to_panel_grid();
+        change_size_of_phase_columns();
+        add_phase_sum_column();
+        Set_Default_Form_Values();
+      }
     }
 
     private void add_phase_sum_column()
@@ -1349,7 +1422,7 @@ namespace AutoCADCommands
       }
     }
 
-    private void clear_and_save_panel_on_2P_to_3P()
+    private bool clear_and_save_panel_on_2P_to_3P()
     {
       // Prompt the user if they want to save before removing all the data
       DialogResult result = MessageBox.Show("Do you want to save the current panel before the data is removed?", "Confirm", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
@@ -1360,14 +1433,39 @@ namespace AutoCADCommands
         save_panel_data();
         // After saving, remove all rows from PANEL_GRID
         PANEL_GRID.Rows.Clear();
+        return true;
       }
       else if (result == DialogResult.No)
       {
         // If the user chooses not to save, then just remove all rows from PANEL_GRID
         PANEL_GRID.Rows.Clear();
+        return true;
       }
-      // If the user clicks 'Cancel', do nothing and return
-      // The 'else if' for DialogResult.Cancel is not needed here as doing nothing (returning) is the default action if neither 'Yes' nor 'No' is selected
+      else
+      {
+        // do the opposite of the current checkbox state
+        if (THREE_PHASE_CHECKBOX.Checked)
+        {
+          ChangeCheckboxStateWithoutEvent(false);
+        }
+        else
+        {
+          ChangeCheckboxStateWithoutEvent(true);
+        }
+        return false;
+      }
+    }
+
+    private void ChangeCheckboxStateWithoutEvent(bool newState)
+    {
+      // Unsubscribe from the event
+      THREE_PHASE_CHECKBOX.CheckedChanged -= THREE_PHASE_CHECKBOX_CheckedChanged;
+
+      // Change the checkbox state
+      THREE_PHASE_CHECKBOX.Checked = newState;
+
+      // Resubscribe to the event
+      THREE_PHASE_CHECKBOX.CheckedChanged += THREE_PHASE_CHECKBOX_CheckedChanged;
     }
 
     private void add_rows_to_panel_grid()
