@@ -81,12 +81,9 @@ namespace AutoCADCommands
       this.LARGEST_LCL_INPUT = new System.Windows.Forms.TextBox();
       this.LARGEST_LCL_LABEL = new System.Windows.Forms.Label();
       this.LARGEST_LCL_CHECKBOX = new System.Windows.Forms.CheckBox();
-      this.LOAD_PANEL_LABEL = new System.Windows.Forms.Label();
-      this.LOAD_PANEL_COMBOBOX = new System.Windows.Forms.ComboBox();
-      this.SAVE_PANEL_BUTTON = new System.Windows.Forms.Button();
       this.NEW_PANEL_BUTTON = new System.Windows.Forms.Button();
-      this.LOAD_PANEL_BUTTON = new System.Windows.Forms.Button();
-      this.THREE_PHASE_CHECKBOX = new System.Windows.Forms.CheckBox();
+      this.tabControl1 = new System.Windows.Forms.TabControl();
+      this.tabPage1 = new System.Windows.Forms.TabPage();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PHASE_SUM_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.TOTAL_VA_GRID)).BeginInit();
@@ -94,6 +91,8 @@ namespace AutoCADCommands
       ((System.ComponentModel.ISupportInitialize)(this.TOTAL_OTHER_LOAD_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
+      this.tabControl1.SuspendLayout();
+      this.tabPage1.SuspendLayout();
       this.SuspendLayout();
       // 
       // PANEL_GRID
@@ -110,7 +109,7 @@ namespace AutoCADCommands
             this.phase_a_right,
             this.phase_b_right,
             this.description_right});
-      this.PANEL_GRID.Location = new System.Drawing.Point(325, 58);
+      this.PANEL_GRID.Location = new System.Drawing.Point(318, 41);
       this.PANEL_GRID.Name = "PANEL_GRID";
       this.PANEL_GRID.Size = new System.Drawing.Size(1047, 489);
       this.PANEL_GRID.TabIndex = 10;
@@ -167,28 +166,28 @@ namespace AutoCADCommands
       // 
       // BUS_RATING_INPUT
       // 
-      this.BUS_RATING_INPUT.Location = new System.Drawing.Point(206, 161);
+      this.BUS_RATING_INPUT.Location = new System.Drawing.Point(199, 144);
       this.BUS_RATING_INPUT.Name = "BUS_RATING_INPUT";
       this.BUS_RATING_INPUT.Size = new System.Drawing.Size(100, 20);
       this.BUS_RATING_INPUT.TabIndex = 4;
       // 
       // MAIN_INPUT
       // 
-      this.MAIN_INPUT.Location = new System.Drawing.Point(206, 135);
+      this.MAIN_INPUT.Location = new System.Drawing.Point(199, 118);
       this.MAIN_INPUT.Name = "MAIN_INPUT";
       this.MAIN_INPUT.Size = new System.Drawing.Size(100, 20);
       this.MAIN_INPUT.TabIndex = 3;
       // 
       // PANEL_LOCATION_INPUT
       // 
-      this.PANEL_LOCATION_INPUT.Location = new System.Drawing.Point(206, 110);
+      this.PANEL_LOCATION_INPUT.Location = new System.Drawing.Point(199, 93);
       this.PANEL_LOCATION_INPUT.Name = "PANEL_LOCATION_INPUT";
       this.PANEL_LOCATION_INPUT.Size = new System.Drawing.Size(100, 20);
       this.PANEL_LOCATION_INPUT.TabIndex = 2;
       // 
       // PANEL_NAME_INPUT
       // 
-      this.PANEL_NAME_INPUT.Location = new System.Drawing.Point(206, 85);
+      this.PANEL_NAME_INPUT.Location = new System.Drawing.Point(199, 68);
       this.PANEL_NAME_INPUT.Name = "PANEL_NAME_INPUT";
       this.PANEL_NAME_INPUT.Size = new System.Drawing.Size(100, 20);
       this.PANEL_NAME_INPUT.TabIndex = 1;
@@ -196,7 +195,7 @@ namespace AutoCADCommands
       // label10
       // 
       this.label10.AutoSize = true;
-      this.label10.Location = new System.Drawing.Point(116, 295);
+      this.label10.Location = new System.Drawing.Point(109, 278);
       this.label10.Name = "label10";
       this.label10.Size = new System.Drawing.Size(66, 13);
       this.label10.TabIndex = 54;
@@ -205,7 +204,7 @@ namespace AutoCADCommands
       // label11
       // 
       this.label11.AutoSize = true;
-      this.label11.Location = new System.Drawing.Point(146, 269);
+      this.label11.Location = new System.Drawing.Point(139, 252);
       this.label11.Name = "label11";
       this.label11.Size = new System.Drawing.Size(36, 13);
       this.label11.TabIndex = 52;
@@ -214,7 +213,7 @@ namespace AutoCADCommands
       // label12
       // 
       this.label12.AutoSize = true;
-      this.label12.Location = new System.Drawing.Point(139, 242);
+      this.label12.Location = new System.Drawing.Point(132, 225);
       this.label12.Name = "label12";
       this.label12.Size = new System.Drawing.Size(43, 13);
       this.label12.TabIndex = 50;
@@ -223,7 +222,7 @@ namespace AutoCADCommands
       // label13
       // 
       this.label13.AutoSize = true;
-      this.label13.Location = new System.Drawing.Point(67, 216);
+      this.label13.Location = new System.Drawing.Point(60, 199);
       this.label13.Name = "label13";
       this.label13.Size = new System.Drawing.Size(112, 13);
       this.label13.TabIndex = 48;
@@ -232,7 +231,7 @@ namespace AutoCADCommands
       // label14
       // 
       this.label14.AutoSize = true;
-      this.label14.Location = new System.Drawing.Point(79, 190);
+      this.label14.Location = new System.Drawing.Point(72, 173);
       this.label14.Name = "label14";
       this.label14.Size = new System.Drawing.Size(100, 13);
       this.label14.TabIndex = 46;
@@ -241,7 +240,7 @@ namespace AutoCADCommands
       // label15
       // 
       this.label15.AutoSize = true;
-      this.label15.Location = new System.Drawing.Point(111, 164);
+      this.label15.Location = new System.Drawing.Point(104, 147);
       this.label15.Name = "label15";
       this.label15.Size = new System.Drawing.Size(89, 13);
       this.label15.TabIndex = 44;
@@ -250,7 +249,7 @@ namespace AutoCADCommands
       // label16
       // 
       this.label16.AutoSize = true;
-      this.label16.Location = new System.Drawing.Point(150, 138);
+      this.label16.Location = new System.Drawing.Point(143, 121);
       this.label16.Name = "label16";
       this.label16.Size = new System.Drawing.Size(50, 13);
       this.label16.TabIndex = 42;
@@ -259,7 +258,7 @@ namespace AutoCADCommands
       // label17
       // 
       this.label17.AutoSize = true;
-      this.label17.Location = new System.Drawing.Point(140, 114);
+      this.label17.Location = new System.Drawing.Point(133, 97);
       this.label17.Name = "label17";
       this.label17.Size = new System.Drawing.Size(61, 13);
       this.label17.TabIndex = 40;
@@ -268,7 +267,7 @@ namespace AutoCADCommands
       // label18
       // 
       this.label18.AutoSize = true;
-      this.label18.Location = new System.Drawing.Point(159, 89);
+      this.label18.Location = new System.Drawing.Point(152, 72);
       this.label18.Name = "label18";
       this.label18.Size = new System.Drawing.Size(42, 13);
       this.label18.TabIndex = 37;
@@ -277,7 +276,7 @@ namespace AutoCADCommands
       // label1
       // 
       this.label1.AutoSize = true;
-      this.label1.Location = new System.Drawing.Point(71, 62);
+      this.label1.Location = new System.Drawing.Point(64, 45);
       this.label1.Name = "label1";
       this.label1.Size = new System.Drawing.Size(108, 13);
       this.label1.TabIndex = 56;
@@ -290,7 +289,7 @@ namespace AutoCADCommands
             "NEW",
             "EXISTING",
             "RELOCATED"});
-      this.STATUS_COMBOBOX.Location = new System.Drawing.Point(185, 59);
+      this.STATUS_COMBOBOX.Location = new System.Drawing.Point(178, 42);
       this.STATUS_COMBOBOX.Name = "STATUS_COMBOBOX";
       this.STATUS_COMBOBOX.Size = new System.Drawing.Size(121, 21);
       this.STATUS_COMBOBOX.TabIndex = 0;
@@ -301,7 +300,7 @@ namespace AutoCADCommands
       this.MOUNTING_COMBOBOX.Items.AddRange(new object[] {
             "SURFACE",
             "RECESSED"});
-      this.MOUNTING_COMBOBOX.Location = new System.Drawing.Point(185, 291);
+      this.MOUNTING_COMBOBOX.Location = new System.Drawing.Point(178, 274);
       this.MOUNTING_COMBOBOX.Name = "MOUNTING_COMBOBOX";
       this.MOUNTING_COMBOBOX.Size = new System.Drawing.Size(121, 21);
       this.MOUNTING_COMBOBOX.TabIndex = 9;
@@ -312,7 +311,7 @@ namespace AutoCADCommands
       this.WIRE_COMBOBOX.Items.AddRange(new object[] {
             "3",
             "4"});
-      this.WIRE_COMBOBOX.Location = new System.Drawing.Point(185, 265);
+      this.WIRE_COMBOBOX.Location = new System.Drawing.Point(178, 248);
       this.WIRE_COMBOBOX.Name = "WIRE_COMBOBOX";
       this.WIRE_COMBOBOX.Size = new System.Drawing.Size(121, 21);
       this.WIRE_COMBOBOX.TabIndex = 8;
@@ -323,7 +322,7 @@ namespace AutoCADCommands
       this.PHASE_COMBOBOX.Items.AddRange(new object[] {
             "1",
             "3"});
-      this.PHASE_COMBOBOX.Location = new System.Drawing.Point(185, 239);
+      this.PHASE_COMBOBOX.Location = new System.Drawing.Point(178, 222);
       this.PHASE_COMBOBOX.Name = "PHASE_COMBOBOX";
       this.PHASE_COMBOBOX.Size = new System.Drawing.Size(121, 21);
       this.PHASE_COMBOBOX.TabIndex = 7;
@@ -335,7 +334,7 @@ namespace AutoCADCommands
             "208",
             "240",
             "480"});
-      this.PHASE_VOLTAGE_COMBOBOX.Location = new System.Drawing.Point(185, 213);
+      this.PHASE_VOLTAGE_COMBOBOX.Location = new System.Drawing.Point(178, 196);
       this.PHASE_VOLTAGE_COMBOBOX.Name = "PHASE_VOLTAGE_COMBOBOX";
       this.PHASE_VOLTAGE_COMBOBOX.Size = new System.Drawing.Size(121, 21);
       this.PHASE_VOLTAGE_COMBOBOX.TabIndex = 6;
@@ -346,14 +345,14 @@ namespace AutoCADCommands
       this.LINE_VOLTAGE_COMBOBOX.Items.AddRange(new object[] {
             "120",
             "277"});
-      this.LINE_VOLTAGE_COMBOBOX.Location = new System.Drawing.Point(185, 187);
+      this.LINE_VOLTAGE_COMBOBOX.Location = new System.Drawing.Point(178, 170);
       this.LINE_VOLTAGE_COMBOBOX.Name = "LINE_VOLTAGE_COMBOBOX";
       this.LINE_VOLTAGE_COMBOBOX.Size = new System.Drawing.Size(121, 21);
       this.LINE_VOLTAGE_COMBOBOX.TabIndex = 5;
       // 
       // ADD_ROW_BUTTON
       // 
-      this.ADD_ROW_BUTTON.Location = new System.Drawing.Point(324, 553);
+      this.ADD_ROW_BUTTON.Location = new System.Drawing.Point(317, 536);
       this.ADD_ROW_BUTTON.Name = "ADD_ROW_BUTTON";
       this.ADD_ROW_BUTTON.Size = new System.Drawing.Size(75, 23);
       this.ADD_ROW_BUTTON.TabIndex = 11;
@@ -365,7 +364,7 @@ namespace AutoCADCommands
       // 
       this.DELETE_ROW_BUTTON.BackColor = System.Drawing.SystemColors.Control;
       this.DELETE_ROW_BUTTON.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-      this.DELETE_ROW_BUTTON.Location = new System.Drawing.Point(1272, 553);
+      this.DELETE_ROW_BUTTON.Location = new System.Drawing.Point(1265, 536);
       this.DELETE_ROW_BUTTON.Name = "DELETE_ROW_BUTTON";
       this.DELETE_ROW_BUTTON.Size = new System.Drawing.Size(100, 23);
       this.DELETE_ROW_BUTTON.TabIndex = 12;
@@ -381,7 +380,7 @@ namespace AutoCADCommands
       this.PHASE_SUM_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.TOTAL_PH_A,
             this.TOTAL_PH_B});
-      this.PHASE_SUM_GRID.Location = new System.Drawing.Point(61, 334);
+      this.PHASE_SUM_GRID.Location = new System.Drawing.Point(54, 317);
       this.PHASE_SUM_GRID.Name = "PHASE_SUM_GRID";
       this.PHASE_SUM_GRID.ReadOnly = true;
       this.PHASE_SUM_GRID.Size = new System.Drawing.Size(245, 44);
@@ -406,7 +405,7 @@ namespace AutoCADCommands
       this.TOTAL_VA_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.TOTAL_VA_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.TOTAL_VA});
-      this.TOTAL_VA_GRID.Location = new System.Drawing.Point(162, 384);
+      this.TOTAL_VA_GRID.Location = new System.Drawing.Point(155, 367);
       this.TOTAL_VA_GRID.Name = "TOTAL_VA_GRID";
       this.TOTAL_VA_GRID.ReadOnly = true;
       this.TOTAL_VA_GRID.Size = new System.Drawing.Size(144, 42);
@@ -426,7 +425,7 @@ namespace AutoCADCommands
       this.LCL_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.LCL_AT_100PC,
             this.LCL_AT_125PC});
-      this.LCL_GRID.Location = new System.Drawing.Point(22, 476);
+      this.LCL_GRID.Location = new System.Drawing.Point(15, 459);
       this.LCL_GRID.Name = "LCL_GRID";
       this.LCL_GRID.ReadOnly = true;
       this.LCL_GRID.Size = new System.Drawing.Size(284, 42);
@@ -453,7 +452,7 @@ namespace AutoCADCommands
       this.TOTAL_OTHER_LOAD_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.TOTAL_OTHER_LOAD_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.TOTAL_OTHER_LOAD});
-      this.TOTAL_OTHER_LOAD_GRID.Location = new System.Drawing.Point(92, 524);
+      this.TOTAL_OTHER_LOAD_GRID.Location = new System.Drawing.Point(85, 507);
       this.TOTAL_OTHER_LOAD_GRID.Name = "TOTAL_OTHER_LOAD_GRID";
       this.TOTAL_OTHER_LOAD_GRID.ReadOnly = true;
       this.TOTAL_OTHER_LOAD_GRID.Size = new System.Drawing.Size(214, 41);
@@ -473,7 +472,7 @@ namespace AutoCADCommands
       this.PANEL_LOAD_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.PANEL_LOAD_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.PANEL_LOAD});
-      this.PANEL_LOAD_GRID.Location = new System.Drawing.Point(123, 571);
+      this.PANEL_LOAD_GRID.Location = new System.Drawing.Point(116, 554);
       this.PANEL_LOAD_GRID.Name = "PANEL_LOAD_GRID";
       this.PANEL_LOAD_GRID.ReadOnly = true;
       this.PANEL_LOAD_GRID.Size = new System.Drawing.Size(183, 43);
@@ -493,7 +492,7 @@ namespace AutoCADCommands
       this.FEEDER_AMP_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.FEEDER_AMP_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.FEEDER_AMPS});
-      this.FEEDER_AMP_GRID.Location = new System.Drawing.Point(131, 620);
+      this.FEEDER_AMP_GRID.Location = new System.Drawing.Point(124, 603);
       this.FEEDER_AMP_GRID.Name = "FEEDER_AMP_GRID";
       this.FEEDER_AMP_GRID.ReadOnly = true;
       this.FEEDER_AMP_GRID.Size = new System.Drawing.Size(175, 40);
@@ -508,7 +507,7 @@ namespace AutoCADCommands
       // 
       // CREATE_PANEL_BUTTON
       // 
-      this.CREATE_PANEL_BUTTON.Location = new System.Drawing.Point(765, 553);
+      this.CREATE_PANEL_BUTTON.Location = new System.Drawing.Point(758, 536);
       this.CREATE_PANEL_BUTTON.Name = "CREATE_PANEL_BUTTON";
       this.CREATE_PANEL_BUTTON.Size = new System.Drawing.Size(126, 23);
       this.CREATE_PANEL_BUTTON.TabIndex = 13;
@@ -518,7 +517,7 @@ namespace AutoCADCommands
       // 
       // LARGEST_LCL_INPUT
       // 
-      this.LARGEST_LCL_INPUT.Location = new System.Drawing.Point(160, 448);
+      this.LARGEST_LCL_INPUT.Location = new System.Drawing.Point(153, 431);
       this.LARGEST_LCL_INPUT.Name = "LARGEST_LCL_INPUT";
       this.LARGEST_LCL_INPUT.Size = new System.Drawing.Size(144, 20);
       this.LARGEST_LCL_INPUT.TabIndex = 67;
@@ -527,7 +526,7 @@ namespace AutoCADCommands
       // LARGEST_LCL_LABEL
       // 
       this.LARGEST_LCL_LABEL.AutoSize = true;
-      this.LARGEST_LCL_LABEL.Location = new System.Drawing.Point(36, 432);
+      this.LARGEST_LCL_LABEL.Location = new System.Drawing.Point(29, 415);
       this.LARGEST_LCL_LABEL.Name = "LARGEST_LCL_LABEL";
       this.LARGEST_LCL_LABEL.Size = new System.Drawing.Size(268, 13);
       this.LARGEST_LCL_LABEL.TabIndex = 68;
@@ -537,7 +536,7 @@ namespace AutoCADCommands
       // 
       this.LARGEST_LCL_CHECKBOX.AutoSize = true;
       this.LARGEST_LCL_CHECKBOX.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-      this.LARGEST_LCL_CHECKBOX.Location = new System.Drawing.Point(86, 451);
+      this.LARGEST_LCL_CHECKBOX.Location = new System.Drawing.Point(-67, 409);
       this.LARGEST_LCL_CHECKBOX.Name = "LARGEST_LCL_CHECKBOX";
       this.LARGEST_LCL_CHECKBOX.Size = new System.Drawing.Size(68, 17);
       this.LARGEST_LCL_CHECKBOX.TabIndex = 69;
@@ -545,37 +544,9 @@ namespace AutoCADCommands
       this.LARGEST_LCL_CHECKBOX.UseVisualStyleBackColor = true;
       this.LARGEST_LCL_CHECKBOX.CheckedChanged += new System.EventHandler(this.LARGEST_LCL_CHECKBOX_CheckedChanged);
       // 
-      // LOAD_PANEL_LABEL
-      // 
-      this.LOAD_PANEL_LABEL.AutoSize = true;
-      this.LOAD_PANEL_LABEL.Location = new System.Drawing.Point(325, 30);
-      this.LOAD_PANEL_LABEL.Name = "LOAD_PANEL_LABEL";
-      this.LOAD_PANEL_LABEL.Size = new System.Drawing.Size(41, 13);
-      this.LOAD_PANEL_LABEL.TabIndex = 70;
-      this.LOAD_PANEL_LABEL.Text = " NAME";
-      // 
-      // LOAD_PANEL_COMBOBOX
-      // 
-      this.LOAD_PANEL_COMBOBOX.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-      this.LOAD_PANEL_COMBOBOX.FormattingEnabled = true;
-      this.LOAD_PANEL_COMBOBOX.Location = new System.Drawing.Point(372, 26);
-      this.LOAD_PANEL_COMBOBOX.Name = "LOAD_PANEL_COMBOBOX";
-      this.LOAD_PANEL_COMBOBOX.Size = new System.Drawing.Size(121, 21);
-      this.LOAD_PANEL_COMBOBOX.TabIndex = 71;
-      // 
-      // SAVE_PANEL_BUTTON
-      // 
-      this.SAVE_PANEL_BUTTON.Location = new System.Drawing.Point(597, 26);
-      this.SAVE_PANEL_BUTTON.Name = "SAVE_PANEL_BUTTON";
-      this.SAVE_PANEL_BUTTON.Size = new System.Drawing.Size(105, 22);
-      this.SAVE_PANEL_BUTTON.TabIndex = 74;
-      this.SAVE_PANEL_BUTTON.Text = "SAVE PANEL";
-      this.SAVE_PANEL_BUTTON.UseVisualStyleBackColor = true;
-      this.SAVE_PANEL_BUTTON.Click += new System.EventHandler(this.SAVE_PANEL_BUTTON_Click);
-      // 
       // NEW_PANEL_BUTTON
       // 
-      this.NEW_PANEL_BUTTON.Location = new System.Drawing.Point(1272, 27);
+      this.NEW_PANEL_BUTTON.Location = new System.Drawing.Point(1265, 12);
       this.NEW_PANEL_BUTTON.Name = "NEW_PANEL_BUTTON";
       this.NEW_PANEL_BUTTON.Size = new System.Drawing.Size(100, 23);
       this.NEW_PANEL_BUTTON.TabIndex = 75;
@@ -583,72 +554,65 @@ namespace AutoCADCommands
       this.NEW_PANEL_BUTTON.UseVisualStyleBackColor = true;
       this.NEW_PANEL_BUTTON.Click += new System.EventHandler(this.NEW_PANEL_BUTTON_Click);
       // 
-      // LOAD_PANEL_BUTTON
+      // tabControl1
       // 
-      this.LOAD_PANEL_BUTTON.Location = new System.Drawing.Point(499, 25);
-      this.LOAD_PANEL_BUTTON.Name = "LOAD_PANEL_BUTTON";
-      this.LOAD_PANEL_BUTTON.Size = new System.Drawing.Size(92, 23);
-      this.LOAD_PANEL_BUTTON.TabIndex = 76;
-      this.LOAD_PANEL_BUTTON.Text = "LOAD PANEL";
-      this.LOAD_PANEL_BUTTON.UseVisualStyleBackColor = true;
-      this.LOAD_PANEL_BUTTON.Click += new System.EventHandler(this.LOAD_PANEL_BUTTON_click);
+      this.tabControl1.Controls.Add(this.tabPage1);
+      this.tabControl1.Location = new System.Drawing.Point(1, 2);
+      this.tabControl1.Name = "tabControl1";
+      this.tabControl1.SelectedIndex = 0;
+      this.tabControl1.Size = new System.Drawing.Size(1409, 691);
+      this.tabControl1.TabIndex = 76;
       // 
-      // THREE_PHASE_CHECKBOX
+      // tabPage1
       // 
-      this.THREE_PHASE_CHECKBOX.AutoSize = true;
-      this.THREE_PHASE_CHECKBOX.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-      this.THREE_PHASE_CHECKBOX.Location = new System.Drawing.Point(166, 30);
-      this.THREE_PHASE_CHECKBOX.Name = "THREE_PHASE_CHECKBOX";
-      this.THREE_PHASE_CHECKBOX.Size = new System.Drawing.Size(140, 17);
-      this.THREE_PHASE_CHECKBOX.TabIndex = 77;
-      this.THREE_PHASE_CHECKBOX.Text = "THREE PHASE PANEL";
-      this.THREE_PHASE_CHECKBOX.UseVisualStyleBackColor = true;
-      this.THREE_PHASE_CHECKBOX.CheckedChanged += new System.EventHandler(this.THREE_PHASE_CHECKBOX_CheckedChanged);
+      this.tabPage1.Controls.Add(this.PANEL_GRID);
+      this.tabPage1.Controls.Add(this.NEW_PANEL_BUTTON);
+      this.tabPage1.Controls.Add(this.label18);
+      this.tabPage1.Controls.Add(this.LARGEST_LCL_CHECKBOX);
+      this.tabPage1.Controls.Add(this.label17);
+      this.tabPage1.Controls.Add(this.LARGEST_LCL_LABEL);
+      this.tabPage1.Controls.Add(this.label16);
+      this.tabPage1.Controls.Add(this.LARGEST_LCL_INPUT);
+      this.tabPage1.Controls.Add(this.label15);
+      this.tabPage1.Controls.Add(this.CREATE_PANEL_BUTTON);
+      this.tabPage1.Controls.Add(this.label14);
+      this.tabPage1.Controls.Add(this.FEEDER_AMP_GRID);
+      this.tabPage1.Controls.Add(this.label13);
+      this.tabPage1.Controls.Add(this.PANEL_LOAD_GRID);
+      this.tabPage1.Controls.Add(this.label12);
+      this.tabPage1.Controls.Add(this.TOTAL_OTHER_LOAD_GRID);
+      this.tabPage1.Controls.Add(this.label11);
+      this.tabPage1.Controls.Add(this.LCL_GRID);
+      this.tabPage1.Controls.Add(this.label10);
+      this.tabPage1.Controls.Add(this.TOTAL_VA_GRID);
+      this.tabPage1.Controls.Add(this.PANEL_NAME_INPUT);
+      this.tabPage1.Controls.Add(this.PHASE_SUM_GRID);
+      this.tabPage1.Controls.Add(this.PANEL_LOCATION_INPUT);
+      this.tabPage1.Controls.Add(this.DELETE_ROW_BUTTON);
+      this.tabPage1.Controls.Add(this.MAIN_INPUT);
+      this.tabPage1.Controls.Add(this.ADD_ROW_BUTTON);
+      this.tabPage1.Controls.Add(this.BUS_RATING_INPUT);
+      this.tabPage1.Controls.Add(this.LINE_VOLTAGE_COMBOBOX);
+      this.tabPage1.Controls.Add(this.label1);
+      this.tabPage1.Controls.Add(this.PHASE_VOLTAGE_COMBOBOX);
+      this.tabPage1.Controls.Add(this.STATUS_COMBOBOX);
+      this.tabPage1.Controls.Add(this.PHASE_COMBOBOX);
+      this.tabPage1.Controls.Add(this.MOUNTING_COMBOBOX);
+      this.tabPage1.Controls.Add(this.WIRE_COMBOBOX);
+      this.tabPage1.Location = new System.Drawing.Point(4, 22);
+      this.tabPage1.Name = "tabPage1";
+      this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+      this.tabPage1.Size = new System.Drawing.Size(1401, 665);
+      this.tabPage1.TabIndex = 0;
+      this.tabPage1.Text = "tabPage1";
+      this.tabPage1.UseVisualStyleBackColor = true;
       // 
       // Form1
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(1408, 691);
-      this.Controls.Add(this.THREE_PHASE_CHECKBOX);
-      this.Controls.Add(this.LOAD_PANEL_BUTTON);
-      this.Controls.Add(this.NEW_PANEL_BUTTON);
-      this.Controls.Add(this.SAVE_PANEL_BUTTON);
-      this.Controls.Add(this.LOAD_PANEL_COMBOBOX);
-      this.Controls.Add(this.LOAD_PANEL_LABEL);
-      this.Controls.Add(this.LARGEST_LCL_CHECKBOX);
-      this.Controls.Add(this.LARGEST_LCL_LABEL);
-      this.Controls.Add(this.LARGEST_LCL_INPUT);
-      this.Controls.Add(this.CREATE_PANEL_BUTTON);
-      this.Controls.Add(this.FEEDER_AMP_GRID);
-      this.Controls.Add(this.PANEL_LOAD_GRID);
-      this.Controls.Add(this.TOTAL_OTHER_LOAD_GRID);
-      this.Controls.Add(this.LCL_GRID);
-      this.Controls.Add(this.TOTAL_VA_GRID);
-      this.Controls.Add(this.PHASE_SUM_GRID);
-      this.Controls.Add(this.DELETE_ROW_BUTTON);
-      this.Controls.Add(this.ADD_ROW_BUTTON);
-      this.Controls.Add(this.LINE_VOLTAGE_COMBOBOX);
-      this.Controls.Add(this.PHASE_VOLTAGE_COMBOBOX);
-      this.Controls.Add(this.PHASE_COMBOBOX);
-      this.Controls.Add(this.WIRE_COMBOBOX);
-      this.Controls.Add(this.MOUNTING_COMBOBOX);
-      this.Controls.Add(this.STATUS_COMBOBOX);
-      this.Controls.Add(this.label1);
-      this.Controls.Add(this.PANEL_GRID);
-      this.Controls.Add(this.BUS_RATING_INPUT);
-      this.Controls.Add(this.MAIN_INPUT);
-      this.Controls.Add(this.PANEL_LOCATION_INPUT);
-      this.Controls.Add(this.PANEL_NAME_INPUT);
-      this.Controls.Add(this.label10);
-      this.Controls.Add(this.label11);
-      this.Controls.Add(this.label12);
-      this.Controls.Add(this.label13);
-      this.Controls.Add(this.label14);
-      this.Controls.Add(this.label15);
-      this.Controls.Add(this.label16);
-      this.Controls.Add(this.label17);
-      this.Controls.Add(this.label18);
+      this.Controls.Add(this.tabControl1);
       this.Name = "Form1";
       this.Text = "Panel Schedule";
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).EndInit();
@@ -658,8 +622,10 @@ namespace AutoCADCommands
       ((System.ComponentModel.ISupportInitialize)(this.TOTAL_OTHER_LOAD_GRID)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).EndInit();
+      this.tabControl1.ResumeLayout(false);
+      this.tabPage1.ResumeLayout(false);
+      this.tabPage1.PerformLayout();
       this.ResumeLayout(false);
-      this.PerformLayout();
 
     }
 
@@ -706,11 +672,7 @@ namespace AutoCADCommands
     private System.Windows.Forms.DataGridViewTextBoxColumn LCL_AT_100PC;
     private System.Windows.Forms.DataGridViewTextBoxColumn LCL_AT_125PC;
     private System.Windows.Forms.DataGridViewTextBoxColumn TOTAL_VA;
-    private System.Windows.Forms.Label LOAD_PANEL_LABEL;
-    private System.Windows.Forms.ComboBox LOAD_PANEL_COMBOBOX;
-    private System.Windows.Forms.Button SAVE_PANEL_BUTTON;
     private System.Windows.Forms.Button NEW_PANEL_BUTTON;
-    private System.Windows.Forms.Button LOAD_PANEL_BUTTON;
     private System.Windows.Forms.DataGridViewTextBoxColumn description_left;
     private System.Windows.Forms.DataGridViewTextBoxColumn phase_a_left;
     private System.Windows.Forms.DataGridViewTextBoxColumn phase_b_left;
@@ -721,7 +683,8 @@ namespace AutoCADCommands
     private System.Windows.Forms.DataGridViewTextBoxColumn phase_a_right;
     private System.Windows.Forms.DataGridViewTextBoxColumn phase_b_right;
     private System.Windows.Forms.DataGridViewTextBoxColumn description_right;
-    private System.Windows.Forms.CheckBox THREE_PHASE_CHECKBOX;
+    private System.Windows.Forms.TabControl tabControl1;
+    private System.Windows.Forms.TabPage tabPage1;
   }
 }
 
