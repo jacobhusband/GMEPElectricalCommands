@@ -25,7 +25,6 @@ namespace AutoCADCommands
       myCommandsInstance = myCommands;
 
       InitializeComponent();
-      Load_Panel_Data();
       Listen_For_New_Rows();
       Remove_Column_Header_Sorting();
 
@@ -51,19 +50,6 @@ namespace AutoCADCommands
       TOTAL_OTHER_LOAD_GRID.Rows.Add("0");
       PANEL_LOAD_GRID.Rows.Add("0");
       FEEDER_AMP_GRID.Rows.Add("0");
-    }
-
-    private void Load_Panel_Data()
-    {
-      List<Dictionary<string, object>> saveData = Retrieve_Saved_Data();
-
-      // check if sum phase c has a value other than 0
-
-      foreach (Dictionary<string, object> panel in saveData)
-      {
-        string panelName = panel["panel"].ToString();
-        LOAD_PANEL_COMBOBOX.Items.Add(panelName);
-      }
     }
 
     private List<Dictionary<string, object>> Retrieve_Saved_Data()
@@ -1061,11 +1047,6 @@ namespace AutoCADCommands
       }
     }
 
-    private void SAVE_PANEL_BUTTON_Click(object sender, EventArgs e)
-    {
-      save_panel_data();
-    }
-
     private void save_panel_data()
     {
       string formattedPanelName = $"'{PANEL_NAME_INPUT.Text.ToUpper()}'";
@@ -1106,51 +1087,9 @@ namespace AutoCADCommands
       else
       {
         saveData.Add(currentPanelData);
-        LOAD_PANEL_COMBOBOX.Items.Add(formattedPanelName); // Adding the formatted panel name to the ComboBox
       }
 
       Store_Data(saveData);
-    }
-
-    private void LOAD_PANEL_BUTTON_click(object sender, EventArgs e)
-    {
-      List<Dictionary<string, object>> saveData = Retrieve_Saved_Data();
-      // check the panel data contains the key "phase_c_left"
-      if (LOAD_PANEL_COMBOBOX.SelectedItem != null)
-      {
-        string selectedPanelName = LOAD_PANEL_COMBOBOX.SelectedItem.ToString();
-        Dictionary<string, object> selectedPanelData = saveData.FirstOrDefault(dict => dict["panel"].ToString() == selectedPanelName);
-        if (selectedPanelData != null)
-        {
-          bool phase = THREE_PHASE_CHECKBOX.Checked;
-          if (saveData.Count > 0 && saveData[0].ContainsKey("phase_c_left"))
-          {
-            THREE_PHASE_CHECKBOX.Checked = true;
-          }
-          else
-          {
-            THREE_PHASE_CHECKBOX.Checked = false;
-          }
-          if (phase != THREE_PHASE_CHECKBOX.Checked)
-          {
-            load_panel_from_data(selectedPanelData);
-          }
-          else
-          {
-            // prompt the user if they would like to save the current panel
-            DialogResult result = MessageBox.Show("Would you like to save the current panel?", "Confirm", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-            if (result == DialogResult.Yes)
-            {
-              save_panel_data();
-            }
-            else if (result == DialogResult.Cancel)
-            {
-              return;
-            }
-            load_panel_from_data(selectedPanelData);
-          }
-        }
-      }
     }
 
     private void load_panel_from_data(Dictionary<string, object> selectedPanelData)
@@ -1266,7 +1205,6 @@ namespace AutoCADCommands
       PHASE_COMBOBOX.SelectedIndex = -1;
       PHASE_VOLTAGE_COMBOBOX.SelectedIndex = -1;
       LINE_VOLTAGE_COMBOBOX.SelectedIndex = -1;
-      LOAD_PANEL_COMBOBOX.SelectedIndex = -1;
 
       // Clear DataGridViews
       PHASE_SUM_GRID.Rows[0].Cells[0].Value = "0";
