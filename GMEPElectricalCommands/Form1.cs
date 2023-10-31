@@ -1119,33 +1119,36 @@ namespace AutoCADCommands
       if (LOAD_PANEL_COMBOBOX.SelectedItem != null)
       {
         string selectedPanelName = LOAD_PANEL_COMBOBOX.SelectedItem.ToString();
-        Dictionary<string, object> selectedPanelData = saveData.First(dict => dict["panel"].ToString() == selectedPanelName);
-        bool phase = THREE_PHASE_CHECKBOX.Checked;
-        if (saveData.Count > 0 && saveData[0].ContainsKey("phase_c_left"))
+        Dictionary<string, object> selectedPanelData = saveData.FirstOrDefault(dict => dict["panel"].ToString() == selectedPanelName);
+        if (selectedPanelData != null)
         {
-          THREE_PHASE_CHECKBOX.Checked = true;
-        }
-        else
-        {
-          THREE_PHASE_CHECKBOX.Checked = false;
-        }
-        if (phase != THREE_PHASE_CHECKBOX.Checked)
-        {
-          load_panel_from_data(selectedPanelData);
-        }
-        else
-        {
-          // prompt the user if they would like to save the current panel
-          DialogResult result = MessageBox.Show("Would you like to save the current panel?", "Confirm", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-          if (result == DialogResult.Yes)
+          bool phase = THREE_PHASE_CHECKBOX.Checked;
+          if (saveData.Count > 0 && saveData[0].ContainsKey("phase_c_left"))
           {
-            save_panel_data();
+            THREE_PHASE_CHECKBOX.Checked = true;
           }
-          else if (result == DialogResult.Cancel)
+          else
           {
-            return;
+            THREE_PHASE_CHECKBOX.Checked = false;
           }
-          load_panel_from_data(selectedPanelData);
+          if (phase != THREE_PHASE_CHECKBOX.Checked)
+          {
+            load_panel_from_data(selectedPanelData);
+          }
+          else
+          {
+            // prompt the user if they would like to save the current panel
+            DialogResult result = MessageBox.Show("Would you like to save the current panel?", "Confirm", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+            if (result == DialogResult.Yes)
+            {
+              save_panel_data();
+            }
+            else if (result == DialogResult.Cancel)
+            {
+              return;
+            }
+            load_panel_from_data(selectedPanelData);
+          }
         }
       }
     }
