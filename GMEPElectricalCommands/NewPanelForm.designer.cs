@@ -30,7 +30,7 @@
     {
       this.CHECKBOX3PH = new System.Windows.Forms.CheckBox();
       this.CREATEPANEL = new System.Windows.Forms.Button();
-      this.textBox1 = new System.Windows.Forms.TextBox();
+      this.CREATEPANELNAME = new System.Windows.Forms.TextBox();
       this.NEWPANELNAME = new System.Windows.Forms.Label();
       this.SuspendLayout();
       // 
@@ -54,13 +54,14 @@
       this.CREATEPANEL.TabIndex = 1;
       this.CREATEPANEL.Text = "Create";
       this.CREATEPANEL.UseVisualStyleBackColor = true;
+      this.CREATEPANEL.Click += new System.EventHandler(this.CREATEPANEL_Click);
       // 
-      // textBox1
+      // CREATEPANELNAME
       // 
-      this.textBox1.Location = new System.Drawing.Point(135, 28);
-      this.textBox1.Name = "textBox1";
-      this.textBox1.Size = new System.Drawing.Size(100, 20);
-      this.textBox1.TabIndex = 2;
+      this.CREATEPANELNAME.Location = new System.Drawing.Point(135, 28);
+      this.CREATEPANELNAME.Name = "CREATEPANELNAME";
+      this.CREATEPANELNAME.Size = new System.Drawing.Size(100, 20);
+      this.CREATEPANELNAME.TabIndex = 2;
       // 
       // NEWPANELNAME
       // 
@@ -77,7 +78,7 @@
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(338, 64);
       this.Controls.Add(this.NEWPANELNAME);
-      this.Controls.Add(this.textBox1);
+      this.Controls.Add(this.CREATEPANELNAME);
       this.Controls.Add(this.CREATEPANEL);
       this.Controls.Add(this.CHECKBOX3PH);
       this.Name = "NEWPANELFORM";
@@ -91,7 +92,7 @@
 
     private System.Windows.Forms.CheckBox CHECKBOX3PH;
     private System.Windows.Forms.Button CREATEPANEL;
-    private System.Windows.Forms.TextBox textBox1;
+    private System.Windows.Forms.TextBox CREATEPANELNAME;
     private System.Windows.Forms.Label NEWPANELNAME;
   }
 }

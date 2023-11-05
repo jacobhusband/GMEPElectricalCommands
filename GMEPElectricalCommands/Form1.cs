@@ -13,15 +13,16 @@ using System.Windows.Forms;
 using Newtonsoft.Json;
 using static OfficeOpenXml.ExcelErrorValue;
 using Autodesk.AutoCAD.GraphicsInterface;
+using NewPanel;
 
 namespace AutoCADCommands
 {
-  public partial class Form1 : Form
+  public partial class MainForm : Form
   {
     private MyCommands myCommandsInstance;
     private object oldValue;
 
-    public Form1(MyCommands myCommands)
+    public MainForm(MyCommands myCommands)
     {
       myCommandsInstance = myCommands;
 
@@ -41,17 +42,6 @@ namespace AutoCADCommands
       add_rows_to_datagrid();
       set_default_form_values();
       deselect_cells();
-    }
-
-    private void add_rows_to_datagrid()
-    {
-      // Datagrids
-      PHASE_SUM_GRID.Rows.Add("0", "0");
-      TOTAL_VA_GRID.Rows.Add("0");
-      LCL_GRID.Rows.Add("0", "0");
-      TOTAL_OTHER_LOAD_GRID.Rows.Add("0");
-      PANEL_LOAD_GRID.Rows.Add("0");
-      FEEDER_AMP_GRID.Rows.Add("0");
     }
 
     private List<Dictionary<string, object>> retrieve_saved_panel_data()
@@ -85,6 +75,346 @@ namespace AutoCADCommands
       }
 
       return saveData;
+    }
+
+    private Dictionary<string, object> retrieve_data_from_modal()
+    {
+      // Create a new panel
+      Dictionary<string, object> panel = new Dictionary<string, object>();
+
+      // Get the value from the main input
+      string mainInput = MAIN_INPUT.Text;
+
+      // Check if the value contains the word "amp" or "AMP"
+      if (mainInput.ToLower().Contains("amp"))
+      {
+        mainInput = mainInput.ToUpper().Replace("A ", "AMP ").Replace(" A", " AMP");
+      }
+      // Check if the value is just a number
+      else if (is_digits_only(mainInput.Replace(" ", "")))
+      {
+        mainInput = mainInput + " AMP";
+      }
+      else
+      {
+        string[] parts = mainInput.Split(' ');
+        if (parts.Length > 1 && is_digits_only(parts[0]) && parts[1].ToLower() == "a")
+        {
+          mainInput = parts[0] + " AMP";
+        }
+        // Add any other conditions here if needed
+      }
+
+      // Add the processed main input to the panel dictionary
+      panel.Add("main", mainInput.ToUpper());
+
+      string GetComboBoxValue(ComboBox comboBox)
+      {
+        if (comboBox.SelectedItem != null)
+        {
+          return comboBox.SelectedItem.ToString().ToUpper();
+        }
+        else if (!string.IsNullOrEmpty(comboBox.Text))
+        {
+          return comboBox.Text.ToUpper();
+        }
+        else
+        {
+          return ""; // Default value or you can return null
+        }
+      }
+
+      // Add simple values in uppercase
+      panel.Add("panel", "'" + PANEL_NAME_INPUT.Text.ToUpper() + "'");
+      panel.Add("location", PANEL_LOCATION_INPUT.Text.ToUpper());
+      panel.Add("voltage1", GetComboBoxValue(LINE_VOLTAGE_COMBOBOX));
+      panel.Add("voltage2", GetComboBoxValue(PHASE_VOLTAGE_COMBOBOX));
+      panel.Add("phase", GetComboBoxValue(PHASE_COMBOBOX));
+      panel.Add("wire", GetComboBoxValue(WIRE_COMBOBOX));
+      panel.Add("mounting", GetComboBoxValue(MOUNTING_COMBOBOX));
+      panel.Add("existing", GetComboBoxValue(STATUS_COMBOBOX));
+
+      // Add datagrid values in uppercase
+      // Assuming that these grids are DataGridViews and the specific cells mentioned are not null or empty
+      panel.Add("subtotal_a", PHASE_SUM_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("subtotal_b", PHASE_SUM_GRID.Rows[0].Cells[1].Value.ToString().ToUpper());
+      // if PHASE_SUM_GRID has the column "subtotal_c"
+      if (PHASE_SUM_GRID.Columns.Count > 2)
+      {
+        panel.Add("subtotal_c", PHASE_SUM_GRID.Rows[0].Cells[2].Value.ToString().ToUpper());
+      }
+      else
+      {
+        panel.Add("subtotal_c", "0");
+      }
+      panel.Add("total_va", TOTAL_VA_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("lcl", LCL_GRID.Rows[0].Cells[1].Value.ToString().ToUpper());
+      panel.Add("lcl_125", LCL_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("total_other_load", TOTAL_OTHER_LOAD_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("kva", PANEL_LOAD_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("feeder_amps", FEEDER_AMP_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+
+      // Add "A" to the bus rating value if it consists of digits only, then convert to uppercase
+      string busRatingInput = BUS_RATING_INPUT.Text;
+      if (is_digits_only(busRatingInput))
+      {
+        busRatingInput += "A"; // append "A" if the input is numeric
+      }
+      panel.Add("bus_rating", busRatingInput.ToUpper());
+
+      List<bool> description_left_highlights = new List<bool>();
+      List<bool> description_right_highlights = new List<bool>();
+      List<bool> breaker_left_highlights = new List<bool>();
+      List<bool> breaker_right_highlights = new List<bool>();
+
+      List<string> description_left = new List<string>();
+      List<string> description_right = new List<string>();
+      List<string> phase_a_left = new List<string>();
+      List<string> phase_b_left = new List<string>();
+      List<string> phase_a_right = new List<string>();
+      List<string> phase_b_right = new List<string>();
+      List<string> phase_c_left = new List<string>();
+      List<string> phase_c_right = new List<string>();
+      List<string> breaker_left = new List<string>();
+      List<string> breaker_right = new List<string>();
+      List<string> circuit_left = new List<string>();
+      List<string> circuit_right = new List<string>();
+
+      for (int i = 0; i < PANEL_GRID.Rows.Count; i++)
+      {
+        string descriptionLeftValue = PANEL_GRID.Rows[i].Cells["description_left"].Value?.ToString().ToUpper() ?? "SPACE";
+        string breakerLeftValue = PANEL_GRID.Rows[i].Cells["breaker_left"].Value?.ToString().ToUpper() ?? "";
+        string descriptionRightValue = PANEL_GRID.Rows[i].Cells["description_right"].Value?.ToString().ToUpper() ?? "SPACE";
+        string breakerRightValue = PANEL_GRID.Rows[i].Cells["breaker_right"].Value?.ToString().ToUpper() ?? "";
+        string circuitRightValue = PANEL_GRID.Rows[i].Cells["circuit_right"].Value?.ToString().ToUpper() ?? "";
+        string circuitLeftValue = PANEL_GRID.Rows[i].Cells["circuit_left"].Value?.ToString().ToUpper() ?? "";
+        string phaseALeftValue = PANEL_GRID.Rows[i].Cells["phase_a_left"].Value?.ToString() ?? "0";
+        string phaseBLeftValue = PANEL_GRID.Rows[i].Cells["phase_b_left"].Value?.ToString() ?? "0";
+        string phaseARightValue = PANEL_GRID.Rows[i].Cells["phase_a_right"].Value?.ToString() ?? "0";
+        string phaseBRightValue = PANEL_GRID.Rows[i].Cells["phase_b_right"].Value?.ToString() ?? "0";
+        string phaseCLeftValue = "0";
+        string phaseCRightValue = "0";
+
+        if (PHASE_SUM_GRID.Columns.Count > 2)
+        {
+          phaseCLeftValue = PANEL_GRID.Rows[i].Cells["phase_c_left"].Value?.ToString() ?? "0";
+          phaseCRightValue = PANEL_GRID.Rows[i].Cells["phase_c_right"].Value?.ToString() ?? "0";
+        }
+
+        // Checks for Left Side
+        bool hasCommaInPhaseLeft = phaseALeftValue.Contains(",") || phaseBLeftValue.Contains(",") || phaseCLeftValue.Contains(",");
+        bool shouldDuplicateLeft = hasCommaInPhaseLeft;
+
+        // Checks for Right Side
+        bool hasCommaInPhaseRight = phaseARightValue.Contains(",") || phaseBRightValue.Contains(",") || phaseCRightValue.Contains(",");
+        bool shouldDuplicateRight = hasCommaInPhaseRight;
+
+        // Handling Phase A Left
+        if (phaseALeftValue.Contains(","))
+        {
+          var splitValues = phaseALeftValue.Split(',').Select(str => str.Trim()).ToArray();
+          phase_a_left.AddRange(splitValues);
+        }
+        else
+        {
+          phase_a_left.Add(phaseALeftValue);
+          phase_a_left.Add("0"); // Default value
+        }
+
+        // Handling Phase B Left
+        if (phaseBLeftValue.Contains(","))
+        {
+          var splitValues = phaseBLeftValue.Split(',').Select(str => str.Trim()).ToArray();
+          phase_b_left.AddRange(splitValues);
+        }
+        else
+        {
+          phase_b_left.Add(phaseBLeftValue);
+          phase_b_left.Add("0"); // Default value
+        }
+
+        // Handling Phase A Right
+        if (phaseARightValue.Contains(","))
+        {
+          var splitValues = phaseARightValue.Split(',').Select(str => str.Trim()).ToArray();
+          phase_a_right.AddRange(splitValues);
+        }
+        else
+        {
+          phase_a_right.Add(phaseARightValue);
+          phase_a_right.Add("0"); // Default value
+        }
+
+        // Handling Phase B Right
+        if (phaseBRightValue.Contains(","))
+        {
+          var splitValues = phaseBRightValue.Split(',').Select(str => str.Trim()).ToArray();
+          phase_b_right.AddRange(splitValues);
+        }
+        else
+        {
+          phase_b_right.Add(phaseBRightValue);
+          phase_b_right.Add("0"); // Default value
+        }
+
+        if (PHASE_SUM_GRID.Columns.Count > 2)
+        {
+          // Handling Phase C Left
+          if (phaseCLeftValue.Contains(","))
+          {
+            var splitValues = phaseCLeftValue.Split(',').Select(str => str.Trim()).ToArray();
+            phase_c_left.AddRange(splitValues);
+          }
+          else
+          {
+            phase_c_left.Add(phaseCLeftValue);
+            phase_c_left.Add("0"); // Default value
+          }
+
+          // Handling Phase C Right
+          if (phaseCRightValue.Contains(","))
+          {
+            var splitValues = phaseCRightValue.Split(',').Select(str => str.Trim()).ToArray();
+            phase_c_right.AddRange(splitValues);
+          }
+          else
+          {
+            phase_c_right.Add(phaseCRightValue);
+            phase_c_right.Add("0"); // Default value
+          }
+        }
+
+        if (descriptionLeftValue.Contains(","))
+        {
+          // If it contains a comma, split and add both values
+          var splitValues = descriptionLeftValue.Split(',')
+                                                .Select(str => str.Trim())
+                                                .ToArray();
+          description_left.AddRange(splitValues);
+          circuit_left.Add(circuitLeftValue + "A");
+          circuit_left.Add(circuitLeftValue + "B");
+        }
+        else
+        {
+          description_left.Add(descriptionLeftValue);
+          description_left.Add(shouldDuplicateLeft ? descriptionLeftValue : "SPACE");
+
+          if (shouldDuplicateLeft)
+          {
+            circuit_left.Add(circuitLeftValue + "A");
+            circuit_left.Add(circuitLeftValue + "B");
+          }
+          else
+          {
+            circuit_left.Add(circuitLeftValue);
+            circuit_left.Add("");
+          }
+        }
+
+        if (breakerLeftValue.Contains(","))
+        {
+          // If it contains a comma, split and add both values
+          var splitValues = breakerLeftValue.Split(',')
+                                                .Select(str => str.Trim())
+                                                .ToArray();
+          breaker_left.AddRange(splitValues);
+        }
+        else
+        {
+          breaker_left.Add(breakerLeftValue);
+          breaker_left.Add(shouldDuplicateLeft ? breakerLeftValue : "");
+        }
+
+        if (descriptionRightValue.Contains(","))
+        {
+          // If it contains a comma, split and add both values
+          var splitValues = descriptionRightValue.Split(',')
+                                                .Select(str => str.Trim())
+                                                .ToArray();
+          description_right.AddRange(splitValues);
+          circuit_right.Add(circuitRightValue + "A");
+          circuit_right.Add(circuitRightValue + "B");
+        }
+        else
+        {
+          description_right.Add(descriptionRightValue);
+          description_right.Add(shouldDuplicateRight ? descriptionRightValue : "SPACE");
+
+          if (shouldDuplicateRight)
+          {
+            circuit_right.Add(circuitRightValue + "A");
+            circuit_right.Add(circuitRightValue + "B");
+          }
+          else
+          {
+            circuit_right.Add(circuitRightValue);
+            circuit_right.Add("");
+          }
+        }
+
+        if (breakerRightValue.Contains(","))
+        {
+          // If it contains a comma, split and add both values
+          var splitValues = breakerRightValue.Split(',')
+                                                .Select(str => str.Trim())
+                                                .ToArray();
+          breaker_right.AddRange(splitValues);
+        }
+        else
+        {
+          breaker_right.Add(breakerRightValue);
+          breaker_right.Add(shouldDuplicateRight ? breakerRightValue : "");
+        }
+
+        // Left Side
+        description_left_highlights.Add(false);
+        breaker_left_highlights.Add(false);
+
+        // Right Side
+        description_right_highlights.Add(false);
+        breaker_right_highlights.Add(false);
+
+        // Default Values for Left Side
+        description_left_highlights.Add(false);
+        breaker_left_highlights.Add(false);
+
+        // Default Values for Right Side
+        description_right_highlights.Add(false);
+        breaker_right_highlights.Add(false);
+      }
+
+      panel.Add("description_left_highlights", description_left_highlights);
+      panel.Add("description_right_highlights", description_right_highlights);
+      panel.Add("breaker_left_highlights", breaker_left_highlights);
+      panel.Add("breaker_right_highlights", breaker_right_highlights);
+      panel.Add("description_left", description_left);
+      panel.Add("description_right", description_right);
+      panel.Add("phase_a_left", phase_a_left);
+      panel.Add("phase_b_left", phase_b_left);
+      panel.Add("phase_a_right", phase_a_right);
+      panel.Add("phase_b_right", phase_b_right);
+      if (PHASE_SUM_GRID.Columns.Count > 2)
+      {
+        panel.Add("phase_c_left", phase_c_left);
+        panel.Add("phase_c_right", phase_c_right);
+      }
+      panel.Add("breaker_left", breaker_left);
+      panel.Add("breaker_right", breaker_right);
+      panel.Add("circuit_left", circuit_left);
+      panel.Add("circuit_right", circuit_right);
+
+      return panel;
+    }
+
+    private void add_rows_to_datagrid()
+    {
+      // Datagrids
+      PHASE_SUM_GRID.Rows.Add("0", "0");
+      TOTAL_VA_GRID.Rows.Add("0");
+      LCL_GRID.Rows.Add("0", "0");
+      TOTAL_OTHER_LOAD_GRID.Rows.Add("0");
+      PANEL_LOAD_GRID.Rows.Add("0");
+      FEEDER_AMP_GRID.Rows.Add("0");
     }
 
     private void store_data_in_autocad_file(List<Dictionary<string, object>> saveData)
@@ -420,335 +750,6 @@ namespace AutoCADCommands
       }
     }
 
-    private Dictionary<string, object> retrieve_data_from_modal()
-    {
-      // Create a new panel
-      Dictionary<string, object> panel = new Dictionary<string, object>();
-
-      // Get the value from the main input
-      string mainInput = MAIN_INPUT.Text;
-
-      // Check if the value contains the word "amp" or "AMP"
-      if (mainInput.ToLower().Contains("amp"))
-      {
-        mainInput = mainInput.ToUpper().Replace("A ", "AMP ").Replace(" A", " AMP");
-      }
-      // Check if the value is just a number
-      else if (is_digits_only(mainInput.Replace(" ", "")))
-      {
-        mainInput = mainInput + " AMP";
-      }
-      else
-      {
-        string[] parts = mainInput.Split(' ');
-        if (parts.Length > 1 && is_digits_only(parts[0]) && parts[1].ToLower() == "a")
-        {
-          mainInput = parts[0] + " AMP";
-        }
-        // Add any other conditions here if needed
-      }
-
-      // Add the processed main input to the panel dictionary
-      panel.Add("main", mainInput.ToUpper());
-
-      string GetComboBoxValue(ComboBox comboBox)
-      {
-        if (comboBox.SelectedItem != null)
-        {
-          return comboBox.SelectedItem.ToString().ToUpper();
-        }
-        else if (!string.IsNullOrEmpty(comboBox.Text))
-        {
-          return comboBox.Text.ToUpper();
-        }
-        else
-        {
-          return ""; // Default value or you can return null
-        }
-      }
-
-      // Add simple values in uppercase
-      panel.Add("panel", "'" + PANEL_NAME_INPUT.Text.ToUpper() + "'");
-      panel.Add("location", PANEL_LOCATION_INPUT.Text.ToUpper());
-      panel.Add("voltage1", GetComboBoxValue(LINE_VOLTAGE_COMBOBOX));
-      panel.Add("voltage2", GetComboBoxValue(PHASE_VOLTAGE_COMBOBOX));
-      panel.Add("phase", GetComboBoxValue(PHASE_COMBOBOX));
-      panel.Add("wire", GetComboBoxValue(WIRE_COMBOBOX));
-      panel.Add("mounting", GetComboBoxValue(MOUNTING_COMBOBOX));
-      panel.Add("existing", GetComboBoxValue(STATUS_COMBOBOX));
-
-      // Add datagrid values in uppercase
-      // Assuming that these grids are DataGridViews and the specific cells mentioned are not null or empty
-      panel.Add("subtotal_a", PHASE_SUM_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
-      panel.Add("subtotal_b", PHASE_SUM_GRID.Rows[0].Cells[1].Value.ToString().ToUpper());
-      // if PHASE_SUM_GRID has the column "subtotal_c"
-      if (PHASE_SUM_GRID.Columns.Count > 2)
-      {
-        panel.Add("subtotal_c", PHASE_SUM_GRID.Rows[0].Cells[2].Value.ToString().ToUpper());
-      }
-      else
-      {
-        panel.Add("subtotal_c", "0");
-      }
-      panel.Add("total_va", TOTAL_VA_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
-      panel.Add("lcl", LCL_GRID.Rows[0].Cells[1].Value.ToString().ToUpper());
-      panel.Add("lcl_125", LCL_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
-      panel.Add("total_other_load", TOTAL_OTHER_LOAD_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
-      panel.Add("kva", PANEL_LOAD_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
-      panel.Add("feeder_amps", FEEDER_AMP_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
-
-      // Add "A" to the bus rating value if it consists of digits only, then convert to uppercase
-      string busRatingInput = BUS_RATING_INPUT.Text;
-      if (is_digits_only(busRatingInput))
-      {
-        busRatingInput += "A"; // append "A" if the input is numeric
-      }
-      panel.Add("bus_rating", busRatingInput.ToUpper());
-
-      List<bool> description_left_highlights = new List<bool>();
-      List<bool> description_right_highlights = new List<bool>();
-      List<bool> breaker_left_highlights = new List<bool>();
-      List<bool> breaker_right_highlights = new List<bool>();
-
-      List<string> description_left = new List<string>();
-      List<string> description_right = new List<string>();
-      List<string> phase_a_left = new List<string>();
-      List<string> phase_b_left = new List<string>();
-      List<string> phase_a_right = new List<string>();
-      List<string> phase_b_right = new List<string>();
-      List<string> phase_c_left = new List<string>();
-      List<string> phase_c_right = new List<string>();
-      List<string> breaker_left = new List<string>();
-      List<string> breaker_right = new List<string>();
-      List<string> circuit_left = new List<string>();
-      List<string> circuit_right = new List<string>();
-
-      for (int i = 0; i < PANEL_GRID.Rows.Count; i++)
-      {
-        string descriptionLeftValue = PANEL_GRID.Rows[i].Cells["description_left"].Value?.ToString().ToUpper() ?? "SPACE";
-        string breakerLeftValue = PANEL_GRID.Rows[i].Cells["breaker_left"].Value?.ToString().ToUpper() ?? "";
-        string descriptionRightValue = PANEL_GRID.Rows[i].Cells["description_right"].Value?.ToString().ToUpper() ?? "SPACE";
-        string breakerRightValue = PANEL_GRID.Rows[i].Cells["breaker_right"].Value?.ToString().ToUpper() ?? "";
-        string circuitRightValue = PANEL_GRID.Rows[i].Cells["circuit_right"].Value?.ToString().ToUpper() ?? "";
-        string circuitLeftValue = PANEL_GRID.Rows[i].Cells["circuit_left"].Value?.ToString().ToUpper() ?? "";
-        string phaseALeftValue = PANEL_GRID.Rows[i].Cells["phase_a_left"].Value?.ToString() ?? "0";
-        string phaseBLeftValue = PANEL_GRID.Rows[i].Cells["phase_b_left"].Value?.ToString() ?? "0";
-        string phaseARightValue = PANEL_GRID.Rows[i].Cells["phase_a_right"].Value?.ToString() ?? "0";
-        string phaseBRightValue = PANEL_GRID.Rows[i].Cells["phase_b_right"].Value?.ToString() ?? "0";
-        string phaseCLeftValue = "0";
-        string phaseCRightValue = "0";
-
-        if (PHASE_SUM_GRID.Columns.Count > 2)
-        {
-          phaseCLeftValue = PANEL_GRID.Rows[i].Cells["phase_c_left"].Value?.ToString() ?? "0";
-          phaseCRightValue = PANEL_GRID.Rows[i].Cells["phase_c_right"].Value?.ToString() ?? "0";
-        }
-
-        // Checks for Left Side
-        bool hasCommaInPhaseLeft = phaseALeftValue.Contains(",") || phaseBLeftValue.Contains(",") || phaseCLeftValue.Contains(",");
-        bool shouldDuplicateLeft = hasCommaInPhaseLeft;
-
-        // Checks for Right Side
-        bool hasCommaInPhaseRight = phaseARightValue.Contains(",") || phaseBRightValue.Contains(",") || phaseCRightValue.Contains(",");
-        bool shouldDuplicateRight = hasCommaInPhaseRight;
-
-        // Handling Phase A Left
-        if (phaseALeftValue.Contains(","))
-        {
-          var splitValues = phaseALeftValue.Split(',').Select(str => str.Trim()).ToArray();
-          phase_a_left.AddRange(splitValues);
-        }
-        else
-        {
-          phase_a_left.Add(phaseALeftValue);
-          phase_a_left.Add("0"); // Default value
-        }
-
-        // Handling Phase B Left
-        if (phaseBLeftValue.Contains(","))
-        {
-          var splitValues = phaseBLeftValue.Split(',').Select(str => str.Trim()).ToArray();
-          phase_b_left.AddRange(splitValues);
-        }
-        else
-        {
-          phase_b_left.Add(phaseBLeftValue);
-          phase_b_left.Add("0"); // Default value
-        }
-
-        // Handling Phase A Right
-        if (phaseARightValue.Contains(","))
-        {
-          var splitValues = phaseARightValue.Split(',').Select(str => str.Trim()).ToArray();
-          phase_a_right.AddRange(splitValues);
-        }
-        else
-        {
-          phase_a_right.Add(phaseARightValue);
-          phase_a_right.Add("0"); // Default value
-        }
-
-        // Handling Phase B Right
-        if (phaseBRightValue.Contains(","))
-        {
-          var splitValues = phaseBRightValue.Split(',').Select(str => str.Trim()).ToArray();
-          phase_b_right.AddRange(splitValues);
-        }
-        else
-        {
-          phase_b_right.Add(phaseBRightValue);
-          phase_b_right.Add("0"); // Default value
-        }
-
-        if (PHASE_SUM_GRID.Columns.Count > 2)
-        {
-          // Handling Phase C Left
-          if (phaseCLeftValue.Contains(","))
-          {
-            var splitValues = phaseCLeftValue.Split(',').Select(str => str.Trim()).ToArray();
-            phase_c_left.AddRange(splitValues);
-          }
-          else
-          {
-            phase_c_left.Add(phaseCLeftValue);
-            phase_c_left.Add("0"); // Default value
-          }
-
-          // Handling Phase C Right
-          if (phaseCRightValue.Contains(","))
-          {
-            var splitValues = phaseCRightValue.Split(',').Select(str => str.Trim()).ToArray();
-            phase_c_right.AddRange(splitValues);
-          }
-          else
-          {
-            phase_c_right.Add(phaseCRightValue);
-            phase_c_right.Add("0"); // Default value
-          }
-        }
-
-        if (descriptionLeftValue.Contains(","))
-        {
-          // If it contains a comma, split and add both values
-          var splitValues = descriptionLeftValue.Split(',')
-                                                .Select(str => str.Trim())
-                                                .ToArray();
-          description_left.AddRange(splitValues);
-          circuit_left.Add(circuitLeftValue + "A");
-          circuit_left.Add(circuitLeftValue + "B");
-        }
-        else
-        {
-          description_left.Add(descriptionLeftValue);
-          description_left.Add(shouldDuplicateLeft ? descriptionLeftValue : "SPACE");
-
-          if (shouldDuplicateLeft)
-          {
-            circuit_left.Add(circuitLeftValue + "A");
-            circuit_left.Add(circuitLeftValue + "B");
-          }
-          else
-          {
-            circuit_left.Add(circuitLeftValue);
-            circuit_left.Add("");
-          }
-        }
-
-        if (breakerLeftValue.Contains(","))
-        {
-          // If it contains a comma, split and add both values
-          var splitValues = breakerLeftValue.Split(',')
-                                                .Select(str => str.Trim())
-                                                .ToArray();
-          breaker_left.AddRange(splitValues);
-        }
-        else
-        {
-          breaker_left.Add(breakerLeftValue);
-          breaker_left.Add(shouldDuplicateLeft ? breakerLeftValue : "");
-        }
-
-        if (descriptionRightValue.Contains(","))
-        {
-          // If it contains a comma, split and add both values
-          var splitValues = descriptionRightValue.Split(',')
-                                                .Select(str => str.Trim())
-                                                .ToArray();
-          description_right.AddRange(splitValues);
-          circuit_right.Add(circuitRightValue + "A");
-          circuit_right.Add(circuitRightValue + "B");
-        }
-        else
-        {
-          description_right.Add(descriptionRightValue);
-          description_right.Add(shouldDuplicateRight ? descriptionRightValue : "SPACE");
-
-          if (shouldDuplicateRight)
-          {
-            circuit_right.Add(circuitRightValue + "A");
-            circuit_right.Add(circuitRightValue + "B");
-          }
-          else
-          {
-            circuit_right.Add(circuitRightValue);
-            circuit_right.Add("");
-          }
-        }
-
-        if (breakerRightValue.Contains(","))
-        {
-          // If it contains a comma, split and add both values
-          var splitValues = breakerRightValue.Split(',')
-                                                .Select(str => str.Trim())
-                                                .ToArray();
-          breaker_right.AddRange(splitValues);
-        }
-        else
-        {
-          breaker_right.Add(breakerRightValue);
-          breaker_right.Add(shouldDuplicateRight ? breakerRightValue : "");
-        }
-
-        // Left Side
-        description_left_highlights.Add(false);
-        breaker_left_highlights.Add(false);
-
-        // Right Side
-        description_right_highlights.Add(false);
-        breaker_right_highlights.Add(false);
-
-        // Default Values for Left Side
-        description_left_highlights.Add(false);
-        breaker_left_highlights.Add(false);
-
-        // Default Values for Right Side
-        description_right_highlights.Add(false);
-        breaker_right_highlights.Add(false);
-      }
-
-      panel.Add("description_left_highlights", description_left_highlights);
-      panel.Add("description_right_highlights", description_right_highlights);
-      panel.Add("breaker_left_highlights", breaker_left_highlights);
-      panel.Add("breaker_right_highlights", breaker_right_highlights);
-      panel.Add("description_left", description_left);
-      panel.Add("description_right", description_right);
-      panel.Add("phase_a_left", phase_a_left);
-      panel.Add("phase_b_left", phase_b_left);
-      panel.Add("phase_a_right", phase_a_right);
-      panel.Add("phase_b_right", phase_b_right);
-      if (PHASE_SUM_GRID.Columns.Count > 2)
-      {
-        panel.Add("phase_c_left", phase_c_left);
-        panel.Add("phase_c_right", phase_c_right);
-      }
-      panel.Add("breaker_left", breaker_left);
-      panel.Add("breaker_right", breaker_right);
-      panel.Add("circuit_left", circuit_left);
-      panel.Add("circuit_right", circuit_right);
-
-      return panel;
-    }
-
     private bool is_digits_only(string str)
     {
       foreach (char c in str)
@@ -962,6 +963,18 @@ namespace AutoCADCommands
       }
     }
 
+    internal void create_new_panel_tab_in_modal()
+    {
+      // Create a new TabPage
+      TabPage newTabPage = new TabPage("New Tab");
+
+      // Add the new TabPage to the TabControl
+      PANEL_TABS.TabPages.Add(newTabPage);
+
+      // Optional: Select the newly created tab
+      PANEL_TABS.SelectedTab = newTabPage;
+    }
+
     private void print_panels(List<Dictionary<string, object>> panels)
     {
       foreach (Dictionary<string, object> panel in panels)
@@ -1133,24 +1146,6 @@ namespace AutoCADCommands
       }
     }
 
-    private void NEW_PANEL_BUTTON_Click(object sender, EventArgs e)
-    {
-      // Create a new TabPage
-      TabPage newTabPage = new TabPage("New Tab");
-
-      // Optionally, you can add controls to newTabPage here
-      // For example, to add a new Label:
-      // Label newLabel = new Label();
-      // newLabel.Text = "Hello, World!";
-      // newTabPage.Controls.Add(newLabel);
-
-      // Add the new TabPage to the TabControl
-      PANEL_TABS.TabPages.Add(newTabPage);
-
-      // Optional: Select the newly created tab
-      PANEL_TABS.SelectedTab = newTabPage;
-    }
-
     private void LARGEST_LCL_INPUT_TextChanged(object sender, EventArgs e)
     {
       calculate_lcl_otherload_panelload_feederamps();
@@ -1159,6 +1154,13 @@ namespace AutoCADCommands
     private void LARGEST_LCL_CHECKBOX_CheckedChanged(object sender, EventArgs e)
     {
       calculate_lcl_otherload_panelload_feederamps();
+    }
+
+    private void NEW_PANEL_BUTTON_CLICK(object sender, EventArgs e)
+    {
+      // Open the NewPanelForm
+      NEWPANELFORM newPanelForm = new NEWPANELFORM(this);
+      newPanelForm.ShowDialog();
     }
 
     private void ADD_ROW_BUTTON_CLICK(object sender, EventArgs e)

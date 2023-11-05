@@ -2,7 +2,7 @@
 
 namespace AutoCADCommands
 {
-  partial class Form1
+  partial class MainForm
   {
     /// <summary>
     /// Required designer variable.
@@ -552,7 +552,7 @@ namespace AutoCADCommands
       this.NEW_PANEL_BUTTON.TabIndex = 75;
       this.NEW_PANEL_BUTTON.Text = "NEW PANEL";
       this.NEW_PANEL_BUTTON.UseVisualStyleBackColor = true;
-      this.NEW_PANEL_BUTTON.Click += new System.EventHandler(this.NEW_PANEL_BUTTON_Click);
+      this.NEW_PANEL_BUTTON.Click += new System.EventHandler(this.NEW_PANEL_BUTTON_CLICK);
       // 
       // PANEL_TABS
       // 

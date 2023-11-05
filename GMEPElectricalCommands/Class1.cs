@@ -175,7 +175,7 @@ namespace AutoCADCommands
 
       try
       {
-        Form1 myForm = new Form1(this);
+        MainForm myForm = new MainForm(this);
         Autodesk.AutoCAD.ApplicationServices.Application.ShowModalDialog(null, myForm, false);
       }
       catch (System.Exception ex)
