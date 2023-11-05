@@ -79,6 +79,12 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="NewPanelForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NewPanelForm.designer.cs">
+      <DependentUpon>NewPanelForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

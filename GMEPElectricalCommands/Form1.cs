@@ -19,14 +19,15 @@ namespace AutoCADCommands
   public partial class Form1 : Form
   {
     private MyCommands myCommandsInstance;
+    private object oldValue;
 
     public Form1(MyCommands myCommands)
     {
       myCommandsInstance = myCommands;
 
       InitializeComponent();
-      Listen_For_New_Rows();
-      Remove_Column_Header_Sorting();
+      listen_for_new_rows();
+      remove_column_header_sorting();
 
       PANEL_GRID.Rows.AddCopies(0, 21);
       PANEL_GRID.AllowUserToAddRows = false;
@@ -34,14 +35,15 @@ namespace AutoCADCommands
       PANEL_GRID.CellBeginEdit += new DataGridViewCellCancelEventHandler(this.PANEL_GRID_CellBeginEdit);
       PANEL_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PANEL_GRID_CellValueChanged);
       PHASE_SUM_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PHASE_SUM_GRID_CellValueChanged);
+      PANEL_NAME_INPUT.TextChanged += new EventHandler(this.PANEL_NAME_INPUT_TextChanged);
       PANEL_GRID.CellFormatting += PANEL_GRID_CellFormatting;
 
-      Add_Rows_To_DataGrids();
-      Set_Default_Form_Values();
-      Deselect_Cells();
+      add_rows_to_datagrid();
+      set_default_form_values();
+      deselect_cells();
     }
 
-    private void Add_Rows_To_DataGrids()
+    private void add_rows_to_datagrid()
     {
       // Datagrids
       PHASE_SUM_GRID.Rows.Add("0", "0");
@@ -52,7 +54,7 @@ namespace AutoCADCommands
       FEEDER_AMP_GRID.Rows.Add("0");
     }
 
-    private List<Dictionary<string, object>> Retrieve_Saved_Data()
+    private List<Dictionary<string, object>> retrieve_saved_panel_data()
     {
       List<Dictionary<string, object>> saveData = new List<Dictionary<string, object>>();
 
@@ -85,7 +87,7 @@ namespace AutoCADCommands
       return saveData;
     }
 
-    private void Store_Data(List<Dictionary<string, object>> saveData)
+    private void store_data_in_autocad_file(List<Dictionary<string, object>> saveData)
     {
       Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Autodesk.AutoCAD.DatabaseServices.Database acCurDb = acDoc.Database;
@@ -110,150 +112,6 @@ namespace AutoCADCommands
         }
 
         tr.Commit();
-      }
-    }
-
-    private object oldValue;
-
-    private void PANEL_GRID_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
-    {
-      oldValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
-    }
-
-    private void PANEL_GRID_KeyDown(object sender, KeyEventArgs e)
-    {
-      if (e.Control && e.KeyCode == Keys.V)
-      {
-        // Get text from clipboard
-        string text = Clipboard.GetText();
-
-        if (!string.IsNullOrEmpty(text))
-        {
-          // Split clipboard text into lines
-          string[] lines = text.Split('\n');
-
-          if (lines.Length > 0 && string.IsNullOrWhiteSpace(lines[lines.Length - 1]))
-          {
-            Array.Resize(ref lines, lines.Length - 1);
-          }
-
-          // Get start cell for pasting
-          int rowIndex = PANEL_GRID.CurrentCell.RowIndex;
-          int colIndex = PANEL_GRID.CurrentCell.ColumnIndex;
-          int startRowIndex = PANEL_GRID.CurrentCell.RowIndex;
-
-          // Paste each line into a row
-          foreach (string line in lines)
-          {
-            string[] parts = line.Split('\t');
-
-            for (int i = 0; i < parts.Length; i++)
-            {
-              if (rowIndex < PANEL_GRID.RowCount && colIndex + i < PANEL_GRID.ColumnCount)
-              {
-                try
-                {
-                  PANEL_GRID[colIndex + i, rowIndex].Value = parts[i];
-                }
-                catch (FormatException)
-                {
-                  // Handle format exception
-
-                  // Set to default value
-                  PANEL_GRID[colIndex + i, rowIndex].Value = 0;
-
-                  // Or leave cell blank
-                  //dataGridView1[colIndex + i, rowIndex].Value = DBNull.Value;
-
-                  // Or notify user
-                  MessageBox.Show("Invalid format in cell!");
-                }
-              }
-            }
-
-            rowIndex++;
-          }
-          // Reset row index after loop
-          rowIndex = startRowIndex;
-        }
-
-        e.Handled = true;
-      }
-      // Check if Ctrl+C was pressed
-      else if (e.Control && e.KeyCode == Keys.C)
-      {
-        StringBuilder copiedText = new StringBuilder();
-
-        // Loop through selected cells
-        foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells)
-        {
-          copiedText.AppendLine(cell.Value?.ToString() ?? string.Empty);
-        }
-
-        // Loop through selected rows
-        foreach (DataGridViewRow row in PANEL_GRID.SelectedRows)
-        {
-          List<string> cellValues = new List<string>();
-          foreach (DataGridViewCell cell in row.Cells)
-          {
-            if (cell.Selected)
-            {
-              cellValues.Add(cell.Value?.ToString() ?? string.Empty);
-            }
-          }
-          if (cellValues.Count > 0)
-          {
-            copiedText.AppendLine(string.Join("\t", cellValues));
-          }
-        }
-
-        if (copiedText.Length > 0)
-        {
-          Clipboard.SetText(copiedText.ToString());
-        }
-
-        e.Handled = true;
-      }
-
-      // Existing code for handling the Delete key
-      else if (e.KeyCode == Keys.Delete)
-      {
-        foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells)
-        {
-          cell.Value = null;
-        }
-        e.Handled = true;
-      }
-    }
-
-    private void PHASE_SUM_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-    {
-      // Check if the modified cell is in row 0 and column 0, 1, or 2
-      if (e.RowIndex == 0 && (e.ColumnIndex == 0 || e.ColumnIndex == 1 || e.ColumnIndex == 2))
-      {
-        // Retrieve the values from PHASE_SUM_GRID, row 0, column 0 and 1
-        double value1 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[0].Value ?? 0); // Using null-coalescing operator for safety
-        double value2 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[1].Value ?? 0); // Using null-coalescing operator for safety
-        double value3 = 0;
-        double sum = value1 + value2; // Sum of first two columns
-
-        // If the "three-phase" checkbox is checked, include the value from column 2
-        if (THREE_PHASE_CHECKBOX.Checked)
-        {
-          value3 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[2].Value ?? 0); // Using null-coalescing operator for safety
-          sum += value3; // Adding value of the third column if three-phase is checked
-        }
-
-        // Conditional execution based on the state of LARGEST_LCL_CHECKBOX and the presence of a value in TOTAL_OTHER_LOAD_GRID
-        if (LARGEST_LCL_CHECKBOX.Checked && TOTAL_OTHER_LOAD_GRID[0, 0].Value != null)
-        {
-          calculate_totalva_panelload_feederamps_lcl(sum);
-        }
-        else
-        {
-          // You might need to adjust the parameters passed to this function based on your needs
-          calculate_totalva_panelload_feederamps_regular(value1, value2, value3, sum);
-        }
       }
     }
 
@@ -289,18 +147,6 @@ namespace AutoCADCommands
           double panelLoadValue = maxVal / lineVoltage;
           FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(panelLoadValue, 1); // Rounded to 1 decimal place
         }
-      }
-    }
-
-    private void PANEL_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-    {
-      if (THREE_PHASE_CHECKBOX.Checked)
-      {
-        panel_cell_changed_3P(e);
-      }
-      else
-      {
-        panel_cell_changed_2P(e);
       }
     }
 
@@ -433,21 +279,7 @@ namespace AutoCADCommands
       object newValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
     }
 
-    private void PANEL_GRID_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
-    {
-      // Check if the current cell is the one being formatted and the DataGridView doesn't have focus
-      if (this.PANEL_GRID.CurrentCell != null
-          && e.RowIndex == this.PANEL_GRID.CurrentCell.RowIndex
-          && e.ColumnIndex == this.PANEL_GRID.CurrentCell.ColumnIndex
-          && !this.PANEL_GRID.Focused)
-      {
-        // Change the back color and fore color to make the current cell less noticeable
-        e.CellStyle.SelectionBackColor = e.CellStyle.BackColor;
-        e.CellStyle.SelectionForeColor = e.CellStyle.ForeColor;
-      }
-    }
-
-    private void Deselect_Cells()
+    private void deselect_cells()
     {
       PHASE_SUM_GRID.DefaultCellStyle.SelectionBackColor = PHASE_SUM_GRID.DefaultCellStyle.BackColor;
       PHASE_SUM_GRID.DefaultCellStyle.SelectionForeColor = PHASE_SUM_GRID.DefaultCellStyle.ForeColor;
@@ -464,7 +296,7 @@ namespace AutoCADCommands
       PANEL_GRID.ClearSelection();
     }
 
-    private void Set_Default_Form_Values()
+    private void set_default_form_values()
     {
       // Textboxes
       PANEL_NAME_INPUT.Text = "A";
@@ -475,7 +307,7 @@ namespace AutoCADCommands
       // Comboboxes
       STATUS_COMBOBOX.SelectedIndex = 0;
       MOUNTING_COMBOBOX.SelectedIndex = 0;
-      if (THREE_PHASE_CHECKBOX.Checked)
+      if (PHASE_SUM_GRID.ColumnCount > 2)
       {
         WIRE_COMBOBOX.SelectedIndex = 1;
         PHASE_COMBOBOX.SelectedIndex = 1;
@@ -498,10 +330,10 @@ namespace AutoCADCommands
       PANEL_LOAD_GRID.Rows[0].Cells[0].Value = "0";
       FEEDER_AMP_GRID.Rows[0].Cells[0].Value = "0";
 
-      if (THREE_PHASE_CHECKBOX.Checked) PHASE_SUM_GRID.Rows[0].Cells[2].Value = "0";
+      if (PHASE_SUM_GRID.ColumnCount > 2) PHASE_SUM_GRID.Rows[0].Cells[2].Value = "0";
     }
 
-    private void Remove_Column_Header_Sorting()
+    private void remove_column_header_sorting()
     {
       foreach (DataGridViewColumn column in PANEL_GRID.Columns)
       {
@@ -509,22 +341,9 @@ namespace AutoCADCommands
       }
     }
 
-    private void Listen_For_New_Rows()
+    private void listen_for_new_rows()
     {
       PANEL_GRID.RowsAdded += new DataGridViewRowsAddedEventHandler(PANEL_GRID_RowsAdded);
-    }
-
-    private void PANEL_GRID_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
-    {
-      // if the three pole checkbox is checked, then call the listen_for_3P_rows_added function instead of 2P
-      if (THREE_PHASE_CHECKBOX.Checked)
-      {
-        listen_for_3P_rows_added(e);
-      }
-      else
-      {
-        listen_for_2P_rows_added(e);
-      }
     }
 
     private void listen_for_3P_rows_added(DataGridViewRowsAddedEventArgs e)
@@ -601,36 +420,7 @@ namespace AutoCADCommands
       }
     }
 
-    private void ADD_ROW_BUTTON_CLICK(object sender, EventArgs e)
-    {
-      PANEL_GRID.Rows.Add();
-    }
-
-    private void DELETE_ROW_BUTTON_CLICK(object sender, EventArgs e)
-    {
-      if (PANEL_GRID.Rows.Count > 0)
-      {
-        PANEL_GRID.Rows.RemoveAt(PANEL_GRID.Rows.Count - 1);
-      }
-    }
-
-    private void CREATE_PANEL_BUTTON_CLICK(object sender, EventArgs e)
-    {
-      Dictionary<string, object> panelDataList = Retrieve_Data_From_Modal();
-      myCommandsInstance.Create_Panel(panelDataList);
-      this.Close();
-    }
-
-    private void Print_Panels(List<Dictionary<string, object>> panels)
-    {
-      foreach (Dictionary<string, object> panel in panels)
-      {
-        string jsonFormattedString = JsonConvert.SerializeObject(panel, Formatting.Indented);
-        Console.WriteLine(jsonFormattedString);
-      }
-    }
-
-    private Dictionary<string, object> Retrieve_Data_From_Modal()
+    private Dictionary<string, object> retrieve_data_from_modal()
     {
       // Create a new panel
       Dictionary<string, object> panel = new Dictionary<string, object>();
@@ -644,14 +434,14 @@ namespace AutoCADCommands
         mainInput = mainInput.ToUpper().Replace("A ", "AMP ").Replace(" A", " AMP");
       }
       // Check if the value is just a number
-      else if (IsDigitsOnly(mainInput.Replace(" ", "")))
+      else if (is_digits_only(mainInput.Replace(" ", "")))
       {
         mainInput = mainInput + " AMP";
       }
       else
       {
         string[] parts = mainInput.Split(' ');
-        if (parts.Length > 1 && IsDigitsOnly(parts[0]) && parts[1].ToLower() == "a")
+        if (parts.Length > 1 && is_digits_only(parts[0]) && parts[1].ToLower() == "a")
         {
           mainInput = parts[0] + " AMP";
         }
@@ -709,7 +499,7 @@ namespace AutoCADCommands
 
       // Add "A" to the bus rating value if it consists of digits only, then convert to uppercase
       string busRatingInput = BUS_RATING_INPUT.Text;
-      if (IsDigitsOnly(busRatingInput))
+      if (is_digits_only(busRatingInput))
       {
         busRatingInput += "A"; // append "A" if the input is numeric
       }
@@ -959,7 +749,7 @@ namespace AutoCADCommands
       return panel;
     }
 
-    private bool IsDigitsOnly(string str)
+    private bool is_digits_only(string str)
     {
       foreach (char c in str)
       {
@@ -967,16 +757,6 @@ namespace AutoCADCommands
           return false;
       }
       return true;
-    }
-
-    private void LARGEST_LCL_CHECKBOX_CheckedChanged(object sender, EventArgs e)
-    {
-      calculate_lcl_otherload_panelload_feederamps();
-    }
-
-    private void LARGEST_LCL_INPUT_TextChanged(object sender, EventArgs e)
-    {
-      calculate_lcl_otherload_panelload_feederamps();
     }
 
     private void calculate_lcl_otherload_panelload_feederamps()
@@ -1035,7 +815,7 @@ namespace AutoCADCommands
         double value2 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[1].Value);
         double value3 = 0;
 
-        if (THREE_PHASE_CHECKBOX.Checked)
+        if (PHASE_SUM_GRID.ColumnCount > 2)
         {
           value3 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[2].Value);
         }
@@ -1047,57 +827,7 @@ namespace AutoCADCommands
       }
     }
 
-    private void save_panel_data()
-    {
-      string formattedPanelName = $"'{PANEL_NAME_INPUT.Text.ToUpper()}'";
-
-      if (string.IsNullOrEmpty(PANEL_NAME_INPUT.Text))
-      {
-        MessageBox.Show("Please enter a value before proceeding.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        return;
-      }
-
-      List<Dictionary<string, object>> saveData = Retrieve_Saved_Data();
-      Dictionary<string, object> currentPanelData = Retrieve_Data_From_Modal();
-
-      bool panelExists = saveData.Any(dict => dict["panel"].ToString() == formattedPanelName);
-
-      if (panelExists)
-      {
-        DialogResult result = MessageBox.Show("The panel name already exists. Do you want to overwrite the existing panel?", "Confirm", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-
-        switch (result)
-        {
-          case DialogResult.Yes:
-            // Find and remove the existing panel data
-            Dictionary<string, object> existingPanel = saveData.First(dict => dict["panel"].ToString() == formattedPanelName);
-            saveData.Remove(existingPanel);
-            saveData.Add(currentPanelData);
-            break;
-
-          case DialogResult.No:
-            // Do nothing and return
-            return;
-
-          case DialogResult.Cancel:
-            // Do nothing and return
-            return;
-        }
-      }
-      else
-      {
-        saveData.Add(currentPanelData);
-      }
-
-      Store_Data(saveData);
-    }
-
-    private void load_panel_from_data(Dictionary<string, object> selectedPanelData)
-    {
-      Set_Modal_Values(selectedPanelData);
-    }
-
-    private void Set_Modal_Values(Dictionary<string, object> selectedPanelData)
+    private void clear_and_set_modal_values(Dictionary<string, object> selectedPanelData)
     {
       clear_current_modal_data();
 
@@ -1232,50 +962,68 @@ namespace AutoCADCommands
       }
     }
 
-    private void NEW_PANEL_BUTTON_Click(object sender, EventArgs e)
+    private void print_panels(List<Dictionary<string, object>> panels)
     {
-      // prompt the user if they would like to save the current panel
-      DialogResult result = MessageBox.Show("Would you like to save the current panel?", "Confirm", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-      if (result == DialogResult.Yes)
+      foreach (Dictionary<string, object> panel in panels)
       {
-        save_panel_data();
-      }
-      else if (result == DialogResult.Cancel)
-      {
-        return;
-      }
-
-      clear_current_modal_data();
-
-      // Set default values
-      Set_Default_Form_Values();
-
-      // remove all rows from PANEL_GRID
-      PANEL_GRID.Rows.Clear();
-
-      // add 21 rows to PANEL_GRID
-      for (int i = 0; i < 21; i++)
-      {
-        PANEL_GRID.Rows.Add();
+        string jsonFormattedString = JsonConvert.SerializeObject(panel, Formatting.Indented);
+        Console.WriteLine(jsonFormattedString);
       }
     }
 
-    private void THREE_PHASE_CHECKBOX_CheckedChanged(object sender, EventArgs e)
+    private void save_panel_data()
     {
-      bool doTheRest = clear_and_save_panel_on_2P_to_3P();
-      if (doTheRest)
+      string formattedPanelName = $"'{PANEL_NAME_INPUT.Text.ToUpper()}'";
+
+      if (string.IsNullOrEmpty(PANEL_NAME_INPUT.Text))
       {
-        add_or_remove_panel_grid_columns();
-        add_rows_to_panel_grid();
-        change_size_of_phase_columns();
-        add_phase_sum_column();
-        Set_Default_Form_Values();
+        MessageBox.Show("Please enter a value before proceeding.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        return;
       }
+
+      List<Dictionary<string, object>> saveData = retrieve_saved_panel_data();
+      Dictionary<string, object> currentPanelData = retrieve_data_from_modal();
+
+      bool panelExists = saveData.Any(dict => dict["panel"].ToString() == formattedPanelName);
+
+      if (panelExists)
+      {
+        DialogResult result = MessageBox.Show("The panel name already exists. Do you want to overwrite the existing panel?", "Confirm", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+
+        switch (result)
+        {
+          case DialogResult.Yes:
+            // Find and remove the existing panel data
+            Dictionary<string, object> existingPanel = saveData.First(dict => dict["panel"].ToString() == formattedPanelName);
+            saveData.Remove(existingPanel);
+            saveData.Add(currentPanelData);
+            break;
+
+          case DialogResult.No:
+            // Do nothing and return
+            return;
+
+          case DialogResult.Cancel:
+            // Do nothing and return
+            return;
+        }
+      }
+      else
+      {
+        saveData.Add(currentPanelData);
+      }
+
+      store_data_in_autocad_file(saveData);
+    }
+
+    private void load_panel_from_data(Dictionary<string, object> selectedPanelData)
+    {
+      clear_and_set_modal_values(selectedPanelData);
     }
 
     private void add_phase_sum_column()
     {
-      if (THREE_PHASE_CHECKBOX.Checked)
+      if (PHASE_SUM_GRID.ColumnCount > 2)
       {
         PHASE_SUM_GRID.Columns.Add(PHASE_SUM_GRID.Columns[0].Clone() as DataGridViewColumn);
         PHASE_SUM_GRID.Columns[2].HeaderText = "PH C (VA)";
@@ -1309,7 +1057,7 @@ namespace AutoCADCommands
     private void change_size_of_phase_columns()
     {
       // when phase c is added, reduce the size of phase a and phase b, and increase the size of phase c until the 3 columns are equal in size and match the width of phase a and phase b combined
-      if (THREE_PHASE_CHECKBOX.Checked)
+      if (PHASE_SUM_GRID.ColumnCount > 2)
       {
         // Left Side
         PANEL_GRID.Columns["phase_a_left"].Width = 67;
@@ -1337,7 +1085,7 @@ namespace AutoCADCommands
     {
       // insert a column with the text "PH C" into PANEL_GRID after phase b on the left and right side if the checkbox is checked
       // give the column the name "phase_c_left" and "phase_c_right"
-      if (THREE_PHASE_CHECKBOX.Checked)
+      if (PHASE_SUM_GRID.ColumnCount > 2)
       {
         // Left Side
         DataGridViewTextBoxColumn phase_c_left = new DataGridViewTextBoxColumn();
@@ -1363,58 +1111,253 @@ namespace AutoCADCommands
       }
     }
 
-    private bool clear_and_save_panel_on_2P_to_3P()
-    {
-      // Prompt the user if they want to save before removing all the data
-      DialogResult result = MessageBox.Show("Do you want to save the current panel before the data is removed?", "Confirm", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-
-      if (result == DialogResult.Yes)
-      {
-        // If the user wants to save, then save the panel data
-        save_panel_data();
-        // After saving, remove all rows from PANEL_GRID
-        PANEL_GRID.Rows.Clear();
-        return true;
-      }
-      else if (result == DialogResult.No)
-      {
-        // If the user chooses not to save, then just remove all rows from PANEL_GRID
-        PANEL_GRID.Rows.Clear();
-        return true;
-      }
-      else
-      {
-        // do the opposite of the current checkbox state
-        if (THREE_PHASE_CHECKBOX.Checked)
-        {
-          ChangeCheckboxStateWithoutEvent(false);
-        }
-        else
-        {
-          ChangeCheckboxStateWithoutEvent(true);
-        }
-        return false;
-      }
-    }
-
-    private void ChangeCheckboxStateWithoutEvent(bool newState)
-    {
-      // Unsubscribe from the event
-      THREE_PHASE_CHECKBOX.CheckedChanged -= THREE_PHASE_CHECKBOX_CheckedChanged;
-
-      // Change the checkbox state
-      THREE_PHASE_CHECKBOX.Checked = newState;
-
-      // Resubscribe to the event
-      THREE_PHASE_CHECKBOX.CheckedChanged += THREE_PHASE_CHECKBOX_CheckedChanged;
-    }
-
     private void add_rows_to_panel_grid()
     {
       // add 21 rows to PANEL_GRID
       for (int i = 0; i < 21; i++)
       {
         PANEL_GRID.Rows.Add();
+      }
+    }
+
+    private void PANEL_NAME_INPUT_TextChanged(object sender, EventArgs e)
+    {
+      // Get the selected tab index
+      int selectedIndex = PANEL_TABS.SelectedIndex;
+
+      // Check if there is a selected tab
+      if (selectedIndex >= 0)
+      {
+        // Rename the current selected tab
+        PANEL_TABS.TabPages[selectedIndex].Text = "PANEL " + PANEL_NAME_INPUT.Text;
+      }
+    }
+
+    private void NEW_PANEL_BUTTON_Click(object sender, EventArgs e)
+    {
+      // Create a new TabPage
+      TabPage newTabPage = new TabPage("New Tab");
+
+      // Optionally, you can add controls to newTabPage here
+      // For example, to add a new Label:
+      // Label newLabel = new Label();
+      // newLabel.Text = "Hello, World!";
+      // newTabPage.Controls.Add(newLabel);
+
+      // Add the new TabPage to the TabControl
+      PANEL_TABS.TabPages.Add(newTabPage);
+
+      // Optional: Select the newly created tab
+      PANEL_TABS.SelectedTab = newTabPage;
+    }
+
+    private void LARGEST_LCL_INPUT_TextChanged(object sender, EventArgs e)
+    {
+      calculate_lcl_otherload_panelload_feederamps();
+    }
+
+    private void LARGEST_LCL_CHECKBOX_CheckedChanged(object sender, EventArgs e)
+    {
+      calculate_lcl_otherload_panelload_feederamps();
+    }
+
+    private void ADD_ROW_BUTTON_CLICK(object sender, EventArgs e)
+    {
+      PANEL_GRID.Rows.Add();
+    }
+
+    private void DELETE_ROW_BUTTON_CLICK(object sender, EventArgs e)
+    {
+      if (PANEL_GRID.Rows.Count > 0)
+      {
+        PANEL_GRID.Rows.RemoveAt(PANEL_GRID.Rows.Count - 1);
+      }
+    }
+
+    private void CREATE_PANEL_BUTTON_CLICK(object sender, EventArgs e)
+    {
+      Dictionary<string, object> panelDataList = retrieve_data_from_modal();
+      myCommandsInstance.Create_Panel(panelDataList);
+      this.Close();
+    }
+
+    private void PANEL_GRID_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
+    {
+      if (PHASE_SUM_GRID.ColumnCount > 2)
+      {
+        listen_for_3P_rows_added(e);
+      }
+      else
+      {
+        listen_for_2P_rows_added(e);
+      }
+    }
+
+    private void PANEL_GRID_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+    {
+      // Check if the current cell is the one being formatted and the DataGridView doesn't have focus
+      if (this.PANEL_GRID.CurrentCell != null
+          && e.RowIndex == this.PANEL_GRID.CurrentCell.RowIndex
+          && e.ColumnIndex == this.PANEL_GRID.CurrentCell.ColumnIndex
+          && !this.PANEL_GRID.Focused)
+      {
+        // Change the back color and fore color to make the current cell less noticeable
+        e.CellStyle.SelectionBackColor = e.CellStyle.BackColor;
+        e.CellStyle.SelectionForeColor = e.CellStyle.ForeColor;
+      }
+    }
+
+    private void PANEL_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+    {
+      if (PHASE_SUM_GRID.ColumnCount > 2)
+      {
+        panel_cell_changed_3P(e);
+      }
+      else
+      {
+        panel_cell_changed_2P(e);
+      }
+    }
+
+    private void PANEL_GRID_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
+    {
+      oldValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+    }
+
+    private void PANEL_GRID_KeyDown(object sender, KeyEventArgs e)
+    {
+      if (e.Control && e.KeyCode == Keys.V)
+      {
+        // Get text from clipboard
+        string text = Clipboard.GetText();
+
+        if (!string.IsNullOrEmpty(text))
+        {
+          // Split clipboard text into lines
+          string[] lines = text.Split('\n');
+
+          if (lines.Length > 0 && string.IsNullOrWhiteSpace(lines[lines.Length - 1]))
+          {
+            Array.Resize(ref lines, lines.Length - 1);
+          }
+
+          // Get start cell for pasting
+          int rowIndex = PANEL_GRID.CurrentCell.RowIndex;
+          int colIndex = PANEL_GRID.CurrentCell.ColumnIndex;
+          int startRowIndex = PANEL_GRID.CurrentCell.RowIndex;
+
+          // Paste each line into a row
+          foreach (string line in lines)
+          {
+            string[] parts = line.Split('\t');
+
+            for (int i = 0; i < parts.Length; i++)
+            {
+              if (rowIndex < PANEL_GRID.RowCount && colIndex + i < PANEL_GRID.ColumnCount)
+              {
+                try
+                {
+                  PANEL_GRID[colIndex + i, rowIndex].Value = parts[i];
+                }
+                catch (FormatException)
+                {
+                  // Handle format exception
+
+                  // Set to default value
+                  PANEL_GRID[colIndex + i, rowIndex].Value = 0;
+
+                  // Or leave cell blank
+                  //dataGridView1[colIndex + i, rowIndex].Value = DBNull.Value;
+
+                  // Or notify user
+                  MessageBox.Show("Invalid format in cell!");
+                }
+              }
+            }
+
+            rowIndex++;
+          }
+          // Reset row index after loop
+          rowIndex = startRowIndex;
+        }
+
+        e.Handled = true;
+      }
+      // Check if Ctrl+C was pressed
+      else if (e.Control && e.KeyCode == Keys.C)
+      {
+        StringBuilder copiedText = new StringBuilder();
+
+        // Loop through selected cells
+        foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells)
+        {
+          copiedText.AppendLine(cell.Value?.ToString() ?? string.Empty);
+        }
+
+        // Loop through selected rows
+        foreach (DataGridViewRow row in PANEL_GRID.SelectedRows)
+        {
+          List<string> cellValues = new List<string>();
+          foreach (DataGridViewCell cell in row.Cells)
+          {
+            if (cell.Selected)
+            {
+              cellValues.Add(cell.Value?.ToString() ?? string.Empty);
+            }
+          }
+          if (cellValues.Count > 0)
+          {
+            copiedText.AppendLine(string.Join("\t", cellValues));
+          }
+        }
+
+        if (copiedText.Length > 0)
+        {
+          Clipboard.SetText(copiedText.ToString());
+        }
+
+        e.Handled = true;
+      }
+
+      // Existing code for handling the Delete key
+      else if (e.KeyCode == Keys.Delete)
+      {
+        foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells)
+        {
+          cell.Value = null;
+        }
+        e.Handled = true;
+      }
+    }
+
+    private void PHASE_SUM_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+    {
+      // Check if the modified cell is in row 0 and column 0, 1, or 2
+      if (e.RowIndex == 0 && (e.ColumnIndex == 0 || e.ColumnIndex == 1 || e.ColumnIndex == 2))
+      {
+        // Retrieve the values from PHASE_SUM_GRID, row 0, column 0 and 1
+        double value1 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[0].Value ?? 0); // Using null-coalescing operator for safety
+        double value2 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[1].Value ?? 0); // Using null-coalescing operator for safety
+        double value3 = 0;
+        double sum = value1 + value2; // Sum of first two columns
+
+        // If the phase sum grid has three columns
+        if (PHASE_SUM_GRID.ColumnCount > 2)
+        {
+          value3 = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[2].Value ?? 0); // Using null-coalescing operator for safety
+          sum += value3; // Adding value of the third column if three-phase is checked
+        }
+
+        // Conditional execution based on the state of LARGEST_LCL_CHECKBOX and the presence of a value in TOTAL_OTHER_LOAD_GRID
+        if (LARGEST_LCL_CHECKBOX.Checked && TOTAL_OTHER_LOAD_GRID[0, 0].Value != null)
+        {
+          calculate_totalva_panelload_feederamps_lcl(sum);
+        }
+        else
+        {
+          // You might need to adjust the parameters passed to this function based on your needs
+          calculate_totalva_panelload_feederamps_regular(value1, value2, value3, sum);
+        }
       }
     }
   }

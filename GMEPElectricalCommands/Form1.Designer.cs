@@ -82,7 +82,7 @@ namespace AutoCADCommands
       this.LARGEST_LCL_LABEL = new System.Windows.Forms.Label();
       this.LARGEST_LCL_CHECKBOX = new System.Windows.Forms.CheckBox();
       this.NEW_PANEL_BUTTON = new System.Windows.Forms.Button();
-      this.tabControl1 = new System.Windows.Forms.TabControl();
+      this.PANEL_TABS = new System.Windows.Forms.TabControl();
       this.tabPage1 = new System.Windows.Forms.TabPage();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PHASE_SUM_GRID)).BeginInit();
@@ -91,7 +91,7 @@ namespace AutoCADCommands
       ((System.ComponentModel.ISupportInitialize)(this.TOTAL_OTHER_LOAD_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
-      this.tabControl1.SuspendLayout();
+      this.PANEL_TABS.SuspendLayout();
       this.tabPage1.SuspendLayout();
       this.SuspendLayout();
       // 
@@ -517,9 +517,9 @@ namespace AutoCADCommands
       // 
       // LARGEST_LCL_INPUT
       // 
-      this.LARGEST_LCL_INPUT.Location = new System.Drawing.Point(153, 431);
+      this.LARGEST_LCL_INPUT.Location = new System.Drawing.Point(155, 431);
       this.LARGEST_LCL_INPUT.Name = "LARGEST_LCL_INPUT";
-      this.LARGEST_LCL_INPUT.Size = new System.Drawing.Size(144, 20);
+      this.LARGEST_LCL_INPUT.Size = new System.Drawing.Size(142, 20);
       this.LARGEST_LCL_INPUT.TabIndex = 67;
       this.LARGEST_LCL_INPUT.TextChanged += new System.EventHandler(this.LARGEST_LCL_INPUT_TextChanged);
       // 
@@ -536,7 +536,7 @@ namespace AutoCADCommands
       // 
       this.LARGEST_LCL_CHECKBOX.AutoSize = true;
       this.LARGEST_LCL_CHECKBOX.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-      this.LARGEST_LCL_CHECKBOX.Location = new System.Drawing.Point(-67, 409);
+      this.LARGEST_LCL_CHECKBOX.Location = new System.Drawing.Point(81, 433);
       this.LARGEST_LCL_CHECKBOX.Name = "LARGEST_LCL_CHECKBOX";
       this.LARGEST_LCL_CHECKBOX.Size = new System.Drawing.Size(68, 17);
       this.LARGEST_LCL_CHECKBOX.TabIndex = 69;
@@ -554,14 +554,14 @@ namespace AutoCADCommands
       this.NEW_PANEL_BUTTON.UseVisualStyleBackColor = true;
       this.NEW_PANEL_BUTTON.Click += new System.EventHandler(this.NEW_PANEL_BUTTON_Click);
       // 
-      // tabControl1
+      // PANEL_TABS
       // 
-      this.tabControl1.Controls.Add(this.tabPage1);
-      this.tabControl1.Location = new System.Drawing.Point(1, 2);
-      this.tabControl1.Name = "tabControl1";
-      this.tabControl1.SelectedIndex = 0;
-      this.tabControl1.Size = new System.Drawing.Size(1409, 691);
-      this.tabControl1.TabIndex = 76;
+      this.PANEL_TABS.Controls.Add(this.tabPage1);
+      this.PANEL_TABS.Location = new System.Drawing.Point(1, 0);
+      this.PANEL_TABS.Name = "PANEL_TABS";
+      this.PANEL_TABS.SelectedIndex = 0;
+      this.PANEL_TABS.Size = new System.Drawing.Size(1409, 691);
+      this.PANEL_TABS.TabIndex = 76;
       // 
       // tabPage1
       // 
@@ -612,7 +612,7 @@ namespace AutoCADCommands
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(1408, 691);
-      this.Controls.Add(this.tabControl1);
+      this.Controls.Add(this.PANEL_TABS);
       this.Name = "Form1";
       this.Text = "Panel Schedule";
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).EndInit();
@@ -622,7 +622,7 @@ namespace AutoCADCommands
       ((System.ComponentModel.ISupportInitialize)(this.TOTAL_OTHER_LOAD_GRID)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).EndInit();
-      this.tabControl1.ResumeLayout(false);
+      this.PANEL_TABS.ResumeLayout(false);
       this.tabPage1.ResumeLayout(false);
       this.tabPage1.PerformLayout();
       this.ResumeLayout(false);
@@ -683,7 +683,7 @@ namespace AutoCADCommands
     private System.Windows.Forms.DataGridViewTextBoxColumn phase_a_right;
     private System.Windows.Forms.DataGridViewTextBoxColumn phase_b_right;
     private System.Windows.Forms.DataGridViewTextBoxColumn description_right;
-    private System.Windows.Forms.TabControl tabControl1;
+    private System.Windows.Forms.TabControl PANEL_TABS;
     private System.Windows.Forms.TabPage tabPage1;
   }
 }
