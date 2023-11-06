@@ -1,28 +1,68 @@
-How can I give the new form access to methods that are part of the main form?
+this.PANEL_TABS = new System.Windows.Forms.TabControl();
+this.tabPage1 = new System.Windows.Forms.TabPage();
 
-"using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+this.PANEL_TABS.SuspendLayout();
+this.tabPage1.SuspendLayout();
 
-namespace NewPanel
-{
-  public partial class NEWPANELFORM : Form
-  {
-    public NEWPANELFORM()
-    {
-      InitializeComponent();
-    }
+// 
+// PANEL_TABS
+// 
+this.PANEL_TABS.Controls.Add(this.tabPage1);
+this.PANEL_TABS.Location = new System.Drawing.Point(1, 0);
+this.PANEL_TABS.Name = "PANEL_TABS";
+this.PANEL_TABS.SelectedIndex = 0;
+this.PANEL_TABS.Size = new System.Drawing.Size(1409, 691);
+this.PANEL_TABS.TabIndex = 76;
+// 
+// tabPage1
+// 
+this.tabPage1.Controls.Add(this.PANEL_GRID);
+this.tabPage1.Controls.Add(this.NEW_PANEL_BUTTON);
+this.tabPage1.Controls.Add(this.label18);
+this.tabPage1.Controls.Add(this.LARGEST_LCL_CHECKBOX);
+this.tabPage1.Controls.Add(this.label17);
+this.tabPage1.Controls.Add(this.LARGEST_LCL_LABEL);
+this.tabPage1.Controls.Add(this.label16);
+this.tabPage1.Controls.Add(this.LARGEST_LCL_INPUT);
+this.tabPage1.Controls.Add(this.label15);
+this.tabPage1.Controls.Add(this.CREATE_PANEL_BUTTON);
+this.tabPage1.Controls.Add(this.label14);
+this.tabPage1.Controls.Add(this.FEEDER_AMP_GRID);
+this.tabPage1.Controls.Add(this.label13);
+this.tabPage1.Controls.Add(this.PANEL_LOAD_GRID);
+this.tabPage1.Controls.Add(this.label12);
+this.tabPage1.Controls.Add(this.TOTAL_OTHER_LOAD_GRID);
+this.tabPage1.Controls.Add(this.label11);
+this.tabPage1.Controls.Add(this.LCL_GRID);
+this.tabPage1.Controls.Add(this.label10);
+this.tabPage1.Controls.Add(this.TOTAL_VA_GRID);
+this.tabPage1.Controls.Add(this.PANEL_NAME_INPUT);
+this.tabPage1.Controls.Add(this.PHASE_SUM_GRID);
+this.tabPage1.Controls.Add(this.PANEL_LOCATION_INPUT);
+this.tabPage1.Controls.Add(this.DELETE_ROW_BUTTON);
+this.tabPage1.Controls.Add(this.MAIN_INPUT);
+this.tabPage1.Controls.Add(this.ADD_ROW_BUTTON);
+this.tabPage1.Controls.Add(this.BUS_RATING_INPUT);
+this.tabPage1.Controls.Add(this.LINE_VOLTAGE_COMBOBOX);
+this.tabPage1.Controls.Add(this.label1);
+this.tabPage1.Controls.Add(this.PHASE_VOLTAGE_COMBOBOX);
+this.tabPage1.Controls.Add(this.STATUS_COMBOBOX);
+this.tabPage1.Controls.Add(this.PHASE_COMBOBOX);
+this.tabPage1.Controls.Add(this.MOUNTING_COMBOBOX);
+this.tabPage1.Controls.Add(this.WIRE_COMBOBOX);
+this.tabPage1.Location = new System.Drawing.Point(4, 22);
+this.tabPage1.Name = "tabPage1";
+this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+this.tabPage1.Size = new System.Drawing.Size(1401, 665);
+this.tabPage1.TabIndex = 0;
+this.tabPage1.Text = "tabPage1";
+this.tabPage1.UseVisualStyleBackColor = true;
 
-    private void CREATEPANEL_Click(object sender, EventArgs e)
-    {
+this.Controls.Add(this.PANEL_TABS);
 
-    }
-  }
-}
-"
+this.PANEL_TABS.ResumeLayout(false);
+this.tabPage1.ResumeLayout(false);
+this.tabPage1.PerformLayout();
+
+private System.Windows.Forms.TabControl PANEL_TABS;
+private System.Windows.Forms.TabPage tabPage1;

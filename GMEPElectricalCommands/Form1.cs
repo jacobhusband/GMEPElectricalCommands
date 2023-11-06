@@ -1142,45 +1142,8 @@ namespace AutoCADCommands
       if (selectedIndex >= 0)
       {
         // Rename the current selected tab
-        PANEL_TABS.TabPages[selectedIndex].Text = "PANEL " + PANEL_NAME_INPUT.Text;
+        PANEL_TABS.TabPages[selectedIndex].Text = "Panel " + PANEL_NAME_INPUT.Text.ToUpper();
       }
-    }
-
-    private void LARGEST_LCL_INPUT_TextChanged(object sender, EventArgs e)
-    {
-      calculate_lcl_otherload_panelload_feederamps();
-    }
-
-    private void LARGEST_LCL_CHECKBOX_CheckedChanged(object sender, EventArgs e)
-    {
-      calculate_lcl_otherload_panelload_feederamps();
-    }
-
-    private void NEW_PANEL_BUTTON_CLICK(object sender, EventArgs e)
-    {
-      // Open the NewPanelForm
-      NEWPANELFORM newPanelForm = new NEWPANELFORM(this);
-      newPanelForm.ShowDialog();
-    }
-
-    private void ADD_ROW_BUTTON_CLICK(object sender, EventArgs e)
-    {
-      PANEL_GRID.Rows.Add();
-    }
-
-    private void DELETE_ROW_BUTTON_CLICK(object sender, EventArgs e)
-    {
-      if (PANEL_GRID.Rows.Count > 0)
-      {
-        PANEL_GRID.Rows.RemoveAt(PANEL_GRID.Rows.Count - 1);
-      }
-    }
-
-    private void CREATE_PANEL_BUTTON_CLICK(object sender, EventArgs e)
-    {
-      Dictionary<string, object> panelDataList = retrieve_data_from_modal();
-      myCommandsInstance.Create_Panel(panelDataList);
-      this.Close();
     }
 
     private void PANEL_GRID_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
@@ -1361,6 +1324,43 @@ namespace AutoCADCommands
           calculate_totalva_panelload_feederamps_regular(value1, value2, value3, sum);
         }
       }
+    }
+
+    private void NEW_PANEL_BUTTON_Click_1(object sender, EventArgs e)
+    {
+      // Open the NewPanelForm
+      NEWPANELFORM newPanelForm = new NEWPANELFORM(this);
+      newPanelForm.ShowDialog();
+    }
+
+    private void ADD_ROW_BUTTON_Click_1(object sender, EventArgs e)
+    {
+      PANEL_GRID.Rows.Add();
+    }
+
+    private void CREATE_PANEL_BUTTON_Click_1(object sender, EventArgs e)
+    {
+      Dictionary<string, object> panelDataList = retrieve_data_from_modal();
+      myCommandsInstance.Create_Panel(panelDataList);
+      this.Close();
+    }
+
+    private void DELETE_ROW_BUTTON_Click_1(object sender, EventArgs e)
+    {
+      if (PANEL_GRID.Rows.Count > 0)
+      {
+        PANEL_GRID.Rows.RemoveAt(PANEL_GRID.Rows.Count - 1);
+      }
+    }
+
+    private void LARGEST_LCL_CHECKBOX_CheckedChanged_1(object sender, EventArgs e)
+    {
+      calculate_lcl_otherload_panelload_feederamps();
+    }
+
+    private void LARGEST_LCL_INPUT_TextChanged_1(object sender, EventArgs e)
+    {
+      calculate_lcl_otherload_panelload_feederamps();
     }
   }
 }
