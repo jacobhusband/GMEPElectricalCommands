@@ -1,4 +1,4 @@
-﻿namespace NewPanel
+﻿namespace AutoCADCommands
 {
   partial class NEWPANELFORM
   {
