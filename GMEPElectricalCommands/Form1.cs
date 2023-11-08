@@ -20,27 +20,55 @@ namespace AutoCADCommands
   {
     private MyCommands myCommandsInstance;
     private NEWPANELFORM newPanelForm;
+    private List<UserControl1> userControls;
     private UserControl1 userControl1;
 
     public MainForm(MyCommands myCommands)
     {
       InitializeComponent();
-      myCommandsInstance = myCommands;
+      this.myCommandsInstance = myCommands;
       this.newPanelForm = new NEWPANELFORM(this);
-      this.userControl1 = new UserControl1(myCommands, this, this.newPanelForm);
-      this.PANEL_TABS.TabPages[0].Controls.Add(this.userControl1);
+      this.userControls = new List<UserControl1>();
+      PANEL_TABS.TabPages.Clear();
+      CreateNewPanelTab("A");
     }
 
-    public void create_new_panel_tab_in_modal()
+    public void AddUserControlToNewTab(UserControl control, TabPage tabPage)
     {
+      // Set the user control location and size if needed
+      control.Location = new Point(0, 0); // Top-left corner of the tab page
+      control.Dock = DockStyle.Fill; // If you want to dock it to fill the tab
+
+      // Add the user control to the controls of the tab page
+      tabPage.Controls.Add(control);
+    }
+
+    public void CreateNewPanelTab(string tabName)
+    {
+      // if tabname has "PANEL" in it replace it with "Panel"
+      if (tabName.Contains("PANEL") || tabName.Contains("Panel"))
+      {
+        tabName = tabName.Replace("PANEL", "");
+        tabName = tabName.Replace("Panel", "");
+      }
+
       // Create a new TabPage
-      TabPage newTabPage = new TabPage("New Tab");
+      TabPage newTabPage = new TabPage(tabName);
 
       // Add the new TabPage to the TabControl
       PANEL_TABS.TabPages.Add(newTabPage);
 
       // Optional: Select the newly created tab
       PANEL_TABS.SelectedTab = newTabPage;
+
+      // Create a new UserControl
+      UserControl1 userControl1 = new UserControl1(this.myCommandsInstance, this, this.newPanelForm, tabName);
+
+      // Add the UserControl to the list of UserControls
+      this.userControls.Add(userControl1);
+
+      // Call the method to add the UserControl to the new tab
+      AddUserControlToNewTab(userControl1, newTabPage);
     }
 
     public void PANEL_NAME_INPUT_TextChanged(object sender, EventArgs e, string input)

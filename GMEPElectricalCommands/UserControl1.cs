@@ -18,7 +18,7 @@ namespace AutoCADCommands
     private NEWPANELFORM newPanelForm;
     private object oldValue;
 
-    public UserControl1(MyCommands myCommands, MainForm mainForm, NEWPANELFORM newPanelForm)
+    public UserControl1(MyCommands myCommands, MainForm mainForm, NEWPANELFORM newPanelForm, string tabName)
     {
       InitializeComponent();
       myCommandsInstance = myCommands;
@@ -37,7 +37,7 @@ namespace AutoCADCommands
       PANEL_GRID.CellFormatting += PANEL_GRID_CellFormatting;
 
       add_rows_to_datagrid();
-      set_default_form_values();
+      set_default_form_values(tabName);
       deselect_cells();
     }
 
@@ -69,10 +69,10 @@ namespace AutoCADCommands
       PANEL_GRID.ClearSelection();
     }
 
-    private void set_default_form_values()
+    private void set_default_form_values(string tabName)
     {
       // Textboxes
-      PANEL_NAME_INPUT.Text = "A";
+      PANEL_NAME_INPUT.Text = tabName;
       PANEL_LOCATION_INPUT.Text = "ELECTRIC ROOM";
       MAIN_INPUT.Text = "M.L.O";
       BUS_RATING_INPUT.Text = "100";
