@@ -1,12 +1,35 @@
-Here is my function for placing my User Control in the main form:
+Here is my user control save panel data function:
 
-"private void placeUserControlInMainForm()
+```
+private void save_panel_data()
     {
-      // Add the user control to the main form
-      this.mainForm.Controls.Add(this);
-      this.mainForm.Controls.SetChildIndex(this, 0);
-    }"
+      string formattedPanelName = $"'{PANEL_NAME_INPUT.Text.ToUpper()}'";
 
-I have an issue where the user control is not ending up in the first tab on the page.
+      if (string.IsNullOrEmpty(PANEL_NAME_INPUT.Text))
+      {
+        MessageBox.Show("Please enter a value before proceeding.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        return;
+      }
 
-Can the user control be placed in the first tab on the page and positioned at the top left corner?
+      List<Dictionary<string, object>> saveData = retrieve_saved_panel_data();
+      Dictionary<string, object> currentPanelData = retrieve_data_from_modal();
+
+      bool panelExists = saveData.Any(dict => dict["panel"].ToString() == formattedPanelName);
+
+      if (panelExists)
+      {
+        Dictionary<string, object> existingPanel = saveData.First(dict => dict["panel"].ToString() == formattedPanelName);
+        saveData.Remove(existingPanel);
+        saveData.Add(currentPanelData);
+      }
+      else
+      {
+        saveData.Add(currentPanelData);
+      }
+
+      store_data_in_autocad_file(saveData);
+    }
+```
+
+I want to run the function save_panel_data() whenever the user closes the modal.
+Can I have an event listener that listens for when the modal is about to close and retrieves all the data and puts it in storage first?

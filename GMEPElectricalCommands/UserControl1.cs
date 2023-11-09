@@ -119,7 +119,7 @@ namespace AutoCADCommands
       PANEL_GRID.RowsAdded += new DataGridViewRowsAddedEventHandler(PANEL_GRID_RowsAdded);
     }
 
-    private List<Dictionary<string, object>> retrieve_saved_panel_data()
+    public List<Dictionary<string, object>> retrieve_saved_panel_data()
     {
       List<Dictionary<string, object>> saveData = new List<Dictionary<string, object>>();
 
@@ -152,7 +152,7 @@ namespace AutoCADCommands
       return saveData;
     }
 
-    private Dictionary<string, object> retrieve_data_from_modal()
+    public Dictionary<string, object> retrieve_data_from_modal()
     {
       // Create a new panel
       Dictionary<string, object> panel = new Dictionary<string, object>();
@@ -481,7 +481,7 @@ namespace AutoCADCommands
       return panel;
     }
 
-    private void store_data_in_autocad_file(List<Dictionary<string, object>> saveData)
+    public void store_data_in_autocad_file(List<Dictionary<string, object>> saveData)
     {
       Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Autodesk.AutoCAD.DatabaseServices.Database acCurDb = acDoc.Database;
@@ -825,7 +825,7 @@ namespace AutoCADCommands
       }
     }
 
-    private void clear_and_set_modal_values(Dictionary<string, object> selectedPanelData)
+    public void clear_and_set_modal_values(Dictionary<string, object> selectedPanelData)
     {
       clear_current_modal_data();
 
@@ -967,51 +967,6 @@ namespace AutoCADCommands
         string jsonFormattedString = JsonConvert.SerializeObject(panel, Formatting.Indented);
         Console.WriteLine(jsonFormattedString);
       }
-    }
-
-    private void save_panel_data()
-    {
-      string formattedPanelName = $"'{PANEL_NAME_INPUT.Text.ToUpper()}'";
-
-      if (string.IsNullOrEmpty(PANEL_NAME_INPUT.Text))
-      {
-        MessageBox.Show("Please enter a value before proceeding.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        return;
-      }
-
-      List<Dictionary<string, object>> saveData = retrieve_saved_panel_data();
-      Dictionary<string, object> currentPanelData = retrieve_data_from_modal();
-
-      bool panelExists = saveData.Any(dict => dict["panel"].ToString() == formattedPanelName);
-
-      if (panelExists)
-      {
-        DialogResult result = MessageBox.Show("The panel name already exists. Do you want to overwrite the existing panel?", "Confirm", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-
-        switch (result)
-        {
-          case DialogResult.Yes:
-            // Find and remove the existing panel data
-            Dictionary<string, object> existingPanel = saveData.First(dict => dict["panel"].ToString() == formattedPanelName);
-            saveData.Remove(existingPanel);
-            saveData.Add(currentPanelData);
-            break;
-
-          case DialogResult.No:
-            // Do nothing and return
-            return;
-
-          case DialogResult.Cancel:
-            // Do nothing and return
-            return;
-        }
-      }
-      else
-      {
-        saveData.Add(currentPanelData);
-      }
-
-      store_data_in_autocad_file(saveData);
     }
 
     private void load_panel_from_data(Dictionary<string, object> selectedPanelData)
