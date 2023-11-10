@@ -20,6 +20,8 @@ namespace AutoCADCommands
 {
   public class MyCommands
   {
+    private MainForm myForm;
+
     [CommandMethod("HelloWorld")]
     public void HelloWorldCommand()
     {
@@ -175,7 +177,16 @@ namespace AutoCADCommands
 
       try
       {
-        MainForm myForm = new MainForm(this);
+        if (this.myForm == null)
+        {
+          this.myForm = new MainForm(this);
+          this.myForm.InitializeModal();
+        }
+        else
+        {
+          this.myForm.InitializeModal();
+        }
+
         Autodesk.AutoCAD.ApplicationServices.Application.ShowModalDialog(null, myForm, false);
       }
       catch (System.Exception ex)
@@ -2118,6 +2129,12 @@ namespace AutoCADCommands
         // Outputting details for debugging
         ed.WriteMessage($"\nPolyline created in layer: {layer} with color: {color.ColorName}. StartPoint: {vertices[0].ToString()} EndPoint: {vertices[vertices.Length - 1].ToString()}");
       }
+    }
+
+    internal void WriteMessage(string v)
+    {
+      var (_, _, ed) = GetGlobals();
+      ed.WriteMessage(v);
     }
   }
 }

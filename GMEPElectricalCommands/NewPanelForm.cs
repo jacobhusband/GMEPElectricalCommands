@@ -32,7 +32,7 @@ namespace AutoCADCommands
       // call a method on the main form
       if (_mainForm != null)
       {
-        _mainForm.CreateNewPanelTab(panelName);
+        _mainForm.CreateNewPanelTab(panelName, is3PH);
       }
     }
   }

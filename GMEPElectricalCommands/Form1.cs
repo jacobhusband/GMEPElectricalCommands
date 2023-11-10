@@ -30,17 +30,19 @@ namespace AutoCADCommands
       this.newPanelForm = new NEWPANELFORM(this);
 
       this.userControls = new List<UserControl1>();
-      InitializeModal();
 
       this.FormClosing += MainForm_FormClosing;
     }
 
-    private void InitializeModal()
+    public void InitializeModal()
     {
       PANEL_TABS.TabPages.Clear();
       UserControl1 userControl = new UserControl1(this.myCommandsInstance, this, this.newPanelForm, "Dummy Usercontrol");
 
       List<Dictionary<string, object>> panelStorage = userControl.retrieve_saved_panel_data();
+
+      string json = JsonConvert.SerializeObject(panelStorage, Formatting.Indented);
+      System.IO.File.WriteAllText(@"C:\Users\Public\Documents\panelStorageOpening.json", json);
 
       if (panelStorage.Count == 0)
       {
@@ -64,12 +66,18 @@ namespace AutoCADCommands
 
       List<Dictionary<string, object>> panelStorage = new List<Dictionary<string, object>>();
 
+      this.myCommandsInstance.WriteMessage("\n" + this.userControls.Count.ToString());
+
       foreach (UserControl1 userControl in this.userControls)
       {
         panelStorage.Add(userControl.retrieve_data_from_modal());
       }
 
+      string json = JsonConvert.SerializeObject(panelStorage, Formatting.Indented);
+      System.IO.File.WriteAllText(@"C:\Users\Public\Documents\panelStorageClosing.json", json);
+
       this.userControls[0].store_data_in_autocad_file(panelStorage);
+      this.userControls = new List<UserControl1>();
     }
 
     public void AddUserControlToNewTab(UserControl control, TabPage tabPage)
@@ -82,7 +90,7 @@ namespace AutoCADCommands
       tabPage.Controls.Add(control);
     }
 
-    public UserControl1 CreateNewPanelTab(string tabName)
+    public UserControl1 CreateNewPanelTab(string tabName, bool is3PH)
     {
       // if tabname has "PANEL" in it replace it with "Panel"
       if (tabName.Contains("PANEL") || tabName.Contains("Panel"))
@@ -101,7 +109,7 @@ namespace AutoCADCommands
       PANEL_TABS.SelectedTab = newTabPage;
 
       // Create a new UserControl
-      UserControl1 userControl1 = new UserControl1(this.myCommandsInstance, this, this.newPanelForm, tabName);
+      UserControl1 userControl1 = new UserControl1(this.myCommandsInstance, this, this.newPanelForm, tabName, is3PH);
 
       // Add the UserControl to the list of UserControls
       this.userControls.Add(userControl1);
