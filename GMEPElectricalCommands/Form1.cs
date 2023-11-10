@@ -46,7 +46,7 @@ namespace AutoCADCommands
 
       if (panelStorage.Count == 0)
       {
-        CreateNewPanelTab("A");
+        CreateNewPanelTab("A", false);
         return;
       }
       else
@@ -54,7 +54,9 @@ namespace AutoCADCommands
         foreach (Dictionary<string, object> panel in panelStorage)
         {
           string panelName = panel["panel"].ToString();
-          UserControl1 userControl1 = CreateNewPanelTab(panelName);
+          bool is3PH = panel.ContainsKey("phase_c_left");
+          this.myCommandsInstance.WriteMessage("\n" + panelName + " " + is3PH);
+          UserControl1 userControl1 = CreateNewPanelTab(panelName, is3PH);
           userControl1.clear_and_set_modal_values(panel);
         }
       }
@@ -65,8 +67,6 @@ namespace AutoCADCommands
       if (this.userControls.Count == 0) return;
 
       List<Dictionary<string, object>> panelStorage = new List<Dictionary<string, object>>();
-
-      this.myCommandsInstance.WriteMessage("\n" + this.userControls.Count.ToString());
 
       foreach (UserControl1 userControl in this.userControls)
       {

@@ -19,7 +19,7 @@ namespace AutoCADCommands
     private NEWPANELFORM newPanelForm;
     private object oldValue;
 
-    public UserControl1(MyCommands myCommands, MainForm mainForm, NEWPANELFORM newPanelForm, string tabName, bool is3PH)
+    public UserControl1(MyCommands myCommands, MainForm mainForm, NEWPANELFORM newPanelForm, string tabName, bool is3PH = false)
     {
       InitializeComponent();
       myCommandsInstance = myCommands;
@@ -27,6 +27,10 @@ namespace AutoCADCommands
       this.newPanelForm = newPanelForm;
       listen_for_new_rows();
       remove_column_header_sorting();
+
+      add_or_remove_panel_grid_columns(is3PH);
+      change_size_of_phase_columns(is3PH);
+      add_phase_sum_column(is3PH);
 
       PANEL_GRID.Rows.AddCopies(0, 21);
       PANEL_GRID.AllowUserToAddRows = false;
@@ -215,6 +219,9 @@ namespace AutoCADCommands
       panel.Add("subtotal_a", PHASE_SUM_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
       panel.Add("subtotal_b", PHASE_SUM_GRID.Rows[0].Cells[1].Value.ToString().ToUpper());
       // if PHASE_SUM_GRID has the column "subtotal_c"
+
+      // log the panel name and the phase sum grid column count
+      myCommandsInstance.WriteMessage("\n" + PANEL_NAME_INPUT.Text + " " + PHASE_SUM_GRID.ColumnCount);
       if (PHASE_SUM_GRID.Columns.Count > 2)
       {
         panel.Add("subtotal_c", PHASE_SUM_GRID.Rows[0].Cells[2].Value.ToString().ToUpper());
@@ -850,12 +857,7 @@ namespace AutoCADCommands
     public void clear_and_set_modal_values(Dictionary<string, object> selectedPanelData)
     {
       clear_current_modal_data();
-
-      // remove rows
-      while (PANEL_GRID.Rows.Count > 1)
-      {
-        PANEL_GRID.Rows.RemoveAt(0);
-      }
+      remove_rows();
 
       // add the number of rows based on the number of rows in the selected panel data
       int numberOfRows = ((Newtonsoft.Json.Linq.JArray)selectedPanelData["description_left"]).ToObject<List<string>>().Count / 2;
@@ -865,6 +867,15 @@ namespace AutoCADCommands
       }
 
       populate_modal_with_panel_data(selectedPanelData);
+    }
+
+    private void remove_rows()
+    {
+      // remove rows
+      while (PANEL_GRID.Rows.Count > 1)
+      {
+        PANEL_GRID.Rows.RemoveAt(0);
+      }
     }
 
     private void populate_modal_with_panel_data(Dictionary<string, object> selectedPanelData)
@@ -1009,9 +1020,9 @@ namespace AutoCADCommands
       clear_and_set_modal_values(selectedPanelData);
     }
 
-    private void add_phase_sum_column()
+    private void add_phase_sum_column(bool is3PH)
     {
-      if (PHASE_SUM_GRID.ColumnCount > 2)
+      if (is3PH)
       {
         PHASE_SUM_GRID.Columns.Add(PHASE_SUM_GRID.Columns[0].Clone() as DataGridViewColumn);
         PHASE_SUM_GRID.Columns[2].HeaderText = "PH C (VA)";
@@ -1026,11 +1037,14 @@ namespace AutoCADCommands
 
         // set the width of the grid
         PHASE_SUM_GRID.Width = 285;
-        PHASE_SUM_GRID.Location = new System.Drawing.Point(21, 334);
+        PHASE_SUM_GRID.Location = new System.Drawing.Point(12, 313);
       }
       else
       {
-        PHASE_SUM_GRID.Columns.Remove("TOTAL_PH_C");
+        if (PHASE_SUM_GRID.Columns.Count > 2)
+        {
+          PHASE_SUM_GRID.Columns.Remove("TOTAL_PH_C");
+        }
 
         // Set the width of the other columns
         PHASE_SUM_GRID.Columns[0].Width = 100;
@@ -1038,24 +1052,24 @@ namespace AutoCADCommands
 
         // set the width of the grid
         PHASE_SUM_GRID.Width = 245;
-        PHASE_SUM_GRID.Location = new System.Drawing.Point(61, 334);
+        PHASE_SUM_GRID.Location = new System.Drawing.Point(52, 319);
       }
     }
 
-    private void change_size_of_phase_columns()
+    private void change_size_of_phase_columns(bool is3PH)
     {
       // when phase c is added, reduce the size of phase a and phase b, and increase the size of phase c until the 3 columns are equal in size and match the width of phase a and phase b combined
-      if (PHASE_SUM_GRID.ColumnCount > 2)
+      if (is3PH)
       {
         // Left Side
-        PANEL_GRID.Columns["phase_a_left"].Width = 67;
-        PANEL_GRID.Columns["phase_b_left"].Width = 67;
-        PANEL_GRID.Columns["phase_c_left"].Width = 67;
+        PANEL_GRID.Columns["phase_a_left"].Width = 66;
+        PANEL_GRID.Columns["phase_b_left"].Width = 66;
+        PANEL_GRID.Columns["phase_c_left"].Width = 66;
 
         // Right Side
-        PANEL_GRID.Columns["phase_a_right"].Width = 67;
-        PANEL_GRID.Columns["phase_b_right"].Width = 67;
-        PANEL_GRID.Columns["phase_c_right"].Width = 67;
+        PANEL_GRID.Columns["phase_a_right"].Width = 66;
+        PANEL_GRID.Columns["phase_b_right"].Width = 66;
+        PANEL_GRID.Columns["phase_c_right"].Width = 66;
       }
       else
       {
@@ -1069,11 +1083,11 @@ namespace AutoCADCommands
       }
     }
 
-    private void add_or_remove_panel_grid_columns()
+    private void add_or_remove_panel_grid_columns(bool is3PH)
     {
       // insert a column with the text "PH C" into PANEL_GRID after phase b on the left and right side if the checkbox is checked
       // give the column the name "phase_c_left" and "phase_c_right"
-      if (PHASE_SUM_GRID.ColumnCount > 2)
+      if (is3PH)
       {
         // Left Side
         DataGridViewTextBoxColumn phase_c_left = new DataGridViewTextBoxColumn();
@@ -1091,11 +1105,14 @@ namespace AutoCADCommands
       }
       else
       {
-        // Left Side
-        PANEL_GRID.Columns.Remove("phase_c_left");
+        if (PANEL_GRID.Columns.Count > 10)
+        {
+          // Left Side
+          PANEL_GRID.Columns.Remove("phase_c_left");
 
-        // Right Side
-        PANEL_GRID.Columns.Remove("phase_c_right");
+          // Right Side
+          PANEL_GRID.Columns.Remove("phase_c_right");
+        }
       }
     }
 
