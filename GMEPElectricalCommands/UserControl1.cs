@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Autodesk.AutoCAD.DatabaseServices;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,7 +19,7 @@ namespace AutoCADCommands
     private NEWPANELFORM newPanelForm;
     private object oldValue;
 
-    public UserControl1(MyCommands myCommands, MainForm mainForm, NEWPANELFORM newPanelForm, string tabName)
+    public UserControl1(MyCommands myCommands, MainForm mainForm, NEWPANELFORM newPanelForm, string tabName, bool is3PH)
     {
       InitializeComponent();
       myCommandsInstance = myCommands;
@@ -483,7 +484,7 @@ namespace AutoCADCommands
 
     public void store_data_in_autocad_file(List<Dictionary<string, object>> saveData)
     {
-      Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
       Autodesk.AutoCAD.DatabaseServices.Database acCurDb = acDoc.Database;
       string jsonDataKey = "JsonSaveData";
 
@@ -491,19 +492,40 @@ namespace AutoCADCommands
       {
         Autodesk.AutoCAD.DatabaseServices.DBDictionary nod = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(acCurDb.NamedObjectsDictionaryId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
 
-        if (!nod.Contains(jsonDataKey))
+        Autodesk.AutoCAD.DatabaseServices.DBDictionary userDict;
+        if (nod.Contains(jsonDataKey))
         {
-          Autodesk.AutoCAD.DatabaseServices.DBDictionary userDict = new Autodesk.AutoCAD.DatabaseServices.DBDictionary();
+          // The dictionary already exists, so we just need to open it for write
+          userDict = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(nod.GetAt(jsonDataKey), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite);
+        }
+        else
+        {
+          // The dictionary doesn't exist, so we create a new one and add it to the NOD
+          userDict = new Autodesk.AutoCAD.DatabaseServices.DBDictionary();
           nod.UpgradeOpen();
           nod.SetAt(jsonDataKey, userDict);
           tr.AddNewlyCreatedDBObject(userDict, true);
+        }
 
-          Autodesk.AutoCAD.DatabaseServices.Xrecord xRecord = new Autodesk.AutoCAD.DatabaseServices.Xrecord();
-          Autodesk.AutoCAD.DatabaseServices.ResultBuffer rb = new Autodesk.AutoCAD.DatabaseServices.ResultBuffer(new Autodesk.AutoCAD.DatabaseServices.TypedValue((int)Autodesk.AutoCAD.DatabaseServices.DxfCode.Text, JsonConvert.SerializeObject(saveData, Formatting.Indented)));
-          xRecord.Data = rb;
+        // Now let's update or create the Xrecord
+        Autodesk.AutoCAD.DatabaseServices.Xrecord xRecord;
+        if (userDict.Contains("SaveData"))
+        {
+          // The Xrecord exists, open it for write to update
+          xRecord = (Autodesk.AutoCAD.DatabaseServices.Xrecord)tr.GetObject(userDict.GetAt("SaveData"), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite);
+        }
+        else
+        {
+          // The Xrecord does not exist, create a new one
+          xRecord = new Autodesk.AutoCAD.DatabaseServices.Xrecord();
           userDict.SetAt("SaveData", xRecord);
           tr.AddNewlyCreatedDBObject(xRecord, true);
         }
+
+        // Update the Xrecord data
+        Autodesk.AutoCAD.DatabaseServices.ResultBuffer rb = new Autodesk.AutoCAD.DatabaseServices.ResultBuffer(new Autodesk.AutoCAD.DatabaseServices.TypedValue((int)Autodesk.AutoCAD.DatabaseServices.DxfCode.Text, JsonConvert.SerializeObject(saveData, Formatting.Indented)));
+        xRecord.Data = new Autodesk.AutoCAD.DatabaseServices.ResultBuffer();
+        xRecord.Data = rb;
 
         tr.Commit();
       }
@@ -828,6 +850,19 @@ namespace AutoCADCommands
     public void clear_and_set_modal_values(Dictionary<string, object> selectedPanelData)
     {
       clear_current_modal_data();
+
+      // remove rows
+      while (PANEL_GRID.Rows.Count > 1)
+      {
+        PANEL_GRID.Rows.RemoveAt(0);
+      }
+
+      // add the number of rows based on the number of rows in the selected panel data
+      int numberOfRows = ((Newtonsoft.Json.Linq.JArray)selectedPanelData["description_left"]).ToObject<List<string>>().Count / 2;
+      for (int i = 0; i < numberOfRows - 1; i++)
+      {
+        PANEL_GRID.Rows.Add();
+      }
 
       populate_modal_with_panel_data(selectedPanelData);
     }
