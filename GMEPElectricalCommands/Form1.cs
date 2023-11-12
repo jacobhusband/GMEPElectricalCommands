@@ -55,7 +55,6 @@ namespace AutoCADCommands
         {
           string panelName = panel["panel"].ToString();
           bool is3PH = panel.ContainsKey("phase_c_left");
-          this.myCommandsInstance.WriteMessage("\n" + panelName + " " + is3PH);
           UserControl1 userControl1 = CreateNewPanelTab(panelName, is3PH);
           userControl1.clear_and_set_modal_values(panel);
         }
