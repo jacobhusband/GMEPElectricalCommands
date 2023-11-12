@@ -28,9 +28,7 @@ namespace AutoCADCommands
       InitializeComponent();
       this.myCommandsInstance = myCommands;
       this.newPanelForm = new NEWPANELFORM(this);
-
       this.userControls = new List<UserControl1>();
-
       this.FormClosing += MainForm_FormClosing;
     }
 
@@ -135,6 +133,37 @@ namespace AutoCADCommands
         // Rename the current selected tab
         PANEL_TABS.TabPages[selectedIndex].Text = "Panel " + input;
       }
+    }
+
+    internal void delete_panel(UserControl1 userControl1)
+    {
+      // remove the tab and remove the usercontrol from the list, prompt the user first so they have a chance to say no
+      DialogResult dialogResult = MessageBox.Show("Are you sure you want to delete this panel?", "Delete Panel", MessageBoxButtons.YesNo);
+      if (dialogResult == DialogResult.Yes)
+      {
+        this.userControls.Remove(userControl1);
+        PANEL_TABS.TabPages.Remove(userControl1.Parent as TabPage);
+      }
+    }
+
+    private void NEW_PANEL_BUTTON_Click(object sender, EventArgs e)
+    {
+      this.newPanelForm.ShowDialog();
+    }
+
+    private void CREATE_ALL_PANELS_BUTTON_Click(object sender, EventArgs e)
+    {
+      List<UserControl1> userControls = retrieve_userControls();
+      List<Dictionary<string, object>> panels = new List<Dictionary<string, object>>();
+
+      foreach (UserControl1 userControl in userControls)
+      {
+        Dictionary<string, object> panelData = userControl.retrieve_data_from_modal();
+        panels.Add(panelData);
+      }
+
+      myCommandsInstance.Create_Panels(panels);
+      Close();
     }
   }
 }
