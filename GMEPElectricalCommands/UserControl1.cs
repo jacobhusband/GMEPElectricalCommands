@@ -21,6 +21,8 @@ namespace AutoCADCommands
 
     public UserControl1(MyCommands myCommands, MainForm mainForm, NEWPANELFORM newPanelForm, string tabName, bool is3PH = false)
     {
+      // log that the user control is being initialized with the name
+      Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"\n\nInitializing UserControl1 with name: {tabName}\n");
       InitializeComponent();
       myCommandsInstance = myCommands;
       this.mainForm = mainForm;
@@ -221,7 +223,6 @@ namespace AutoCADCommands
       // if PHASE_SUM_GRID has the column "subtotal_c"
 
       // log the panel name and the phase sum grid column count
-      myCommandsInstance.WriteMessage("\n" + PANEL_NAME_INPUT.Text + " " + PHASE_SUM_GRID.ColumnCount);
       if (PHASE_SUM_GRID.Columns.Count > 2)
       {
         panel.Add("subtotal_c", PHASE_SUM_GRID.Rows[0].Cells[2].Value.ToString().ToUpper());
@@ -704,8 +705,10 @@ namespace AutoCADCommands
 
     private void listen_for_3P_rows_added(DataGridViewRowsAddedEventArgs e)
     {
-      // Define the gray color
-      Color grayColor = Color.LightGray; // Replace with the specific gray color code if necessary
+      Color grayColor = Color.LightGray;
+
+      // Log the row count and starting index
+      Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"\n\nRow Count: {e.RowCount}, Starting Index: {e.RowIndex}\n");
 
       for (int i = 0; i < e.RowCount; i++)
       {
@@ -718,33 +721,24 @@ namespace AutoCADCommands
         PANEL_GRID.Rows[rowIndex].Cells[7].Value = "20";
 
         // Determine the row pattern (zig-zag) for gray background
-        int pattern = rowIndex % 3; // Assuming a repeated pattern every 3 rows
+        int pattern = rowIndex % 3;
 
-        // Apply pattern for columns 2, 3, 4 based on the row pattern
-        if (pattern == 0) // First row in pattern
+        Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"Row Index: {rowIndex}, Pattern: {pattern}\n");
+
+        // Apply pattern for two sets of columns based on the row pattern
+        if (pattern == 0)
         {
           PANEL_GRID.Rows[rowIndex].Cells[1].Style.BackColor = grayColor;
-        }
-        else if (pattern == 1) // Second row in pattern
-        {
-          PANEL_GRID.Rows[rowIndex].Cells[2].Style.BackColor = grayColor;
-        }
-        else // Third row in pattern
-        {
-          PANEL_GRID.Rows[rowIndex].Cells[3].Style.BackColor = grayColor;
-        }
-
-        // Apply the same pattern for columns 8, 9, 10
-        if (pattern == 0) // First row in pattern
-        {
           PANEL_GRID.Rows[rowIndex].Cells[8].Style.BackColor = grayColor;
         }
-        else if (pattern == 1) // Second row in pattern
+        else if (pattern == 1)
         {
+          PANEL_GRID.Rows[rowIndex].Cells[2].Style.BackColor = grayColor;
           PANEL_GRID.Rows[rowIndex].Cells[9].Style.BackColor = grayColor;
         }
-        else // Third row in pattern
+        else
         {
+          PANEL_GRID.Rows[rowIndex].Cells[3].Style.BackColor = grayColor;
           PANEL_GRID.Rows[rowIndex].Cells[10].Style.BackColor = grayColor;
         }
       }
@@ -861,10 +855,7 @@ namespace AutoCADCommands
 
       // add the number of rows based on the number of rows in the selected panel data
       int numberOfRows = ((Newtonsoft.Json.Linq.JArray)selectedPanelData["description_left"]).ToObject<List<string>>().Count / 2;
-      for (int i = 0; i < numberOfRows - 1; i++)
-      {
-        PANEL_GRID.Rows.Add();
-      }
+      PANEL_GRID.Rows.Add(numberOfRows);
 
       populate_modal_with_panel_data(selectedPanelData);
     }
@@ -872,7 +863,7 @@ namespace AutoCADCommands
     private void remove_rows()
     {
       // remove rows
-      while (PANEL_GRID.Rows.Count > 1)
+      while (PANEL_GRID.Rows.Count >= 1)
       {
         PANEL_GRID.Rows.RemoveAt(0);
       }
@@ -1015,11 +1006,6 @@ namespace AutoCADCommands
       }
     }
 
-    private void load_panel_from_data(Dictionary<string, object> selectedPanelData)
-    {
-      clear_and_set_modal_values(selectedPanelData);
-    }
-
     private void add_phase_sum_column(bool is3PH)
     {
       if (is3PH)
@@ -1062,14 +1048,14 @@ namespace AutoCADCommands
       if (is3PH)
       {
         // Left Side
-        PANEL_GRID.Columns["phase_a_left"].Width = 66;
-        PANEL_GRID.Columns["phase_b_left"].Width = 66;
-        PANEL_GRID.Columns["phase_c_left"].Width = 66;
+        PANEL_GRID.Columns["phase_a_left"].Width = 67;
+        PANEL_GRID.Columns["phase_b_left"].Width = 67;
+        PANEL_GRID.Columns["phase_c_left"].Width = 67;
 
         // Right Side
-        PANEL_GRID.Columns["phase_a_right"].Width = 66;
-        PANEL_GRID.Columns["phase_b_right"].Width = 66;
-        PANEL_GRID.Columns["phase_c_right"].Width = 66;
+        PANEL_GRID.Columns["phase_a_right"].Width = 67;
+        PANEL_GRID.Columns["phase_b_right"].Width = 67;
+        PANEL_GRID.Columns["phase_c_right"].Width = 67;
       }
       else
       {
