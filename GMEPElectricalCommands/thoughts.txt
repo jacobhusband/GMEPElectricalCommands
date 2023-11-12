@@ -8,8 +8,12 @@ e. If it does then copy the values of the subpanel's phase_sum_grid object to th
 f. Listen for changes in the subpanel's phase_sum_grid object and copy the values to the main panel's panel_grid object at the appropriate rows with the appropriate phase A, B, and/or C values (depending on the subpanel being single phase with only phase A and B or three phase with phase A, B, and C).
 g. If it does not, then prompt the user if they want to create a new tab with the panel name and copy the values of the subpanel's phase_sum_grid object to the main panel's panel_grid object at the appropriate rows with the appropriate phase A, B, and/or C values (depending on the subpanel being single phase with only phase A and B or three phase with phase A, B, and C).
 h. If the user says yes, then create the subpanel and listen for changes to the subpanel's phase_sum_grid object and copy the values to the main panel's panel_grid object at the appropriate rows with the appropriate phase A, B, and/or C values (depending on the subpanel being single phase with only phase A and B or three phase with phase A, B, and C).
-2. Delete the current panel
-3. Create all the panels
-4. Add or remove any notes to the panel and mark breakers with the notes
 
-I want to receive ideas of how to implement the changes in a well-designed intuitive way.
+
+2. Delete the current panel
+
+
+3. Add or remove any notes to the panel and mark breakers with the notes
+
+
+4. Add an undo/redo capability

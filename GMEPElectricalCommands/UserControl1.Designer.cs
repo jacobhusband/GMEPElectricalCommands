@@ -39,7 +39,6 @@
       this.phase_a_right = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.phase_b_right = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.description_right = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.NEW_PANEL_BUTTON = new System.Windows.Forms.Button();
       this.label18 = new System.Windows.Forms.Label();
       this.LARGEST_LCL_CHECKBOX = new System.Windows.Forms.CheckBox();
       this.label17 = new System.Windows.Forms.Label();
@@ -80,7 +79,7 @@
       this.PHASE_COMBOBOX = new System.Windows.Forms.ComboBox();
       this.MOUNTING_COMBOBOX = new System.Windows.Forms.ComboBox();
       this.WIRE_COMBOBOX = new System.Windows.Forms.ComboBox();
-      this.CREATE_ALL_PANELS_BUTTON = new System.Windows.Forms.Button();
+      this.DELETE_PANEL_BUTTON = new System.Windows.Forms.Button();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -159,16 +158,6 @@
       this.description_right.HeaderText = "DESCRIPTION";
       this.description_right.Name = "description_right";
       // 
-      // NEW_PANEL_BUTTON
-      // 
-      this.NEW_PANEL_BUTTON.Location = new System.Drawing.Point(1263, 14);
-      this.NEW_PANEL_BUTTON.Name = "NEW_PANEL_BUTTON";
-      this.NEW_PANEL_BUTTON.Size = new System.Drawing.Size(100, 23);
-      this.NEW_PANEL_BUTTON.TabIndex = 177;
-      this.NEW_PANEL_BUTTON.Text = "NEW PANEL";
-      this.NEW_PANEL_BUTTON.UseVisualStyleBackColor = true;
-      this.NEW_PANEL_BUTTON.Click += new System.EventHandler(this.NEW_PANEL_BUTTON_Click);
-      // 
       // label18
       // 
       this.label18.AutoSize = true;
@@ -236,7 +225,7 @@
       // 
       // CREATE_PANEL_BUTTON
       // 
-      this.CREATE_PANEL_BUTTON.Location = new System.Drawing.Point(694, 538);
+      this.CREATE_PANEL_BUTTON.Location = new System.Drawing.Point(758, 538);
       this.CREATE_PANEL_BUTTON.Name = "CREATE_PANEL_BUTTON";
       this.CREATE_PANEL_BUTTON.Size = new System.Drawing.Size(126, 23);
       this.CREATE_PANEL_BUTTON.TabIndex = 157;
@@ -439,7 +428,7 @@
       // DELETE_ROW_BUTTON
       // 
       this.DELETE_ROW_BUTTON.BackColor = System.Drawing.SystemColors.Control;
-      this.DELETE_ROW_BUTTON.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+      this.DELETE_ROW_BUTTON.ForeColor = System.Drawing.Color.DarkRed;
       this.DELETE_ROW_BUTTON.Location = new System.Drawing.Point(1263, 538);
       this.DELETE_ROW_BUTTON.Name = "DELETE_ROW_BUTTON";
       this.DELETE_ROW_BUTTON.Size = new System.Drawing.Size(100, 23);
@@ -549,23 +538,24 @@
       this.WIRE_COMBOBOX.Size = new System.Drawing.Size(121, 21);
       this.WIRE_COMBOBOX.TabIndex = 152;
       // 
-      // CREATE_ALL_PANELS_BUTTON
+      // DELETE_PANEL_BUTTON
       // 
-      this.CREATE_ALL_PANELS_BUTTON.Location = new System.Drawing.Point(826, 538);
-      this.CREATE_ALL_PANELS_BUTTON.Name = "CREATE_ALL_PANELS_BUTTON";
-      this.CREATE_ALL_PANELS_BUTTON.Size = new System.Drawing.Size(148, 23);
-      this.CREATE_ALL_PANELS_BUTTON.TabIndex = 178;
-      this.CREATE_ALL_PANELS_BUTTON.Text = "CREATE ALL PANELS";
-      this.CREATE_ALL_PANELS_BUTTON.UseVisualStyleBackColor = true;
-      this.CREATE_ALL_PANELS_BUTTON.Click += new System.EventHandler(this.CREATE_ALL_PANELS_BUTTON_Click);
+      this.DELETE_PANEL_BUTTON.BackColor = System.Drawing.SystemColors.Control;
+      this.DELETE_PANEL_BUTTON.ForeColor = System.Drawing.Color.DarkRed;
+      this.DELETE_PANEL_BUTTON.Location = new System.Drawing.Point(1252, 14);
+      this.DELETE_PANEL_BUTTON.Name = "DELETE_PANEL_BUTTON";
+      this.DELETE_PANEL_BUTTON.Size = new System.Drawing.Size(111, 23);
+      this.DELETE_PANEL_BUTTON.TabIndex = 179;
+      this.DELETE_PANEL_BUTTON.Text = "DELETE PANEL";
+      this.DELETE_PANEL_BUTTON.UseVisualStyleBackColor = false;
+      this.DELETE_PANEL_BUTTON.Click += new System.EventHandler(this.DELETE_PANEL_BUTTON_Click);
       // 
       // UserControl1
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.Controls.Add(this.CREATE_ALL_PANELS_BUTTON);
+      this.Controls.Add(this.DELETE_PANEL_BUTTON);
       this.Controls.Add(this.PANEL_GRID);
-      this.Controls.Add(this.NEW_PANEL_BUTTON);
       this.Controls.Add(this.label18);
       this.Controls.Add(this.LARGEST_LCL_CHECKBOX);
       this.Controls.Add(this.label17);
@@ -625,7 +615,6 @@
     private System.Windows.Forms.DataGridViewTextBoxColumn phase_a_right;
     private System.Windows.Forms.DataGridViewTextBoxColumn phase_b_right;
     private System.Windows.Forms.DataGridViewTextBoxColumn description_right;
-    private System.Windows.Forms.Button NEW_PANEL_BUTTON;
     private System.Windows.Forms.Label label18;
     private System.Windows.Forms.CheckBox LARGEST_LCL_CHECKBOX;
     private System.Windows.Forms.Label label17;
@@ -666,6 +655,6 @@
     private System.Windows.Forms.ComboBox PHASE_COMBOBOX;
     private System.Windows.Forms.ComboBox MOUNTING_COMBOBOX;
     private System.Windows.Forms.ComboBox WIRE_COMBOBOX;
-    private System.Windows.Forms.Button CREATE_ALL_PANELS_BUTTON;
+    private System.Windows.Forms.Button DELETE_PANEL_BUTTON;
   }
 }

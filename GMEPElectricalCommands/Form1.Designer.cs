@@ -32,6 +32,8 @@ namespace AutoCADCommands
     {
       this.PANEL_TABS = new System.Windows.Forms.TabControl();
       this.tabPage1 = new System.Windows.Forms.TabPage();
+      this.NEW_PANEL_BUTTON = new System.Windows.Forms.Button();
+      this.CREATE_ALL_PANELS_BUTTON = new System.Windows.Forms.Button();
       this.PANEL_TABS.SuspendLayout();
       this.SuspendLayout();
       // 
@@ -54,11 +56,33 @@ namespace AutoCADCommands
       this.tabPage1.Text = "tabPage1";
       this.tabPage1.UseVisualStyleBackColor = true;
       // 
+      // NEW_PANEL_BUTTON
+      // 
+      this.NEW_PANEL_BUTTON.Location = new System.Drawing.Point(5, 693);
+      this.NEW_PANEL_BUTTON.Name = "NEW_PANEL_BUTTON";
+      this.NEW_PANEL_BUTTON.Size = new System.Drawing.Size(100, 23);
+      this.NEW_PANEL_BUTTON.TabIndex = 178;
+      this.NEW_PANEL_BUTTON.Text = "NEW PANEL";
+      this.NEW_PANEL_BUTTON.UseVisualStyleBackColor = true;
+      this.NEW_PANEL_BUTTON.Click += new System.EventHandler(this.NEW_PANEL_BUTTON_Click);
+      // 
+      // CREATE_ALL_PANELS_BUTTON
+      // 
+      this.CREATE_ALL_PANELS_BUTTON.Location = new System.Drawing.Point(111, 693);
+      this.CREATE_ALL_PANELS_BUTTON.Name = "CREATE_ALL_PANELS_BUTTON";
+      this.CREATE_ALL_PANELS_BUTTON.Size = new System.Drawing.Size(148, 23);
+      this.CREATE_ALL_PANELS_BUTTON.TabIndex = 179;
+      this.CREATE_ALL_PANELS_BUTTON.Text = "CREATE ALL PANELS";
+      this.CREATE_ALL_PANELS_BUTTON.UseVisualStyleBackColor = true;
+      this.CREATE_ALL_PANELS_BUTTON.Click += new System.EventHandler(this.CREATE_ALL_PANELS_BUTTON_Click);
+      // 
       // MainForm
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(1408, 691);
+      this.ClientSize = new System.Drawing.Size(1405, 722);
+      this.Controls.Add(this.CREATE_ALL_PANELS_BUTTON);
+      this.Controls.Add(this.NEW_PANEL_BUTTON);
       this.Controls.Add(this.PANEL_TABS);
       this.Name = "MainForm";
       this.Text = "Panel Schedule";
@@ -70,6 +94,8 @@ namespace AutoCADCommands
     #endregion
     private System.Windows.Forms.TabControl PANEL_TABS;
     private System.Windows.Forms.TabPage tabPage1;
+    private System.Windows.Forms.Button NEW_PANEL_BUTTON;
+    private System.Windows.Forms.Button CREATE_ALL_PANELS_BUTTON;
   }
 }
 
