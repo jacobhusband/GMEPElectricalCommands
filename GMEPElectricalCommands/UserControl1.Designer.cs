@@ -80,6 +80,7 @@
       this.PHASE_COMBOBOX = new System.Windows.Forms.ComboBox();
       this.MOUNTING_COMBOBOX = new System.Windows.Forms.ComboBox();
       this.WIRE_COMBOBOX = new System.Windows.Forms.ComboBox();
+      this.CREATE_ALL_PANELS_BUTTON = new System.Windows.Forms.Button();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -235,7 +236,7 @@
       // 
       // CREATE_PANEL_BUTTON
       // 
-      this.CREATE_PANEL_BUTTON.Location = new System.Drawing.Point(756, 538);
+      this.CREATE_PANEL_BUTTON.Location = new System.Drawing.Point(694, 538);
       this.CREATE_PANEL_BUTTON.Name = "CREATE_PANEL_BUTTON";
       this.CREATE_PANEL_BUTTON.Size = new System.Drawing.Size(126, 23);
       this.CREATE_PANEL_BUTTON.TabIndex = 157;
@@ -548,10 +549,21 @@
       this.WIRE_COMBOBOX.Size = new System.Drawing.Size(121, 21);
       this.WIRE_COMBOBOX.TabIndex = 152;
       // 
+      // CREATE_ALL_PANELS_BUTTON
+      // 
+      this.CREATE_ALL_PANELS_BUTTON.Location = new System.Drawing.Point(826, 538);
+      this.CREATE_ALL_PANELS_BUTTON.Name = "CREATE_ALL_PANELS_BUTTON";
+      this.CREATE_ALL_PANELS_BUTTON.Size = new System.Drawing.Size(148, 23);
+      this.CREATE_ALL_PANELS_BUTTON.TabIndex = 178;
+      this.CREATE_ALL_PANELS_BUTTON.Text = "CREATE ALL PANELS";
+      this.CREATE_ALL_PANELS_BUTTON.UseVisualStyleBackColor = true;
+      this.CREATE_ALL_PANELS_BUTTON.Click += new System.EventHandler(this.CREATE_ALL_PANELS_BUTTON_Click);
+      // 
       // UserControl1
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      this.Controls.Add(this.CREATE_ALL_PANELS_BUTTON);
       this.Controls.Add(this.PANEL_GRID);
       this.Controls.Add(this.NEW_PANEL_BUTTON);
       this.Controls.Add(this.label18);
@@ -654,5 +666,6 @@
     private System.Windows.Forms.ComboBox PHASE_COMBOBOX;
     private System.Windows.Forms.ComboBox MOUNTING_COMBOBOX;
     private System.Windows.Forms.ComboBox WIRE_COMBOBOX;
+    private System.Windows.Forms.Button CREATE_ALL_PANELS_BUTTON;
   }
 }

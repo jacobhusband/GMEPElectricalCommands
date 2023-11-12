@@ -1,102 +1,15 @@
-Here is my function, it is called every time a row is added to a data grid object if the condition is met:
+Changes that I want to make to the program:
+1. Be able to link subpanels to the main panel
+a. Listen for cell changes in the PANEL_GRID object
+b. when a cell is changed, check if the column is the description column & if the cell contains the string "panel" and after the word "panel" or "subpanel" check if there is a panel name.
+c. If all the conditons are met, get rid of quotes and tildas around the panel name
+d. Check if the panel name matches one of the open tabs
+e. If it does then copy the values of the subpanel's phase_sum_grid object to the main panel's panel_grid object at the appropriate rows with the appropriate phase A, B, and/or C values (depending on the subpanel being single phase with only phase A and B or three phase with phase A, B, and C).
+f. Listen for changes in the subpanel's phase_sum_grid object and copy the values to the main panel's panel_grid object at the appropriate rows with the appropriate phase A, B, and/or C values (depending on the subpanel being single phase with only phase A and B or three phase with phase A, B, and C).
+g. If it does not, then prompt the user if they want to create a new tab with the panel name and copy the values of the subpanel's phase_sum_grid object to the main panel's panel_grid object at the appropriate rows with the appropriate phase A, B, and/or C values (depending on the subpanel being single phase with only phase A and B or three phase with phase A, B, and C).
+h. If the user says yes, then create the subpanel and listen for changes to the subpanel's phase_sum_grid object and copy the values to the main panel's panel_grid object at the appropriate rows with the appropriate phase A, B, and/or C values (depending on the subpanel being single phase with only phase A and B or three phase with phase A, B, and C).
+2. Delete the current panel
+3. Create all the panels
+4. Add or remove any notes to the panel and mark breakers with the notes
 
-"private void listen_for_3P_rows_added(DataGridViewRowsAddedEventArgs e)
-    {
-      // Define the gray color
-      Color grayColor = Color.LightGray; // Replace with the specific gray color code if necessary
-
-      // log the e.rowcount and index
-      Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"\n\nRow Count: {e.RowCount}, Index: {e.RowIndex}\n");
-
-      for (int i = 0; i < e.RowCount; i++)
-      {
-        int rowIndex = e.RowIndex + i;
-        int pattern = rowIndex % 3;
-
-        // Log row index, pattern and cell indexes
-        Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"Row Index: {rowIndex}, Pattern: {pattern}\n");
-
-        // Set common column values
-        PANEL_GRID.Rows[rowIndex].Cells[4].Value = "20";
-        PANEL_GRID.Rows[rowIndex].Cells[5].Value = ((rowIndex + 1) * 2) - 1;
-        PANEL_GRID.Rows[rowIndex].Cells[6].Value = (rowIndex + 1) * 2;
-        PANEL_GRID.Rows[rowIndex].Cells[7].Value = "20";
-
-        // Log for the first group of cells
-        if (pattern == 0)
-        {
-          PANEL_GRID.Rows[rowIndex].Cells[1].Style.BackColor = grayColor;
-          Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"Setting gray on Row {rowIndex} Cell 1\n");
-        }
-        else if (pattern == 1)
-        {
-          PANEL_GRID.Rows[rowIndex].Cells[2].Style.BackColor = grayColor;
-          Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"Setting gray on Row {rowIndex} Cell 2\n");
-        }
-        else
-        {
-          PANEL_GRID.Rows[rowIndex].Cells[3].Style.BackColor = grayColor;
-          Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"Setting gray on Row {rowIndex} Cell 3\n");
-        }
-
-        // Apply the same pattern for columns 8, 9, 10
-        if (pattern == 0) // First row in pattern
-        {
-          PANEL_GRID.Rows[rowIndex].Cells[8].Style.BackColor = grayColor;
-        }
-        else if (pattern == 1) // Second row in pattern
-        {
-          PANEL_GRID.Rows[rowIndex].Cells[9].Style.BackColor = grayColor;
-        }
-        else // Third row in pattern
-        {
-          PANEL_GRID.Rows[rowIndex].Cells[10].Style.BackColor = grayColor;
-        }
-      }
-    }"
-
-"private void PANEL_GRID_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
-    {
-      if (PHASE_SUM_GRID.ColumnCount > 2)
-      {
-        listen_for_3P_rows_added(e);
-      }
-      else
-      {
-        listen_for_2P_rows_added(e);
-      }
-    }"
-
-"private void listen_for_new_rows()
-    {
-      PANEL_GRID.RowsAdded += new DataGridViewRowsAddedEventHandler(PANEL_GRID_RowsAdded);
-    }"
-
-"public UserControl1(MyCommands myCommands, MainForm mainForm, NEWPANELFORM newPanelForm, string tabName, bool is3PH = false)
-    {
-      InitializeComponent();
-      myCommandsInstance = myCommands;
-      this.mainForm = mainForm;
-      this.newPanelForm = newPanelForm;
-      listen_for_new_rows();
-      remove_column_header_sorting();
-
-      add_or_remove_panel_grid_columns(is3PH);
-      change_size_of_phase_columns(is3PH);
-      add_phase_sum_column(is3PH);
-
-      PANEL_GRID.Rows.AddCopies(0, 21);
-      PANEL_GRID.AllowUserToAddRows = false;
-      PANEL_GRID.KeyDown += new KeyEventHandler(this.PANEL_GRID_KeyDown);
-      PANEL_GRID.CellBeginEdit += new DataGridViewCellCancelEventHandler(this.PANEL_GRID_CellBeginEdit);
-      PANEL_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PANEL_GRID_CellValueChanged);
-      PHASE_SUM_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PHASE_SUM_GRID_CellValueChanged);
-      PANEL_NAME_INPUT.TextChanged += new EventHandler(this.PANEL_NAME_INPUT_TextChanged);
-      PANEL_GRID.CellFormatting += PANEL_GRID_CellFormatting;
-
-      add_rows_to_datagrid();
-      set_default_form_values(tabName);
-      deselect_cells();
-    }"
-
-I am thinking that in the function listen_for_3P_rows_added the for loop is useless and instead it just needs to color 2 cells per row based on the pattern. Can you simplify and update my listen_for_3P_rows_added function?
+I want to receive ideas of how to implement the changes in a well-designed intuitive way.

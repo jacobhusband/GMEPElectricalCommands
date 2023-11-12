@@ -1330,5 +1330,20 @@ namespace AutoCADCommands
     {
       calculate_lcl_otherload_panelload_feederamps();
     }
+
+    private void CREATE_ALL_PANELS_BUTTON_Click(object sender, EventArgs e)
+    {
+      List<UserControl1> userControls = this.mainForm.retrieve_userControls();
+      List<Dictionary<string, object>> panels = new List<Dictionary<string, object>>();
+
+      foreach (UserControl1 userControl in userControls)
+      {
+        Dictionary<string, object> panelData = userControl.retrieve_data_from_modal();
+        panels.Add(panelData);
+      }
+
+      myCommandsInstance.Create_Panels(panels);
+      this.mainForm.Close();
+    }
   }
 }

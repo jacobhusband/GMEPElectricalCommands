@@ -34,6 +34,11 @@ namespace AutoCADCommands
       this.FormClosing += MainForm_FormClosing;
     }
 
+    public List<UserControl1> retrieve_userControls()
+    {
+      return this.userControls;
+    }
+
     public void InitializeModal()
     {
       PANEL_TABS.TabPages.Clear();
