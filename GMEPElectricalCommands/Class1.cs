@@ -169,8 +169,8 @@ namespace AutoCADCommands
       dialog.ShowDialog();
     }
 
-    [CommandMethod("SinglePhasePanel")]
-    public void SinglePhasePanel()
+    [CommandMethod("Panel")]
+    public void Panel()
     {
       Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Editor ed = doc.Editor;
@@ -180,11 +180,11 @@ namespace AutoCADCommands
         if (this.myForm == null)
         {
           this.myForm = new MainForm(this);
-          this.myForm.InitializeModal();
+          this.myForm.initialize_modal();
         }
         else
         {
-          this.myForm.InitializeModal();
+          this.myForm.initialize_modal();
         }
 
         Autodesk.AutoCAD.ApplicationServices.Application.ShowModalDialog(null, myForm, false);
@@ -929,9 +929,6 @@ namespace AutoCADCommands
       var kvaParseResult = double.TryParse(panelData["kva"] as string, out kvaValue);
       var feederAmpsParseResult = double.TryParse(panelData["feeder_amps"] as string, out feederAmpsValue);
 
-      ed.WriteMessage($"KVA VALUE: {panelData["kva"] as string}\n");
-      ed.WriteMessage($"FEEDER AMPS VALUE: {panelData["feeder_amps"] as string}\n");
-
       if (kvaParseResult)
       {
         CreateAndPositionRightText(tr, Math.Round(kvaValue, 1).ToString("0.0") + " KVA", "ROMANS", 0.09375, 1, 2, "PNLTXT", new Point3d(endPoint.X - 6.69695957617801, endPoint.Y - 0.785594790702817, 0));
@@ -1441,7 +1438,6 @@ namespace AutoCADCommands
       Point3d botPoint = new Point3d(0, 0, 0);
       bool currentlyKeeping = false;
 
-      ed.WriteMessage(breakersHighlight.Count.ToString());
       for (int i = 0; i < breakersHighlight.Count; i += 2)
       {
         if (left)
@@ -1457,8 +1453,6 @@ namespace AutoCADCommands
           displacement = 1;
         }
 
-        ed.WriteMessage($"The value of breakersHighlight[i]: {breakersHighlight[i]} \nThe value of i: {i}\n");
-
         if (breakersHighlight[i] && !currentlyKeeping)
         {
           topPoint = new Point3d(start_x, start_y - (row_height * (i / 2)), 0);
@@ -1469,8 +1463,6 @@ namespace AutoCADCommands
           botPoint = new Point3d(start_x, start_y - (row_height * (i / 2)), 0);
           currentlyKeeping = false;
           KeepBreakersGivenPoints(topPoint, botPoint, new Point3d(topPoint.X + displacement, topPoint.Y, 0));
-          ed.WriteMessage($"\nWent inside to make the breakers, value of i: {i}\n");
-          ed.WriteMessage($"\nTop point value: {topPoint}\nBot point value: {botPoint}\n");
         }
         else if (breakersHighlight[i] && currentlyKeeping && i >= breakersHighlight.Count - 2)
         {
@@ -1711,7 +1703,6 @@ namespace AutoCADCommands
 
         CreateAndPositionText(tr, description, "ROMANS", 0.09375, 1.0, 2, "0", new Point3d(descriptionX, height, 0));
         if (phase != "0") CreateAndPositionCenteredText(tr, phase, "ROMANS", 0.09375, 1.0, 2, "0", new Point3d(phaseX, height, 0));
-        ed.WriteMessage($"The value of breaker is: {breaker}\nThe value of breakerX is: {breakerX}\nThe value of length is: {length}");
         if (breaker != "") CreateAndPositionFittedText(tr, breaker, "ROMANS", 0.09375, 1.0, 2, "0", new Point3d(breakerX, height, 0), length);
         CreateAndPositionText(tr, circuit, "ROMANS", 0.09375, 1.0, 7, "0", new Point3d(circuitX, height, 0));
         CreateHorizontalLine(startPoint.X, startPoint.Y, circuit, left, tr, btr);
@@ -2125,9 +2116,6 @@ namespace AutoCADCommands
         acTrans.AddNewlyCreatedDBObject(acPoly, true);
 
         acTrans.Commit();
-
-        // Outputting details for debugging
-        ed.WriteMessage($"\nPolyline created in layer: {layer} with color: {color.ColorName}. StartPoint: {vertices[0].ToString()} EndPoint: {vertices[vertices.Length - 1].ToString()}");
       }
     }
 
