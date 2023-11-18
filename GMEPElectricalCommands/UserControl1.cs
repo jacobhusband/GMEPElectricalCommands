@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Text.RegularExpressions;
+using System.IO;
 
 namespace AutoCADCommands
 {
@@ -17,6 +19,7 @@ namespace AutoCADCommands
     private MyCommands myCommandsInstance;
     private MainForm mainForm;
     private NEWPANELFORM newPanelForm;
+    private List<object> callbacks;
     private object oldValue;
 
     public UserControl1(MyCommands myCommands, MainForm mainForm, NEWPANELFORM newPanelForm, string tabName, bool is3PH = false)
@@ -27,6 +30,7 @@ namespace AutoCADCommands
       myCommandsInstance = myCommands;
       this.mainForm = mainForm;
       this.newPanelForm = newPanelForm;
+      this.callbacks = new List<object>();
       listen_for_new_rows();
       remove_column_header_sorting();
 
@@ -39,6 +43,8 @@ namespace AutoCADCommands
       PANEL_GRID.KeyDown += new KeyEventHandler(this.PANEL_GRID_KeyDown);
       PANEL_GRID.CellBeginEdit += new DataGridViewCellCancelEventHandler(this.PANEL_GRID_CellBeginEdit);
       PANEL_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PANEL_GRID_CellValueChanged);
+      PANEL_GRID.CellEnter += new DataGridViewCellEventHandler(this.PANEL_GRID_CellEnter);
+      PANEL_GRID.CellClick += new DataGridViewCellEventHandler(this.PANEL_GRID_CellClick);
       PHASE_SUM_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PHASE_SUM_GRID_CellValueChanged);
       PANEL_NAME_INPUT.TextChanged += new EventHandler(this.PANEL_NAME_INPUT_TextChanged);
       PANEL_GRID.CellFormatting += PANEL_GRID_CellFormatting;
@@ -46,6 +52,14 @@ namespace AutoCADCommands
       add_rows_to_datagrid();
       set_default_form_values(tabName);
       deselect_cells();
+    }
+
+    // create a method for adding a callback function to this.links
+    public void add_callback(object link)
+    {
+      this.callbacks.Add(link);
+      // log that a link has been added
+      Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"\n\nLink added to UserControl1: {link}\n");
     }
 
     private void add_rows_to_datagrid()
@@ -124,39 +138,6 @@ namespace AutoCADCommands
     private void listen_for_new_rows()
     {
       PANEL_GRID.RowsAdded += new DataGridViewRowsAddedEventHandler(PANEL_GRID_RowsAdded);
-    }
-
-    public List<Dictionary<string, object>> retrieve_saved_panel_data()
-    {
-      List<Dictionary<string, object>> saveData = new List<Dictionary<string, object>>();
-
-      Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-      Autodesk.AutoCAD.DatabaseServices.Database acCurDb = acDoc.Database;
-      string jsonDataKey = "JsonSaveData";
-
-      using (Autodesk.AutoCAD.DatabaseServices.Transaction tr = acCurDb.TransactionManager.StartTransaction())
-      {
-        Autodesk.AutoCAD.DatabaseServices.DBDictionary nod = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(acCurDb.NamedObjectsDictionaryId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
-
-        if (nod.Contains(jsonDataKey))
-        {
-          Autodesk.AutoCAD.DatabaseServices.DBDictionary userDict = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(nod.GetAt(jsonDataKey), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
-          Autodesk.AutoCAD.DatabaseServices.Xrecord xRecord = (Autodesk.AutoCAD.DatabaseServices.Xrecord)tr.GetObject(userDict.GetAt("SaveData"), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
-          Autodesk.AutoCAD.DatabaseServices.ResultBuffer rb = xRecord.Data;
-          if (rb != null)
-          {
-            foreach (Autodesk.AutoCAD.DatabaseServices.TypedValue tv in rb)
-            {
-              if (tv.TypeCode == (int)Autodesk.AutoCAD.DatabaseServices.DxfCode.Text)
-              {
-                saveData = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(tv.Value.ToString());
-              }
-            }
-          }
-        }
-      }
-
-      return saveData;
     }
 
     public Dictionary<string, object> retrieve_data_from_modal()
@@ -488,55 +469,6 @@ namespace AutoCADCommands
       panel.Add("circuit_right", circuit_right);
 
       return panel;
-    }
-
-    public void store_data_in_autocad_file(List<Dictionary<string, object>> saveData)
-    {
-      Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
-      Autodesk.AutoCAD.DatabaseServices.Database acCurDb = acDoc.Database;
-      string jsonDataKey = "JsonSaveData";
-
-      using (Autodesk.AutoCAD.DatabaseServices.Transaction tr = acCurDb.TransactionManager.StartTransaction())
-      {
-        Autodesk.AutoCAD.DatabaseServices.DBDictionary nod = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(acCurDb.NamedObjectsDictionaryId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
-
-        Autodesk.AutoCAD.DatabaseServices.DBDictionary userDict;
-        if (nod.Contains(jsonDataKey))
-        {
-          // The dictionary already exists, so we just need to open it for write
-          userDict = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(nod.GetAt(jsonDataKey), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite);
-        }
-        else
-        {
-          // The dictionary doesn't exist, so we create a new one and add it to the NOD
-          userDict = new Autodesk.AutoCAD.DatabaseServices.DBDictionary();
-          nod.UpgradeOpen();
-          nod.SetAt(jsonDataKey, userDict);
-          tr.AddNewlyCreatedDBObject(userDict, true);
-        }
-
-        // Now let's update or create the Xrecord
-        Autodesk.AutoCAD.DatabaseServices.Xrecord xRecord;
-        if (userDict.Contains("SaveData"))
-        {
-          // The Xrecord exists, open it for write to update
-          xRecord = (Autodesk.AutoCAD.DatabaseServices.Xrecord)tr.GetObject(userDict.GetAt("SaveData"), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite);
-        }
-        else
-        {
-          // The Xrecord does not exist, create a new one
-          xRecord = new Autodesk.AutoCAD.DatabaseServices.Xrecord();
-          userDict.SetAt("SaveData", xRecord);
-          tr.AddNewlyCreatedDBObject(xRecord, true);
-        }
-
-        // Update the Xrecord data
-        Autodesk.AutoCAD.DatabaseServices.ResultBuffer rb = new Autodesk.AutoCAD.DatabaseServices.ResultBuffer(new Autodesk.AutoCAD.DatabaseServices.TypedValue((int)Autodesk.AutoCAD.DatabaseServices.DxfCode.Text, JsonConvert.SerializeObject(saveData, Formatting.Indented)));
-        xRecord.Data = new Autodesk.AutoCAD.DatabaseServices.ResultBuffer();
-        xRecord.Data = rb;
-
-        tr.Commit();
-      }
     }
 
     private void calculate_totalva_panelload_feederamps_lcl(double sum)
@@ -997,13 +929,23 @@ namespace AutoCADCommands
       }
     }
 
-    private void print_panels(List<Dictionary<string, object>> panels)
+    public static string extract_panel_name(string input)
     {
-      foreach (Dictionary<string, object> panel in panels)
+      // Check if the input contains the word "panel" (case-insensitive)
+      if (Regex.IsMatch(input, @"\bpanel\b", RegexOptions.IgnoreCase))
       {
-        string jsonFormattedString = JsonConvert.SerializeObject(panel, Formatting.Indented);
-        Console.WriteLine(jsonFormattedString);
+        // Extract the panel name using a regular expression
+        var match = Regex.Match(input, @"panel\s*['""`]?([a-zA-Z0-9]+)['""`]?", RegexOptions.IgnoreCase);
+
+        if (match.Success)
+        {
+          // Return the extracted panel name in uppercase
+          return match.Groups[1].Value.ToUpper();
+        }
       }
+
+      // Return null or an appropriate default value if no panel name is found
+      return null;
     }
 
     private void add_phase_sum_column(bool is3PH)
@@ -1102,12 +1044,43 @@ namespace AutoCADCommands
       }
     }
 
-    private void add_rows_to_panel_grid()
+    private void update_parent_panel_cell_values(List<double> childPanelPhaseValues, int rowIndex, int columnIndex)
     {
-      // add 21 rows to PANEL_GRID
-      for (int i = 0; i < 21; i++)
+      List<Dictionary<string, int>> grayCells = new List<Dictionary<string, int>>();
+
+      // Check columns based on the position of columnIndex
+      int startColumnIndex, endColumnIndex;
+      if (columnIndex < 5)
       {
-        PANEL_GRID.Rows.Add();
+        // Check the 3 columns after the columnIndex
+        startColumnIndex = columnIndex + 1;
+        endColumnIndex = columnIndex + 3;
+      }
+      else
+      {
+        // Check the 3 columns before the columnIndex
+        startColumnIndex = columnIndex - 3;
+        endColumnIndex = columnIndex - 1;
+      }
+
+      // Define the number of rows to check
+      int rowsToCheck = childPanelPhaseValues.Count;
+
+      for (int row = rowIndex; row < rowIndex + rowsToCheck; row++)
+      {
+        for (int col = startColumnIndex; col <= endColumnIndex; col++)
+        {
+          // Check if the cell at [row, col] is gray
+          if (PANEL_GRID.Rows[row].Cells[col].Style.BackColor == Color.LightGray)
+          {
+            Dictionary<string, int> grayCell = new Dictionary<string, int>();
+            grayCell.Add("row", row);
+            grayCell.Add("col", col);
+            grayCells.Add(grayCell);
+            PANEL_GRID.Rows[row].Cells[col].Value = childPanelPhaseValues[0];
+            childPanelPhaseValues.RemoveAt(0);
+          }
+        }
       }
     }
 
@@ -1151,6 +1124,37 @@ namespace AutoCADCommands
       else
       {
         panel_cell_changed_2P(e);
+      }
+      if (PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value == null || PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString() == "") return;
+      string cellValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
+      string columnName = PANEL_GRID.Columns[e.ColumnIndex].Name;
+      if (columnName.Contains("description"))
+      {
+        string childPanelNameInParentPanel = extract_panel_name(cellValue);
+        if (childPanelNameInParentPanel != null)
+        {
+          foreach (UserControl userControl in this.mainForm.retrieve_userControls())
+          {
+            TextBox childPanelName = (TextBox)userControl.Controls.Find("PANEL_NAME_INPUT", true)[0];
+            if (childPanelName.Text == childPanelNameInParentPanel)
+            {
+              DialogResult dialogResult = MessageBox.Show($"Would you like to link {childPanelNameInParentPanel} to this panel?", "Link Panel", MessageBoxButtons.YesNo);
+              if (dialogResult == DialogResult.No) return;
+              userControl.GetType().GetMethod("add_callback").Invoke(userControl, new object[] { PANEL_NAME_INPUT.Text });
+              DataGridView phaseSumGrid = (DataGridView)userControl.Controls.Find("PHASE_SUM_GRID", true)[0];
+              int childNumberOfPoles = phaseSumGrid.ColumnCount;
+              int parentNumberOfPoles = PHASE_SUM_GRID.ColumnCount;
+              if (childNumberOfPoles > parentNumberOfPoles) return;
+              if (childNumberOfPoles > PANEL_GRID.Rows.Count - e.RowIndex) return;
+              List<double> childPanelPhaseValues = new List<double>();
+              for (int i = 0; i < childNumberOfPoles; i++)
+              {
+                childPanelPhaseValues.Add(Convert.ToDouble(phaseSumGrid.Rows[0].Cells[i].Value));
+              }
+              update_parent_panel_cell_values(childPanelPhaseValues, e.RowIndex, e.ColumnIndex);
+            }
+          }
+        }
       }
     }
 
@@ -1263,6 +1267,18 @@ namespace AutoCADCommands
         }
         e.Handled = true;
       }
+    }
+
+    private void PANEL_GRID_CellEnter(object sender, DataGridViewCellEventArgs e)
+    {
+      // log that the cell has been entered
+      Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"\n\nCell Entered: {PANEL_GRID.CurrentCell.RowIndex}, {PANEL_GRID.CurrentCell.ColumnIndex}\n");
+    }
+
+    private void PANEL_GRID_CellClick(object sender, DataGridViewCellEventArgs e)
+    {
+      // log that the cell has been clicked
+      Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"\n\nCell Clicked: {PANEL_GRID.CurrentCell.RowIndex}, {PANEL_GRID.CurrentCell.ColumnIndex}\n");
     }
 
     private void PHASE_SUM_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
