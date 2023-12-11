@@ -13,6 +13,7 @@ using System.Windows.Forms;
 using Newtonsoft.Json;
 using static OfficeOpenXml.ExcelErrorValue;
 using Autodesk.AutoCAD.GraphicsInterface;
+using Autodesk.AutoCAD.EditorInput;
 
 namespace GMEPElectricalCommands
 {
@@ -30,6 +31,7 @@ namespace GMEPElectricalCommands
       this.newPanelForm = new NEWPANELFORM(this);
       this.userControls = new List<UserInterface>();
       this.FormClosing += MAINFORM_FormClosing;
+      this.Shown += MainForm_Shown;
     }
 
     public List<UserInterface> retrieve_userControls()
@@ -60,6 +62,17 @@ namespace GMEPElectricalCommands
           userControl1.clear_and_set_modal_values(panel);
         }
       }
+    }
+
+    public int get_usercontrol_count()
+    {
+      return this.userControls.Count;
+    }
+
+    public void show_new_modal_dialog()
+    {
+      Console.WriteLine("Performing click");
+      NEW_PANEL_BUTTON.PerformClick();
     }
 
     internal void delete_panel(UserInterface userControl1)
@@ -242,6 +255,16 @@ namespace GMEPElectricalCommands
 
       myCommandsInstance.Create_Panels(panels);
       Close();
+    }
+
+    private void MainForm_Shown(object sender, EventArgs e)
+    {
+      // Check if the userControls list is empty
+      if (this.userControls.Count == 0)
+      {
+        // If empty, show newPanelForm as a modal dialog
+        newPanelForm.ShowDialog(); // or use appropriate method to show it as modal
+      }
     }
   }
 }

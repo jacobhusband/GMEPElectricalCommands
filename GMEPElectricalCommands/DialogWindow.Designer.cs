@@ -40,7 +40,7 @@ namespace GMEPElectricalCommands
       // PANEL_TABS
       // 
       this.PANEL_TABS.Controls.Add(this.tabPage1);
-      this.PANEL_TABS.Location = new System.Drawing.Point(1, 0);
+      this.PANEL_TABS.Location = new System.Drawing.Point(-2, 41);
       this.PANEL_TABS.Name = "PANEL_TABS";
       this.PANEL_TABS.SelectedIndex = 0;
       this.PANEL_TABS.Size = new System.Drawing.Size(1409, 691);
@@ -58,7 +58,7 @@ namespace GMEPElectricalCommands
       // 
       // NEW_PANEL_BUTTON
       // 
-      this.NEW_PANEL_BUTTON.Location = new System.Drawing.Point(5, 693);
+      this.NEW_PANEL_BUTTON.Location = new System.Drawing.Point(9, 12);
       this.NEW_PANEL_BUTTON.Name = "NEW_PANEL_BUTTON";
       this.NEW_PANEL_BUTTON.Size = new System.Drawing.Size(100, 23);
       this.NEW_PANEL_BUTTON.TabIndex = 178;
@@ -68,7 +68,7 @@ namespace GMEPElectricalCommands
       // 
       // CREATE_ALL_PANELS_BUTTON
       // 
-      this.CREATE_ALL_PANELS_BUTTON.Location = new System.Drawing.Point(111, 693);
+      this.CREATE_ALL_PANELS_BUTTON.Location = new System.Drawing.Point(115, 12);
       this.CREATE_ALL_PANELS_BUTTON.Name = "CREATE_ALL_PANELS_BUTTON";
       this.CREATE_ALL_PANELS_BUTTON.Size = new System.Drawing.Size(148, 23);
       this.CREATE_ALL_PANELS_BUTTON.TabIndex = 179;
@@ -80,7 +80,7 @@ namespace GMEPElectricalCommands
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(1405, 722);
+      this.ClientSize = new System.Drawing.Size(1411, 737);
       this.Controls.Add(this.CREATE_ALL_PANELS_BUTTON);
       this.Controls.Add(this.NEW_PANEL_BUTTON);
       this.Controls.Add(this.PANEL_TABS);

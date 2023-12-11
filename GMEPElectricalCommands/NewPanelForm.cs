@@ -18,6 +18,7 @@ namespace GMEPElectricalCommands
     public NEWPANELFORM(MainForm mainForm)
     {
       InitializeComponent();
+      this.StartPosition = FormStartPosition.CenterParent;
       _mainForm = mainForm;
     }
 

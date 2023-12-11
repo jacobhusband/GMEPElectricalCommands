@@ -172,17 +172,9 @@ namespace GMEPElectricalCommands
         if (this.myForm == null)
         {
           this.myForm = new MainForm(this);
-          this.myForm.initialize_modal();
         }
-        else
-        {
-          this.myForm.initialize_modal();
-        }
-
-        Autodesk.AutoCAD.ApplicationServices.Application.ShowModalDialog(null, myForm, false);
-        if (this.myForm == null)
-        {
-        }
+        this.myForm.initialize_modal();
+        Autodesk.AutoCAD.ApplicationServices.Application.ShowModalDialog(null, this.myForm, false);
       }
       catch (System.Exception ex)
       {
