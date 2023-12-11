@@ -12,17 +12,18 @@ using System.Windows.Forms;
 using System.Text.RegularExpressions;
 using System.IO;
 
-namespace AutoCADCommands
+namespace GMEPElectricalCommands
 {
-  public partial class UserControl1 : UserControl
+  public partial class UserInterface : UserControl
   {
     private MyCommands myCommandsInstance;
     private MainForm mainForm;
     private NEWPANELFORM newPanelForm;
-    private List<object> callbacks;
+
+    private bool initialization;
     private object oldValue;
 
-    public UserControl1(MyCommands myCommands, MainForm mainForm, NEWPANELFORM newPanelForm, string tabName, bool is3PH = false)
+    public UserInterface(MyCommands myCommands, MainForm mainForm, NEWPANELFORM newPanelForm, string tabName, bool is3PH = false)
     {
       // log that the user control is being initialized with the name
       Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"\n\nInitializing UserControl1 with name: {tabName}\n");
@@ -30,7 +31,7 @@ namespace AutoCADCommands
       myCommandsInstance = myCommands;
       this.mainForm = mainForm;
       this.newPanelForm = newPanelForm;
-      this.callbacks = new List<object>();
+      this.initialization = false;
       listen_for_new_rows();
       remove_column_header_sorting();
 
@@ -44,7 +45,6 @@ namespace AutoCADCommands
       PANEL_GRID.CellBeginEdit += new DataGridViewCellCancelEventHandler(this.PANEL_GRID_CellBeginEdit);
       PANEL_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PANEL_GRID_CellValueChanged);
       PANEL_GRID.CellEnter += new DataGridViewCellEventHandler(this.PANEL_GRID_CellEnter);
-      PANEL_GRID.CellClick += new DataGridViewCellEventHandler(this.PANEL_GRID_CellClick);
       PHASE_SUM_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PHASE_SUM_GRID_CellValueChanged);
       PANEL_NAME_INPUT.TextChanged += new EventHandler(this.PANEL_NAME_INPUT_TextChanged);
       PANEL_GRID.CellFormatting += PANEL_GRID_CellFormatting;
@@ -52,14 +52,7 @@ namespace AutoCADCommands
       add_rows_to_datagrid();
       set_default_form_values(tabName);
       deselect_cells();
-    }
-
-    // create a method for adding a callback function to this.links
-    public void add_callback(object link)
-    {
-      this.callbacks.Add(link);
-      // log that a link has been added
-      Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"\n\nLink added to UserControl1: {link}\n");
+      this.initialization = true;
     }
 
     private void add_rows_to_datagrid()
@@ -1044,46 +1037,6 @@ namespace AutoCADCommands
       }
     }
 
-    private void update_parent_panel_cell_values(List<double> childPanelPhaseValues, int rowIndex, int columnIndex)
-    {
-      List<Dictionary<string, int>> grayCells = new List<Dictionary<string, int>>();
-
-      // Check columns based on the position of columnIndex
-      int startColumnIndex, endColumnIndex;
-      if (columnIndex < 5)
-      {
-        // Check the 3 columns after the columnIndex
-        startColumnIndex = columnIndex + 1;
-        endColumnIndex = columnIndex + 3;
-      }
-      else
-      {
-        // Check the 3 columns before the columnIndex
-        startColumnIndex = columnIndex - 3;
-        endColumnIndex = columnIndex - 1;
-      }
-
-      // Define the number of rows to check
-      int rowsToCheck = childPanelPhaseValues.Count;
-
-      for (int row = rowIndex; row < rowIndex + rowsToCheck; row++)
-      {
-        for (int col = startColumnIndex; col <= endColumnIndex; col++)
-        {
-          // Check if the cell at [row, col] is gray
-          if (PANEL_GRID.Rows[row].Cells[col].Style.BackColor == Color.LightGray)
-          {
-            Dictionary<string, int> grayCell = new Dictionary<string, int>();
-            grayCell.Add("row", row);
-            grayCell.Add("col", col);
-            grayCells.Add(grayCell);
-            PANEL_GRID.Rows[row].Cells[col].Value = childPanelPhaseValues[0];
-            childPanelPhaseValues.RemoveAt(0);
-          }
-        }
-      }
-    }
-
     private void PANEL_NAME_INPUT_TextChanged(object sender, EventArgs e)
     {
       this.mainForm.PANEL_NAME_INPUT_TextChanged(sender, e, PANEL_NAME_INPUT.Text.ToUpper());
@@ -1128,34 +1081,6 @@ namespace AutoCADCommands
       if (PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value == null || PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString() == "") return;
       string cellValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
       string columnName = PANEL_GRID.Columns[e.ColumnIndex].Name;
-      if (columnName.Contains("description"))
-      {
-        string childPanelNameInParentPanel = extract_panel_name(cellValue);
-        if (childPanelNameInParentPanel != null)
-        {
-          foreach (UserControl userControl in this.mainForm.retrieve_userControls())
-          {
-            TextBox childPanelName = (TextBox)userControl.Controls.Find("PANEL_NAME_INPUT", true)[0];
-            if (childPanelName.Text == childPanelNameInParentPanel)
-            {
-              DialogResult dialogResult = MessageBox.Show($"Would you like to link {childPanelNameInParentPanel} to this panel?", "Link Panel", MessageBoxButtons.YesNo);
-              if (dialogResult == DialogResult.No) return;
-              userControl.GetType().GetMethod("add_callback").Invoke(userControl, new object[] { PANEL_NAME_INPUT.Text });
-              DataGridView phaseSumGrid = (DataGridView)userControl.Controls.Find("PHASE_SUM_GRID", true)[0];
-              int childNumberOfPoles = phaseSumGrid.ColumnCount;
-              int parentNumberOfPoles = PHASE_SUM_GRID.ColumnCount;
-              if (childNumberOfPoles > parentNumberOfPoles) return;
-              if (childNumberOfPoles > PANEL_GRID.Rows.Count - e.RowIndex) return;
-              List<double> childPanelPhaseValues = new List<double>();
-              for (int i = 0; i < childNumberOfPoles; i++)
-              {
-                childPanelPhaseValues.Add(Convert.ToDouble(phaseSumGrid.Rows[0].Cells[i].Value));
-              }
-              update_parent_panel_cell_values(childPanelPhaseValues, e.RowIndex, e.ColumnIndex);
-            }
-          }
-        }
-      }
     }
 
     private void PANEL_GRID_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
@@ -1272,13 +1197,7 @@ namespace AutoCADCommands
     private void PANEL_GRID_CellEnter(object sender, DataGridViewCellEventArgs e)
     {
       // log that the cell has been entered
-      Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"\n\nCell Entered: {PANEL_GRID.CurrentCell.RowIndex}, {PANEL_GRID.CurrentCell.ColumnIndex}\n");
-    }
-
-    private void PANEL_GRID_CellClick(object sender, DataGridViewCellEventArgs e)
-    {
-      // log that the cell has been clicked
-      Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"\n\nCell Clicked: {PANEL_GRID.CurrentCell.RowIndex}, {PANEL_GRID.CurrentCell.ColumnIndex}\n");
+      //Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"\n\nCell Entered: {PANEL_GRID.CurrentCell.RowIndex}, {PANEL_GRID.CurrentCell.ColumnIndex}\n");
     }
 
     private void PHASE_SUM_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)

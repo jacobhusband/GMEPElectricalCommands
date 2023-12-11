@@ -14,25 +14,25 @@ using Newtonsoft.Json;
 using static OfficeOpenXml.ExcelErrorValue;
 using Autodesk.AutoCAD.GraphicsInterface;
 
-namespace AutoCADCommands
+namespace GMEPElectricalCommands
 {
   public partial class MainForm : Form
   {
     private MyCommands myCommandsInstance;
     private NEWPANELFORM newPanelForm;
-    private List<UserControl1> userControls;
-    private UserControl1 userControl1;
+    private List<UserInterface> userControls;
+    private UserInterface userControl1;
 
     public MainForm(MyCommands myCommands)
     {
       InitializeComponent();
       this.myCommandsInstance = myCommands;
       this.newPanelForm = new NEWPANELFORM(this);
-      this.userControls = new List<UserControl1>();
+      this.userControls = new List<UserInterface>();
       this.FormClosing += MAINFORM_FormClosing;
     }
 
-    public List<UserControl1> retrieve_userControls()
+    public List<UserInterface> retrieve_userControls()
     {
       return this.userControls;
     }
@@ -56,13 +56,13 @@ namespace AutoCADCommands
         {
           string panelName = panel["panel"].ToString();
           bool is3PH = panel.ContainsKey("phase_c_left");
-          UserControl1 userControl1 = create_new_panel_tab(panelName, is3PH);
+          UserInterface userControl1 = create_new_panel_tab(panelName, is3PH);
           userControl1.clear_and_set_modal_values(panel);
         }
       }
     }
 
-    internal void delete_panel(UserControl1 userControl1)
+    internal void delete_panel(UserInterface userControl1)
     {
       // remove the tab and remove the usercontrol from the list, prompt the user first so they have a chance to say no
       DialogResult dialogResult = MessageBox.Show("Are you sure you want to delete this panel?", "Delete Panel", MessageBoxButtons.YesNo);
@@ -83,7 +83,7 @@ namespace AutoCADCommands
       tabPage.Controls.Add(control);
     }
 
-    public UserControl1 create_new_panel_tab(string tabName, bool is3PH)
+    public UserInterface create_new_panel_tab(string tabName, bool is3PH)
     {
       // if tabname has "PANEL" in it replace it with "Panel"
       if (tabName.Contains("PANEL") || tabName.Contains("Panel"))
@@ -102,7 +102,7 @@ namespace AutoCADCommands
       PANEL_TABS.SelectedTab = newTabPage;
 
       // Create a new UserControl
-      UserControl1 userControl1 = new UserControl1(this.myCommandsInstance, this, this.newPanelForm, tabName, is3PH);
+      UserInterface userControl1 = new UserInterface(this.myCommandsInstance, this, this.newPanelForm, tabName, is3PH);
 
       // Add the UserControl to the list of UserControls
       this.userControls.Add(userControl1);
@@ -212,7 +212,7 @@ namespace AutoCADCommands
     {
       List<Dictionary<string, object>> panelStorage = new List<Dictionary<string, object>>();
 
-      foreach (UserControl1 userControl in this.userControls)
+      foreach (UserInterface userControl in this.userControls)
       {
         panelStorage.Add(userControl.retrieve_data_from_modal());
       }
@@ -221,7 +221,7 @@ namespace AutoCADCommands
       System.IO.File.WriteAllText(@"C:\Users\Public\Documents\panelStorageClosing.json", json);
 
       store_data_in_autocad_file(panelStorage);
-      this.userControls = new List<UserControl1>();
+      this.userControls = new List<UserInterface>();
     }
 
     private void NEW_PANEL_BUTTON_Click(object sender, EventArgs e)
@@ -231,10 +231,10 @@ namespace AutoCADCommands
 
     private void CREATE_ALL_PANELS_BUTTON_Click(object sender, EventArgs e)
     {
-      List<UserControl1> userControls = retrieve_userControls();
+      List<UserInterface> userControls = retrieve_userControls();
       List<Dictionary<string, object>> panels = new List<Dictionary<string, object>>();
 
-      foreach (UserControl1 userControl in userControls)
+      foreach (UserInterface userControl in userControls)
       {
         Dictionary<string, object> panelData = userControl.retrieve_data_from_modal();
         panels.Add(panelData);

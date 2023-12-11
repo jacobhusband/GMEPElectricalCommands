@@ -14,21 +14,13 @@ using Autodesk.AutoCAD.Colors;
 using OfficeOpenXml;
 using System.Collections;
 
-[assembly: CommandClass(typeof(AutoCADCommands.MyCommands))]
+[assembly: CommandClass(typeof(GMEPElectricalCommands.MyCommands))]
 
-namespace AutoCADCommands
+namespace GMEPElectricalCommands
 {
   public class MyCommands
   {
     private MainForm myForm;
-
-    [CommandMethod("HelloWorld")]
-    public void HelloWorldCommand()
-    {
-      Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-      Editor ed = doc.Editor;
-      ed.WriteMessage("HelloWorld");
-    }
 
     [CommandMethod("PanelInput")]
     public void PanelInputCommand()
@@ -188,6 +180,9 @@ namespace AutoCADCommands
         }
 
         Autodesk.AutoCAD.ApplicationServices.Application.ShowModalDialog(null, myForm, false);
+        if (this.myForm == null)
+        {
+        }
       }
       catch (System.Exception ex)
       {

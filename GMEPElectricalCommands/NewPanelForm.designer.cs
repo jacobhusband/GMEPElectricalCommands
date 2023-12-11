@@ -1,4 +1,4 @@
-﻿namespace AutoCADCommands
+﻿namespace GMEPElectricalCommands
 {
   partial class NEWPANELFORM
   {
