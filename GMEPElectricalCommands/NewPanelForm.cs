@@ -1,4 +1,4 @@
-﻿using AutoCADCommands;
+﻿using GMEPElectricalCommands;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace AutoCADCommands
+namespace GMEPElectricalCommands
 {
   public partial class NEWPANELFORM : Form
   {

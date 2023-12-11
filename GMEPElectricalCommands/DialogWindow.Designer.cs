@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace AutoCADCommands
+namespace GMEPElectricalCommands
 {
   partial class MainForm
   {

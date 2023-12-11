@@ -1,6 +1,6 @@
-﻿namespace AutoCADCommands
+﻿namespace GMEPElectricalCommands
 {
-  partial class UserControl1
+  partial class UserInterface
   {
     /// <summary> 
     /// Required designer variable.
