@@ -30,6 +30,13 @@ namespace GMEPElectricalCommands
       // get the value of the textbox
       string panelName = CREATEPANELNAME.Text;
 
+      // check if the panel name already exists
+      if (_mainForm.panel_name_exists(panelName))
+      {
+        MessageBox.Show("Panel name already exists. Please choose another name.");
+        return;
+      }
+
       // call a method on the main form
       if (_mainForm != null)
       {

@@ -977,6 +977,21 @@ namespace GMEPElectricalCommands
       }
     }
 
+    private void link_cell_to_phase(string cellValue, string columnName, DataGridViewRow row, DataGridViewColumn col)
+    {
+      var (panel_name, phase) = convert_cell_value_to_panel_name_and_phase(cellValue);
+    }
+
+    private (string, string) convert_cell_value_to_panel_name_and_phase(string cellValue)
+    {
+      // an example cell value is "=PA-A" with "PA" being the panel name and "A" being the phase, the panel name can be any length of string and the phase can only be "A, B, or C" and always comes after a dash
+      string[] splitCellValue = cellValue.Split('-');
+      string panelName = splitCellValue[0].Replace("=", "");
+      string phase = splitCellValue[1];
+
+      return (panelName, phase);
+    }
+
     private void change_size_of_phase_columns(bool is3PH)
     {
       // when phase c is added, reduce the size of phase a and phase b, and increase the size of phase c until the 3 columns are equal in size and match the width of phase a and phase b combined
@@ -1079,8 +1094,14 @@ namespace GMEPElectricalCommands
         panel_cell_changed_2P(e);
       }
       if (PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value == null || PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString() == "") return;
-      string cellValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
-      string columnName = PANEL_GRID.Columns[e.ColumnIndex].Name;
+      var cellValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
+      var columnName = PANEL_GRID.Columns[e.ColumnIndex].Name;
+      var row = PANEL_GRID.Rows[e.RowIndex];
+      var col = PANEL_GRID.Columns[e.ColumnIndex];
+      if (cellValue.StartsWith("="))
+      {
+        link_cell_to_phase(cellValue, columnName, row, col);
+      }
     }
 
     private void PANEL_GRID_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)

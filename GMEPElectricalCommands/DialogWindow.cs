@@ -266,5 +266,17 @@ namespace GMEPElectricalCommands
         newPanelForm.ShowDialog(); // or use appropriate method to show it as modal
       }
     }
+
+    internal bool panel_name_exists(string panelName)
+    {
+      foreach (TabPage tabPage in PANEL_TABS.TabPages)
+      {
+        if (tabPage.Text.Split(' ')[1] == panelName)
+        {
+          return true;
+        }
+      }
+      return false;
+    }
   }
 }
