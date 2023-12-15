@@ -986,7 +986,41 @@ namespace GMEPElectricalCommands
       if (isPanelReal)
       {
         UserControl panelControl = mainForm.findUserControl(panel_name);
+        if (panelControl != null)
+        {
+          DataGridView panelControl_phaseSumGrid = panelControl.Controls.Find("PHASE_SUM_GRID", true).FirstOrDefault() as DataGridView;
+          DataGridView this_panelGrid = this.Controls.Find("PANEL_GRID", true).FirstOrDefault() as DataGridView;
+          listenForPhaseChanges(panelControl_phaseSumGrid, phase, row, col, this_panelGrid);
+        }
       }
+    }
+
+    private void listenForPhaseChanges(DataGridView panelControl_phaseSumGrid, string phase, DataGridViewRow row, DataGridViewColumn col, DataGridView panelGrid)
+    {
+      var phaseSumGrid_row = 0;
+      var phaseSumGrid_col = 0;
+
+      if (phase == "A")
+      {
+        phaseSumGrid_col = 0;
+      }
+      else if (phase == "B")
+      {
+        phaseSumGrid_col = 1;
+      }
+      else if (phase == "C")
+      {
+        phaseSumGrid_col = 2;
+      }
+
+      panelControl_phaseSumGrid.CellValueChanged += (sender, e) =>
+      {
+        if (e.RowIndex == phaseSumGrid_row && e.ColumnIndex == phaseSumGrid_col)
+        {
+          var newCellValue = panelControl_phaseSumGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
+          panelGrid.Rows[row.Index].Cells[col.Index].Value = newCellValue;
+        }
+      };
     }
 
     private (string, string) convert_cell_value_to_panel_name_and_phase(string cellValue)
