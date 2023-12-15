@@ -31,12 +31,25 @@ namespace GMEPElectricalCommands
       this.newPanelForm = new NEWPANELFORM(this);
       this.userControls = new List<UserInterface>();
       this.FormClosing += MAINFORM_FormClosing;
-      this.Shown += MainForm_Shown;
+      this.Shown += MAINFORM_SHOWN;
     }
 
     public List<UserInterface> retrieve_userControls()
     {
       return this.userControls;
+    }
+
+    public UserControl findUserControl(string panelName)
+    {
+      foreach (UserInterface userControl in userControls)
+      {
+        if (userControl.Name == panelName)
+        {
+          return userControl;
+        }
+      }
+
+      return null;
     }
 
     public void initialize_modal()
@@ -64,17 +77,6 @@ namespace GMEPElectricalCommands
       }
     }
 
-    public int get_usercontrol_count()
-    {
-      return this.userControls.Count;
-    }
-
-    public void show_new_modal_dialog()
-    {
-      Console.WriteLine("Performing click");
-      NEW_PANEL_BUTTON.PerformClick();
-    }
-
     internal void delete_panel(UserInterface userControl1)
     {
       // remove the tab and remove the usercontrol from the list, prompt the user first so they have a chance to say no
@@ -84,6 +86,18 @@ namespace GMEPElectricalCommands
         this.userControls.Remove(userControl1);
         PANEL_TABS.TabPages.Remove(userControl1.Parent as TabPage);
       }
+    }
+
+    internal bool panel_name_exists(string panelName)
+    {
+      foreach (TabPage tabPage in PANEL_TABS.TabPages)
+      {
+        if (tabPage.Text.Split(' ')[1] == panelName)
+        {
+          return true;
+        }
+      }
+      return false;
     }
 
     public void add_usercontrol_to_new_tab(UserControl control, TabPage tabPage)
@@ -257,7 +271,7 @@ namespace GMEPElectricalCommands
       Close();
     }
 
-    private void MainForm_Shown(object sender, EventArgs e)
+    private void MAINFORM_SHOWN(object sender, EventArgs e)
     {
       // Check if the userControls list is empty
       if (this.userControls.Count == 0)
@@ -265,18 +279,6 @@ namespace GMEPElectricalCommands
         // If empty, show newPanelForm as a modal dialog
         newPanelForm.ShowDialog(); // or use appropriate method to show it as modal
       }
-    }
-
-    internal bool panel_name_exists(string panelName)
-    {
-      foreach (TabPage tabPage in PANEL_TABS.TabPages)
-      {
-        if (tabPage.Text.Split(' ')[1] == panelName)
-        {
-          return true;
-        }
-      }
-      return false;
     }
   }
 }

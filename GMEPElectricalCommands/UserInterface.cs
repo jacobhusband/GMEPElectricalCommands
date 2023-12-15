@@ -32,6 +32,7 @@ namespace GMEPElectricalCommands
       this.mainForm = mainForm;
       this.newPanelForm = newPanelForm;
       this.initialization = false;
+      this.Name = tabName;
       listen_for_new_rows();
       remove_column_header_sorting();
 
@@ -980,6 +981,12 @@ namespace GMEPElectricalCommands
     private void link_cell_to_phase(string cellValue, string columnName, DataGridViewRow row, DataGridViewColumn col)
     {
       var (panel_name, phase) = convert_cell_value_to_panel_name_and_phase(cellValue);
+      var isPanelReal = this.mainForm.panel_name_exists(panel_name);
+
+      if (isPanelReal)
+      {
+        UserControl panelControl = mainForm.findUserControl(panel_name);
+      }
     }
 
     private (string, string) convert_cell_value_to_panel_name_and_phase(string cellValue)
