@@ -1000,6 +1000,9 @@ namespace GMEPElectricalCommands
       var phaseSumGrid_row = 0;
       var phaseSumGrid_col = 0;
 
+      DataGridViewCellEventHandler eventHandler = null;
+      DataGridViewCellEventHandler panelGrid_eventHandler = null;
+
       if (phase == "A")
       {
         phaseSumGrid_col = 0;
@@ -1013,14 +1016,38 @@ namespace GMEPElectricalCommands
         phaseSumGrid_col = 2;
       }
 
-      panelControl_phaseSumGrid.CellValueChanged += (sender, e) =>
+      var newCellValue = panelControl_phaseSumGrid.Rows[phaseSumGrid_row].Cells[phaseSumGrid_col].Value.ToString();
+      panelGrid.Rows[row.Index].Cells[col.Index].Value = newCellValue;
+      panelGrid.Rows[row.Index].Cells[col.Index].Style.BackColor = Color.LightGreen;
+
+      eventHandler = (sender, e) =>
       {
         if (e.RowIndex == phaseSumGrid_row && e.ColumnIndex == phaseSumGrid_col)
         {
           var newCellValue = panelControl_phaseSumGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
           panelGrid.Rows[row.Index].Cells[col.Index].Value = newCellValue;
+          panelGrid.Rows[row.Index].Cells[col.Index].Style.BackColor = Color.LightGreen;
         }
       };
+
+      panelControl_phaseSumGrid.CellValueChanged += eventHandler;
+
+      panelGrid_eventHandler = (sender, e) =>
+      {
+        if (e.RowIndex == row.Index && e.ColumnIndex == col.Index)
+        {
+          var newCellValue = panelGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
+          var phaseSumGridValue = panelControl_phaseSumGrid.Rows[phaseSumGrid_row].Cells[phaseSumGrid_col].Value?.ToString();
+          if (newCellValue != phaseSumGridValue)
+          {
+            panelControl_phaseSumGrid.CellValueChanged -= eventHandler;
+            panelGrid.CellValueChanged -= panelGrid_eventHandler;
+            panelGrid.Rows[row.Index].Cells[col.Index].Style.BackColor = Color.LightGray;
+          }
+        }
+      };
+
+      panelGrid.CellValueChanged += panelGrid_eventHandler;
     }
 
     private (string, string) convert_cell_value_to_panel_name_and_phase(string cellValue)
