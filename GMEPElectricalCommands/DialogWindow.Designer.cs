@@ -40,7 +40,7 @@ namespace GMEPElectricalCommands
       // PANEL_TABS
       // 
       this.PANEL_TABS.Controls.Add(this.tabPage1);
-      this.PANEL_TABS.Location = new System.Drawing.Point(-2, 41);
+      this.PANEL_TABS.Location = new System.Drawing.Point(-2, 33);
       this.PANEL_TABS.Name = "PANEL_TABS";
       this.PANEL_TABS.SelectedIndex = 0;
       this.PANEL_TABS.Size = new System.Drawing.Size(1409, 691);
@@ -58,7 +58,7 @@ namespace GMEPElectricalCommands
       // 
       // NEW_PANEL_BUTTON
       // 
-      this.NEW_PANEL_BUTTON.Location = new System.Drawing.Point(9, 12);
+      this.NEW_PANEL_BUTTON.Location = new System.Drawing.Point(9, 6);
       this.NEW_PANEL_BUTTON.Name = "NEW_PANEL_BUTTON";
       this.NEW_PANEL_BUTTON.Size = new System.Drawing.Size(100, 23);
       this.NEW_PANEL_BUTTON.TabIndex = 178;
@@ -68,7 +68,7 @@ namespace GMEPElectricalCommands
       // 
       // CREATE_ALL_PANELS_BUTTON
       // 
-      this.CREATE_ALL_PANELS_BUTTON.Location = new System.Drawing.Point(115, 12);
+      this.CREATE_ALL_PANELS_BUTTON.Location = new System.Drawing.Point(115, 6);
       this.CREATE_ALL_PANELS_BUTTON.Name = "CREATE_ALL_PANELS_BUTTON";
       this.CREATE_ALL_PANELS_BUTTON.Size = new System.Drawing.Size(148, 23);
       this.CREATE_ALL_PANELS_BUTTON.TabIndex = 179;

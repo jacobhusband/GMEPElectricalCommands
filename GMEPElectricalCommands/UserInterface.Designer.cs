@@ -80,6 +80,7 @@
       this.MOUNTING_COMBOBOX = new System.Windows.Forms.ComboBox();
       this.WIRE_COMBOBOX = new System.Windows.Forms.ComboBox();
       this.DELETE_PANEL_BUTTON = new System.Windows.Forms.Button();
+      this.INFO_LABEL = new System.Windows.Forms.Label();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -550,10 +551,23 @@
       this.DELETE_PANEL_BUTTON.UseVisualStyleBackColor = false;
       this.DELETE_PANEL_BUTTON.Click += new System.EventHandler(this.DELETE_PANEL_BUTTON_Click);
       // 
-      // UserControl1
+      // INFO_LABEL
+      // 
+      this.INFO_LABEL.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
+      this.INFO_LABEL.AutoSize = true;
+      this.INFO_LABEL.Location = new System.Drawing.Point(844, 19);
+      this.INFO_LABEL.Name = "INFO_LABEL";
+      this.INFO_LABEL.Size = new System.Drawing.Size(29, 13);
+      this.INFO_LABEL.TabIndex = 180;
+      this.INFO_LABEL.Text = "label";
+      this.INFO_LABEL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+      this.INFO_LABEL.Click += new System.EventHandler(this.INFO_LABEL_CLICK);
+      // 
+      // UserInterface
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      this.Controls.Add(this.INFO_LABEL);
       this.Controls.Add(this.DELETE_PANEL_BUTTON);
       this.Controls.Add(this.PANEL_GRID);
       this.Controls.Add(this.label18);
@@ -588,7 +602,7 @@
       this.Controls.Add(this.PHASE_COMBOBOX);
       this.Controls.Add(this.MOUNTING_COMBOBOX);
       this.Controls.Add(this.WIRE_COMBOBOX);
-      this.Name = "UserControl1";
+      this.Name = "UserInterface";
       this.Size = new System.Drawing.Size(1382, 663);
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).EndInit();
@@ -656,5 +670,6 @@
     private System.Windows.Forms.ComboBox MOUNTING_COMBOBOX;
     private System.Windows.Forms.ComboBox WIRE_COMBOBOX;
     private System.Windows.Forms.Button DELETE_PANEL_BUTTON;
+    private System.Windows.Forms.Label INFO_LABEL;
   }
 }

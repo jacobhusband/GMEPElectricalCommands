@@ -37,6 +37,13 @@ namespace GMEPElectricalCommands
         return;
       }
 
+      // check if the panel name is empty
+      if (panelName == "")
+      {
+        MessageBox.Show("Panel name cannot be empty.");
+        return;
+      }
+
       // call a method on the main form
       if (_mainForm != null)
       {

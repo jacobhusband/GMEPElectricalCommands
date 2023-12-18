@@ -45,15 +45,19 @@ namespace GMEPElectricalCommands
       PANEL_GRID.KeyDown += new KeyEventHandler(this.PANEL_GRID_KeyDown);
       PANEL_GRID.CellBeginEdit += new DataGridViewCellCancelEventHandler(this.PANEL_GRID_CellBeginEdit);
       PANEL_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PANEL_GRID_CellValueChanged);
-      PANEL_GRID.CellEnter += new DataGridViewCellEventHandler(this.PANEL_GRID_CellEnter);
       PHASE_SUM_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PHASE_SUM_GRID_CellValueChanged);
       PANEL_NAME_INPUT.TextChanged += new EventHandler(this.PANEL_NAME_INPUT_TextChanged);
       PANEL_GRID.CellFormatting += PANEL_GRID_CellFormatting;
+      PANEL_GRID.CellClick += new DataGridViewCellEventHandler(this.PANEL_GRID_CellClick);
 
       add_rows_to_datagrid();
       set_default_form_values(tabName);
       deselect_cells();
       this.initialization = true;
+
+      INFO_LABEL.Text = "";
+      INFO_LABEL.Anchor = AnchorStyles.None;
+      INFO_LABEL.Location = new Point((this.Width - INFO_LABEL.Width) / 2, (this.Height - INFO_LABEL.Height - 5));
     }
 
     private void add_rows_to_datagrid()
@@ -159,10 +163,8 @@ namespace GMEPElectricalCommands
         {
           mainInput = parts[0] + " AMP";
         }
-        // Add any other conditions here if needed
       }
 
-      // Add the processed main input to the panel dictionary
       panel.Add("main", mainInput.ToUpper());
 
       string GetComboBoxValue(ComboBox comboBox)
@@ -191,13 +193,9 @@ namespace GMEPElectricalCommands
       panel.Add("mounting", GetComboBoxValue(MOUNTING_COMBOBOX));
       panel.Add("existing", GetComboBoxValue(STATUS_COMBOBOX));
 
-      // Add datagrid values in uppercase
-      // Assuming that these grids are DataGridViews and the specific cells mentioned are not null or empty
       panel.Add("subtotal_a", PHASE_SUM_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
       panel.Add("subtotal_b", PHASE_SUM_GRID.Rows[0].Cells[1].Value.ToString().ToUpper());
-      // if PHASE_SUM_GRID has the column "subtotal_c"
 
-      // log the panel name and the phase sum grid column count
       if (PHASE_SUM_GRID.Columns.Count > 2)
       {
         panel.Add("subtotal_c", PHASE_SUM_GRID.Rows[0].Cells[2].Value.ToString().ToUpper());
@@ -238,6 +236,12 @@ namespace GMEPElectricalCommands
       List<string> breaker_right = new List<string>();
       List<string> circuit_left = new List<string>();
       List<string> circuit_right = new List<string>();
+      List<string> phase_a_left_tag = new List<string>();
+      List<string> phase_b_left_tag = new List<string>();
+      List<string> phase_a_right_tag = new List<string>();
+      List<string> phase_b_right_tag = new List<string>();
+      List<string> phase_c_left_tag = new List<string>();
+      List<string> phase_c_right_tag = new List<string>();
 
       for (int i = 0; i < PANEL_GRID.Rows.Count; i++)
       {
@@ -248,17 +252,32 @@ namespace GMEPElectricalCommands
         string circuitRightValue = PANEL_GRID.Rows[i].Cells["circuit_right"].Value?.ToString().ToUpper() ?? "";
         string circuitLeftValue = PANEL_GRID.Rows[i].Cells["circuit_left"].Value?.ToString().ToUpper() ?? "";
         string phaseALeftValue = PANEL_GRID.Rows[i].Cells["phase_a_left"].Value?.ToString() ?? "0";
+        string phaseALeftTag = PANEL_GRID.Rows[i].Cells["phase_a_left"].Tag?.ToString() ?? "";
         string phaseBLeftValue = PANEL_GRID.Rows[i].Cells["phase_b_left"].Value?.ToString() ?? "0";
+        string phaseBLeftTag = PANEL_GRID.Rows[i].Cells["phase_b_left"].Tag?.ToString() ?? "";
         string phaseARightValue = PANEL_GRID.Rows[i].Cells["phase_a_right"].Value?.ToString() ?? "0";
+        string phaseARightTag = PANEL_GRID.Rows[i].Cells["phase_a_right"].Tag?.ToString() ?? "";
         string phaseBRightValue = PANEL_GRID.Rows[i].Cells["phase_b_right"].Value?.ToString() ?? "0";
+        string phaseBRightTag = PANEL_GRID.Rows[i].Cells["phase_b_right"].Tag?.ToString() ?? "";
         string phaseCLeftValue = "0";
         string phaseCRightValue = "0";
+        string phaseCLeftTag = "";
+        string phaseCRightTag = "";
 
         if (PHASE_SUM_GRID.Columns.Count > 2)
         {
           phaseCLeftValue = PANEL_GRID.Rows[i].Cells["phase_c_left"].Value?.ToString() ?? "0";
+          phaseCLeftTag = PANEL_GRID.Rows[i].Cells["phase_c_left"].Tag?.ToString() ?? "";
           phaseCRightValue = PANEL_GRID.Rows[i].Cells["phase_c_right"].Value?.ToString() ?? "0";
+          phaseCRightTag = PANEL_GRID.Rows[i].Cells["phase_c_right"].Tag?.ToString() ?? "";
         }
+
+        phase_a_left_tag.Add(phaseALeftTag);
+        phase_b_left_tag.Add(phaseBLeftTag);
+        phase_a_right_tag.Add(phaseARightTag);
+        phase_b_right_tag.Add(phaseBRightTag);
+        phase_c_left_tag.Add(phaseCLeftTag);
+        phase_c_right_tag.Add(phaseCRightTag);
 
         // Checks for Left Side
         bool hasCommaInPhaseLeft = phaseALeftValue.Contains(",") || phaseBLeftValue.Contains(",") || phaseCLeftValue.Contains(",");
@@ -461,6 +480,25 @@ namespace GMEPElectricalCommands
       panel.Add("breaker_right", breaker_right);
       panel.Add("circuit_left", circuit_left);
       panel.Add("circuit_right", circuit_right);
+      panel.Add("phase_a_left_tag", phase_a_left_tag);
+      panel.Add("phase_b_left_tag", phase_b_left_tag);
+      panel.Add("phase_a_right_tag", phase_a_right_tag);
+      panel.Add("phase_b_right_tag", phase_b_right_tag);
+      if (PHASE_SUM_GRID.Columns.Count > 2)
+      {
+        panel.Add("phase_c_left_tag", phase_c_left_tag);
+        panel.Add("phase_c_right_tag", phase_c_right_tag);
+      }
+
+      // go through each tag in the list and if it has a value that is not an empty string or null, print the tag and the cell value
+      Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage("\n\n");
+      for (int i = 0; i < phase_a_left_tag.Count; i++)
+      {
+        if (!string.IsNullOrEmpty(phase_a_left_tag[i]))
+        {
+          Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"Tag: {phase_a_left_tag[i]}, Value: {phase_a_left[i]}\n");
+        }
+      }
 
       return panel;
     }
@@ -786,6 +824,11 @@ namespace GMEPElectricalCommands
       populate_modal_with_panel_data(selectedPanelData);
     }
 
+    internal DataGridView retrieve_panelGrid()
+    {
+      return PANEL_GRID;
+    }
+
     private void remove_rows()
     {
       // remove rows
@@ -986,10 +1029,12 @@ namespace GMEPElectricalCommands
       if (isPanelReal)
       {
         UserControl panelControl = mainForm.findUserControl(panel_name);
+
         if (panelControl != null)
         {
           DataGridView panelControl_phaseSumGrid = panelControl.Controls.Find("PHASE_SUM_GRID", true).FirstOrDefault() as DataGridView;
           DataGridView this_panelGrid = this.Controls.Find("PANEL_GRID", true).FirstOrDefault() as DataGridView;
+          this_panelGrid.Rows[row.Index].Cells[col.Index].Tag = cellValue;
           listenForPhaseChanges(panelControl_phaseSumGrid, phase, row, col, this_panelGrid);
         }
       }
@@ -1043,6 +1088,10 @@ namespace GMEPElectricalCommands
             panelControl_phaseSumGrid.CellValueChanged -= eventHandler;
             panelGrid.CellValueChanged -= panelGrid_eventHandler;
             panelGrid.Rows[row.Index].Cells[col.Index].Style.BackColor = Color.LightGray;
+            if (panelGrid.Rows[row.Index].Cells[col.Index].Tag != null)
+            {
+              panelGrid.Rows[row.Index].Cells[col.Index].Tag = null;
+            }
           }
         }
       };
@@ -1283,10 +1332,33 @@ namespace GMEPElectricalCommands
       }
     }
 
-    private void PANEL_GRID_CellEnter(object sender, DataGridViewCellEventArgs e)
+    private async void PANEL_GRID_CellClick(object sender, DataGridViewCellEventArgs e)
     {
-      // log that the cell has been entered
-      //Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"\n\nCell Entered: {PANEL_GRID.CurrentCell.RowIndex}, {PANEL_GRID.CurrentCell.ColumnIndex}\n");
+      // Get the selected cell
+      DataGridViewCell cell = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex];
+
+      // check if the cell has a tag
+      if (cell.Tag != null)
+      {
+        // remove the equals from the tag
+        string cellValue = cell.Tag.ToString().Replace("=", "");
+
+        // split the cell value by dash, to create two strings, one for the panel name and one for the phase
+        string[] splitCellValue = cellValue.Split('-');
+
+        // get the panel name and phase from the split cell value
+        string panelName = splitCellValue[0];
+        string phase = splitCellValue[1];
+
+        // change the INFO_LABEL.TEXT value to inform the user that the cell is linked to another panel and its phase for 5 seconds, then erase it
+        INFO_LABEL.Text = $"This cell is linked to phase {phase} of panel '{panelName}'.";
+
+        // wait for 5 seconds
+        await Task.Delay(5000);
+
+        // erase the INFO_LABEL.TEXT value
+        INFO_LABEL.Text = string.Empty;
+      }
     }
 
     private void PHASE_SUM_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
@@ -1353,6 +1425,10 @@ namespace GMEPElectricalCommands
     private void DELETE_PANEL_BUTTON_Click(object sender, EventArgs e)
     {
       this.mainForm.delete_panel(this);
+    }
+
+    private void INFO_LABEL_CLICK(object sender, EventArgs e)
+    {
     }
   }
 }

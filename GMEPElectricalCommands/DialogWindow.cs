@@ -43,7 +43,17 @@ namespace GMEPElectricalCommands
     {
       foreach (UserInterface userControl in userControls)
       {
-        if (userControl.Name == panelName)
+        string userControlName = userControl.Name.Replace("'", "");
+        userControlName = userControlName.Replace(" ", "");
+        userControlName = userControlName.Replace("-", "");
+        userControlName = userControlName.Replace("PANEL", "");
+
+        panelName = panelName.Replace("'", "");
+        panelName = panelName.Replace(" ", "");
+        panelName = panelName.Replace("-", "");
+        panelName = panelName.Replace("PANEL", "");
+
+        if (userControlName == panelName)
         {
           return userControl;
         }
@@ -73,6 +83,74 @@ namespace GMEPElectricalCommands
           bool is3PH = panel.ContainsKey("phase_c_left");
           UserInterface userControl1 = create_new_panel_tab(panelName, is3PH);
           userControl1.clear_and_set_modal_values(panel);
+        }
+
+        foreach (Dictionary<string, object> panel in panelStorage)
+        {
+          string panelName = panel["panel"].ToString();
+          UserInterface userControl1 = (UserInterface)findUserControl(panelName);
+          if (userControl1 == null)
+          {
+            continue;
+          }
+          DataGridView panelGrid = userControl1.retrieve_panelGrid();
+          foreach (DataGridViewRow row in panelGrid.Rows)
+          {
+            int rowIndex = row.Index;
+
+            string phase_a_left_tag = panel["phase_a_left_tag"].ToString();
+            List<string> phase_a_left_tag_list = JsonConvert.DeserializeObject<List<string>>(phase_a_left_tag);
+            string phase_a_left_tag_value = phase_a_left_tag_list[rowIndex];
+            if (phase_a_left_tag_value != "")
+            {
+              row.Cells[1].Value = phase_a_left_tag_value;
+            }
+            // repeat for each phase
+            string phase_b_left_tag = panel["phase_b_left_tag"].ToString();
+            List<string> phase_b_left_tag_list = JsonConvert.DeserializeObject<List<string>>(phase_b_left_tag);
+            string phase_b_left_tag_value = phase_b_left_tag_list[rowIndex];
+            if (phase_b_left_tag_value != "")
+            {
+              row.Cells[2].Value = phase_b_left_tag_value;
+            }
+            // check if c exists
+            if (panel.ContainsKey("phase_c_left"))
+            {
+              string phase_c_left_tag = panel["phase_c_left_tag"].ToString();
+              List<string> phase_c_left_tag_list = JsonConvert.DeserializeObject<List<string>>(phase_c_left_tag);
+              string phase_c_left_tag_value = phase_c_left_tag_list[rowIndex];
+              if (phase_c_left_tag_value != "")
+              {
+                row.Cells[3].Value = phase_c_left_tag_value;
+              }
+            }
+            string phase_a_right_tag = panel["phase_a_right_tag"].ToString();
+            List<string> phase_a_right_tag_list = JsonConvert.DeserializeObject<List<string>>(phase_a_right_tag);
+            string phase_a_right_tag_value = phase_a_right_tag_list[rowIndex];
+            if (phase_a_right_tag_value != "")
+            {
+              row.Cells[4].Value = phase_a_right_tag_value;
+            }
+            // repeat for each phase
+            string phase_b_right_tag = panel["phase_b_right_tag"].ToString();
+            List<string> phase_b_right_tag_list = JsonConvert.DeserializeObject<List<string>>(phase_b_right_tag);
+            string phase_b_right_tag_value = phase_b_right_tag_list[rowIndex];
+            if (phase_b_right_tag_value != "")
+            {
+              row.Cells[5].Value = phase_b_right_tag_value;
+            }
+            // check if c exists
+            if (panel.ContainsKey("phase_c_right"))
+            {
+              string phase_c_right_tag = panel["phase_c_right_tag"].ToString();
+              List<string> phase_c_right_tag_list = JsonConvert.DeserializeObject<List<string>>(phase_c_right_tag);
+              string phase_c_right_tag_value = phase_c_right_tag_list[rowIndex];
+              if (phase_c_right_tag_value != "")
+              {
+                row.Cells[6].Value = phase_c_right_tag_value;
+              }
+            }
+          }
         }
       }
     }
