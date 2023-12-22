@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 using System.IO;
+using Autodesk.AutoCAD.ApplicationServices;
 
 namespace GMEPElectricalCommands
 {
@@ -144,24 +145,25 @@ namespace GMEPElectricalCommands
       Dictionary<string, object> panel = new Dictionary<string, object>();
 
       // Get the value from the main input
-      string mainInput = MAIN_INPUT.Text;
+      string mainInput = MAIN_INPUT.Text.ToLower();
 
-      // Check if the value contains the word "amp" or "AMP"
-      if (mainInput.ToLower().Contains("amp"))
+      if (!mainInput.Contains("mlo") && !mainInput.Contains("m.l.o") && !mainInput.Contains("m.l.o."))
       {
-        mainInput = mainInput.ToUpper().Replace("A ", "AMP ").Replace(" A", " AMP");
-      }
-      // Check if the value is just a number
-      else if (is_digits_only(mainInput.Replace(" ", "")))
-      {
-        mainInput = mainInput + " AMP";
-      }
-      else
-      {
-        string[] parts = mainInput.Split(' ');
-        if (parts.Length > 1 && is_digits_only(parts[0]) && parts[1].ToLower() == "a")
+        if (mainInput.Contains("amp"))
         {
-          mainInput = parts[0] + " AMP";
+          mainInput = mainInput.Replace("amp", "AMP");
+        }
+        else if (mainInput.Contains("a"))
+        {
+          mainInput = mainInput.Replace("a", "AMP");
+        }
+        else if (mainInput.Contains(" "))
+        {
+          mainInput = mainInput.Replace(" ", " AMP");
+        }
+        else
+        {
+          mainInput += " AMP";
         }
       }
 
@@ -212,11 +214,25 @@ namespace GMEPElectricalCommands
       panel.Add("feeder_amps", FEEDER_AMP_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
 
       // Add "A" to the bus rating value if it consists of digits only, then convert to uppercase
-      string busRatingInput = BUS_RATING_INPUT.Text;
-      if (is_digits_only(busRatingInput))
+      string busRatingInput = BUS_RATING_INPUT.Text.ToLower();
+
+      if (busRatingInput.Contains("amp"))
       {
-        busRatingInput += "A"; // append "A" if the input is numeric
+        busRatingInput = busRatingInput.Replace("amp", "A");
       }
+      else if (busRatingInput.Contains("a"))
+      {
+        busRatingInput = busRatingInput.Replace("a", "A");
+      }
+      else if (busRatingInput.Contains(" "))
+      {
+        busRatingInput = busRatingInput.Replace(" ", " A");
+      }
+      else
+      {
+        busRatingInput += " A";
+      }
+
       panel.Add("bus_rating", busRatingInput.ToUpper());
 
       List<bool> description_left_highlights = new List<bool>();
@@ -841,10 +857,10 @@ namespace GMEPElectricalCommands
     private void populate_modal_with_panel_data(Dictionary<string, object> selectedPanelData)
     {
       // Set TextBoxes
-      MAIN_INPUT.Text = selectedPanelData["main"].ToString();
+      MAIN_INPUT.Text = selectedPanelData["main"].ToString().Replace("AMP", "").Replace("A", "").Replace(" ", "");
       PANEL_NAME_INPUT.Text = selectedPanelData["panel"].ToString().Replace("'", "");
       PANEL_LOCATION_INPUT.Text = selectedPanelData["location"].ToString();
-      BUS_RATING_INPUT.Text = selectedPanelData["bus_rating"].ToString().Replace("A", "");
+      BUS_RATING_INPUT.Text = selectedPanelData["bus_rating"].ToString().Replace("AMP", "").Replace("A", "").Replace(" ", "");
 
       // Set ComboBoxes
       STATUS_COMBOBOX.SelectedItem = selectedPanelData["existing"].ToString();
@@ -865,6 +881,12 @@ namespace GMEPElectricalCommands
       FEEDER_AMP_GRID.Rows[0].Cells[0].Value = selectedPanelData["feeder_amps"].ToString();
 
       List<string> multi_row_datagrid_keys = new List<string> { "description_left", "description_right", "phase_a_left", "phase_b_left", "phase_a_right", "phase_b_right", "breaker_left", "breaker_right", "circuit_left", "circuit_right" };
+
+      // check if the panel is three phase and if so add the third phase to the list of keys
+      if (selectedPanelData["phase"].ToString() == "3")
+      {
+        multi_row_datagrid_keys.AddRange(new List<string> { "phase_c_left", "phase_c_right" });
+      }
 
       int length = ((Newtonsoft.Json.Linq.JArray)selectedPanelData["description_left"]).ToObject<List<string>>().Count;
 
@@ -1400,14 +1422,32 @@ namespace GMEPElectricalCommands
     private void CREATE_PANEL_BUTTON_Click(object sender, EventArgs e)
     {
       Dictionary<string, object> panelDataList = retrieve_data_from_modal();
-      myCommandsInstance.Create_Panel(panelDataList);
-      this.mainForm.Close();
+
+      using (DocumentLock docLock = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.LockDocument())
+      {
+        this.mainForm.Close();
+        myCommandsInstance.Create_Panel(panelDataList);
+      }
     }
 
     private void DELETE_ROW_BUTTON_Click(object sender, EventArgs e)
     {
       if (PANEL_GRID.Rows.Count > 0)
       {
+        var lastRow = PANEL_GRID.Rows[PANEL_GRID.Rows.Count - 1];
+        var phaseCells = new List<string> { "phase_a_left", "phase_b_left", "phase_a_right", "phase_b_right" };
+
+        if (PHASE_SUM_GRID.ColumnCount > 2)
+        {
+          phaseCells.Add("phase_c_left");
+          phaseCells.Add("phase_c_right");
+        }
+
+        foreach (var cell in phaseCells)
+        {
+          lastRow.Cells[cell].Value = "0";
+        }
+
         PANEL_GRID.Rows.RemoveAt(PANEL_GRID.Rows.Count - 1);
       }
     }

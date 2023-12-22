@@ -171,7 +171,6 @@ namespace GMEPElectricalCommands
     {
       foreach (TabPage tabPage in PANEL_TABS.TabPages)
       {
-        MessageBox.Show(tabPage.Text);
         if (tabPage.Text.Split(' ')[1] == panelName)
         {
           return true;
@@ -319,16 +318,19 @@ namespace GMEPElectricalCommands
     {
       List<Dictionary<string, object>> panelStorage = new List<Dictionary<string, object>>();
 
-      foreach (UserInterface userControl in this.userControls)
+      using (DocumentLock docLock = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.LockDocument())
       {
-        panelStorage.Add(userControl.retrieve_data_from_modal());
+        foreach (UserInterface userControl in this.userControls)
+        {
+          panelStorage.Add(userControl.retrieve_data_from_modal());
+        }
+
+        string json = JsonConvert.SerializeObject(panelStorage, Formatting.Indented);
+        System.IO.File.WriteAllText(@"C:\Users\Public\Documents\panelStorageClosing.json", json);
+
+        store_data_in_autocad_file(panelStorage);
+        this.userControls = new List<UserInterface>();
       }
-
-      string json = JsonConvert.SerializeObject(panelStorage, Formatting.Indented);
-      System.IO.File.WriteAllText(@"C:\Users\Public\Documents\panelStorageClosing.json", json);
-
-      store_data_in_autocad_file(panelStorage);
-      this.userControls = new List<UserInterface>();
     }
 
     private void NEW_PANEL_BUTTON_Click(object sender, EventArgs e)

@@ -169,12 +169,14 @@ namespace GMEPElectricalCommands
 
       try
       {
-        if (this.myForm == null)
-        {
-          this.myForm = new MainForm(this);
-          this.myForm.initialize_modal();
-        }
+        //if (this.myForm == null)
+        //{
+        //  this.myForm = new MainForm(this);
+        //  this.myForm.initialize_modal();
+        //}
 
+        this.myForm = new MainForm(this);
+        this.myForm.initialize_modal();
         this.myForm.Show();
       }
       catch (System.Exception ex)
