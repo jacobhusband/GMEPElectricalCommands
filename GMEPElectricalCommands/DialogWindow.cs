@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using static OfficeOpenXml.ExcelErrorValue;
 using Autodesk.AutoCAD.GraphicsInterface;
 using Autodesk.AutoCAD.EditorInput;
+using Autodesk.AutoCAD.ApplicationServices;
 
 namespace GMEPElectricalCommands
 {
@@ -170,6 +171,7 @@ namespace GMEPElectricalCommands
     {
       foreach (TabPage tabPage in PANEL_TABS.TabPages)
       {
+        MessageBox.Show(tabPage.Text);
         if (tabPage.Text.Split(' ')[1] == panelName)
         {
           return true;
@@ -345,8 +347,11 @@ namespace GMEPElectricalCommands
         panels.Add(panelData);
       }
 
-      myCommandsInstance.Create_Panels(panels);
-      Close();
+      using (DocumentLock docLock = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.LockDocument())
+      {
+        Close();
+        myCommandsInstance.Create_Panels(panels);
+      }
     }
 
     private void MAINFORM_SHOWN(object sender, EventArgs e)
