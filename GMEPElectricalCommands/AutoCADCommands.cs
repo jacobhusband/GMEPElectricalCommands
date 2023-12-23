@@ -389,6 +389,7 @@ namespace GMEPElectricalCommands
       double lowestY = topRightCorner.Y;
 
       int counter = 0;
+      CREATEBLOCK();
 
       foreach (var panelData in panelDataList)
       {
@@ -398,8 +399,6 @@ namespace GMEPElectricalCommands
         using (var tr = db.TransactionManager.StartTransaction())
         {
           var btr = (BlockTableRecord)tr.GetObject(spaceId, OpenMode.ForWrite);
-
-          CREATEBLOCK();
 
           // Create initial values
           var startPoint = new Point3d(topRightCorner.X - 8.9856, topRightCorner.Y, 0);
@@ -531,7 +530,24 @@ namespace GMEPElectricalCommands
 
       for (int i = panelRow; i <= lastRow; i++)
       {
-        string description = selectedWorksheet.Cells[i, col].Value?.ToString().ToUpper() ?? "SPACE";
+        string description = "";
+        if (selectedWorksheet.Cells[i, col].Value == null && selectedWorksheet.Cells[i, col + 5].Value != null)
+        {
+          description = "SPARE";
+        }
+        else
+        {
+          description = selectedWorksheet.Cells[i, col].Value?.ToString().ToUpper() ?? "SPACE";
+        }
+        string descriptionR = "";
+        if (selectedWorksheet.Cells[i, col + 12].Value == null && selectedWorksheet.Cells[i, col + 8].Value != null)
+        {
+          descriptionR = "SPARE";
+        }
+        else
+        {
+          descriptionR = selectedWorksheet.Cells[i, col + 12].Value?.ToString().ToUpper() ?? "SPACE";
+        }
         string phaseA = selectedWorksheet.Cells[i, col + 2].Value?.ToString() ?? "0";
         string phaseB = selectedWorksheet.Cells[i, col + 3].Value?.ToString() ?? "0";
         string phaseC = selectedWorksheet.Cells[i, col + 4].Value?.ToString() ?? "0";
@@ -542,7 +558,6 @@ namespace GMEPElectricalCommands
         string phaseAR = selectedWorksheet.Cells[i, col + 9].Value?.ToString() ?? "0";
         string phaseBR = selectedWorksheet.Cells[i, col + 10].Value?.ToString() ?? "0";
         string phaseCR = selectedWorksheet.Cells[i, col + 11].Value?.ToString() ?? "0";
-        string descriptionR = selectedWorksheet.Cells[i, col + 12].Value?.ToString().ToUpper() ?? "SPACE";
 
         bool isLeftHighlighted = selectedWorksheet.Cells[i, col].Style.Fill.BackgroundColor.LookupColor() != "#FF000000";
         bool isRightHighlighted = selectedWorksheet.Cells[i, col + 12].Style.Fill.BackgroundColor.LookupColor() != "#FF000000";
@@ -648,7 +663,24 @@ namespace GMEPElectricalCommands
       // add cell values to lists
       for (int i = panelRow; i <= lastRow; i++)
       {
-        string description = selectedWorksheet.Cells[i, col].Value?.ToString().ToUpper() ?? "SPACE";
+        string description = "";
+        if (selectedWorksheet.Cells[i, col].Value == null && selectedWorksheet.Cells[i, col + 5].Value != null)
+        {
+          description = "SPARE";
+        }
+        else
+        {
+          description = selectedWorksheet.Cells[i, col].Value?.ToString().ToUpper() ?? "SPACE";
+        }
+        string descriptionR = "";
+        if (selectedWorksheet.Cells[i, col + 12].Value == null && selectedWorksheet.Cells[i, col + 8].Value != null)
+        {
+          descriptionR = "SPARE";
+        }
+        else
+        {
+          descriptionR = selectedWorksheet.Cells[i, col + 12].Value?.ToString().ToUpper() ?? "SPACE";
+        }
         string phaseA = selectedWorksheet.Cells[i, col + 3].Value?.ToString() ?? "0";
         string phaseB = selectedWorksheet.Cells[i, col + 4].Value?.ToString() ?? "0";
         string breakerL = selectedWorksheet.Cells[i, col + 5].Value?.ToString() ?? "";
@@ -657,7 +689,6 @@ namespace GMEPElectricalCommands
         string breakerR = selectedWorksheet.Cells[i, col + 8].Value?.ToString() ?? "";
         string phaseAR = selectedWorksheet.Cells[i, col + 9].Value?.ToString() ?? "0";
         string phaseBR = selectedWorksheet.Cells[i, col + 10].Value?.ToString() ?? "0";
-        string descriptionR = selectedWorksheet.Cells[i, col + 11].Value?.ToString().ToUpper() ?? "SPACE";
 
         bool isLeftHighlighted = selectedWorksheet.Cells[i, col].Style.Fill.BackgroundColor.LookupColor() != "#FF000000";
         bool isRightHighlighted = selectedWorksheet.Cells[i, col + 11].Style.Fill.BackgroundColor.LookupColor() != "#FF000000";
