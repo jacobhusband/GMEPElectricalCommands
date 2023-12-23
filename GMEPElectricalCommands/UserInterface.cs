@@ -20,20 +20,21 @@ namespace GMEPElectricalCommands
     private MyCommands myCommandsInstance;
     private MainForm mainForm;
     private NEWPANELFORM newPanelForm;
+    private noteForm notesForm;
 
     private bool initialization;
     private object oldValue;
 
     public UserInterface(MyCommands myCommands, MainForm mainForm, NEWPANELFORM newPanelForm, string tabName, bool is3PH = false)
     {
-      // log that the user control is being initialized with the name
-      Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"\n\nInitializing UserControl1 with name: {tabName}\n");
       InitializeComponent();
       myCommandsInstance = myCommands;
       this.mainForm = mainForm;
       this.newPanelForm = newPanelForm;
       this.initialization = false;
       this.Name = tabName;
+      this.notesForm = new noteForm();
+
       listen_for_new_rows();
       remove_column_header_sorting();
 
@@ -94,7 +95,7 @@ namespace GMEPElectricalCommands
       // Textboxes
       PANEL_NAME_INPUT.Text = tabName;
       PANEL_LOCATION_INPUT.Text = "ELECTRIC ROOM";
-      MAIN_INPUT.Text = "M.L.O";
+      MAIN_INPUT.Text = "M.L.O.";
       BUS_RATING_INPUT.Text = "100";
 
       // Comboboxes
@@ -687,9 +688,6 @@ namespace GMEPElectricalCommands
     {
       Color grayColor = Color.LightGray;
 
-      // Log the row count and starting index
-      Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"\n\nRow Count: {e.RowCount}, Starting Index: {e.RowIndex}\n");
-
       for (int i = 0; i < e.RowCount; i++)
       {
         int rowIndex = e.RowIndex + i;
@@ -702,8 +700,6 @@ namespace GMEPElectricalCommands
 
         // Determine the row pattern (zig-zag) for gray background
         int pattern = rowIndex % 3;
-
-        Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"Row Index: {rowIndex}, Pattern: {pattern}\n");
 
         // Apply pattern for two sets of columns based on the row pattern
         if (pattern == 0)
@@ -748,16 +744,6 @@ namespace GMEPElectricalCommands
           PANEL_GRID.Rows[rowIndex].Cells[8].Style.BackColor = Color.LightGray; // Column 9
         }
       }
-    }
-
-    private bool is_digits_only(string str)
-    {
-      foreach (char c in str)
-      {
-        if (c < '0' || c > '9')
-          return false;
-      }
-      return true;
     }
 
     private void calculate_lcl_otherload_panelload_feederamps()
@@ -1469,6 +1455,11 @@ namespace GMEPElectricalCommands
 
     private void INFO_LABEL_CLICK(object sender, EventArgs e)
     {
+    }
+
+    private void NOTES_BUTTON_Click(object sender, EventArgs e)
+    {
+      this.notesForm.Show();
     }
   }
 }

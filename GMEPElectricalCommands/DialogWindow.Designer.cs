@@ -58,7 +58,7 @@ namespace GMEPElectricalCommands
       // 
       // NEW_PANEL_BUTTON
       // 
-      this.NEW_PANEL_BUTTON.Location = new System.Drawing.Point(9, 6);
+      this.NEW_PANEL_BUTTON.Location = new System.Drawing.Point(5, 7);
       this.NEW_PANEL_BUTTON.Name = "NEW_PANEL_BUTTON";
       this.NEW_PANEL_BUTTON.Size = new System.Drawing.Size(100, 23);
       this.NEW_PANEL_BUTTON.TabIndex = 178;
@@ -68,7 +68,7 @@ namespace GMEPElectricalCommands
       // 
       // CREATE_ALL_PANELS_BUTTON
       // 
-      this.CREATE_ALL_PANELS_BUTTON.Location = new System.Drawing.Point(115, 6);
+      this.CREATE_ALL_PANELS_BUTTON.Location = new System.Drawing.Point(111, 7);
       this.CREATE_ALL_PANELS_BUTTON.Name = "CREATE_ALL_PANELS_BUTTON";
       this.CREATE_ALL_PANELS_BUTTON.Size = new System.Drawing.Size(148, 23);
       this.CREATE_ALL_PANELS_BUTTON.TabIndex = 179;

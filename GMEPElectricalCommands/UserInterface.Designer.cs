@@ -81,6 +81,9 @@
       this.WIRE_COMBOBOX = new System.Windows.Forms.ComboBox();
       this.DELETE_PANEL_BUTTON = new System.Windows.Forms.Button();
       this.INFO_LABEL = new System.Windows.Forms.Label();
+      this.APPLY_BUTTON = new System.Windows.Forms.Button();
+      this.APPLY_COMBOBOX = new System.Windows.Forms.ComboBox();
+      this.NOTES_BUTTON = new System.Windows.Forms.Button();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -563,10 +566,44 @@
       this.INFO_LABEL.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
       this.INFO_LABEL.Click += new System.EventHandler(this.INFO_LABEL_CLICK);
       // 
+      // APPLY_BUTTON
+      // 
+      this.APPLY_BUTTON.Location = new System.Drawing.Point(768, 623);
+      this.APPLY_BUTTON.Name = "APPLY_BUTTON";
+      this.APPLY_BUTTON.Size = new System.Drawing.Size(75, 23);
+      this.APPLY_BUTTON.TabIndex = 181;
+      this.APPLY_BUTTON.Text = "APPLY";
+      this.APPLY_BUTTON.UseVisualStyleBackColor = true;
+      // 
+      // APPLY_COMBOBOX
+      // 
+      this.APPLY_COMBOBOX.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this.APPLY_COMBOBOX.FormattingEnabled = true;
+      this.APPLY_COMBOBOX.Items.AddRange(new object[] {
+            "BREAKER IS EXISTING TO REMAIN",
+            "LCL @80% LOAD CAPACITY"});
+      this.APPLY_COMBOBOX.Location = new System.Drawing.Point(397, 624);
+      this.APPLY_COMBOBOX.Name = "APPLY_COMBOBOX";
+      this.APPLY_COMBOBOX.Size = new System.Drawing.Size(365, 21);
+      this.APPLY_COMBOBOX.TabIndex = 182;
+      // 
+      // NOTES_BUTTON
+      // 
+      this.NOTES_BUTTON.Location = new System.Drawing.Point(316, 622);
+      this.NOTES_BUTTON.Name = "NOTES_BUTTON";
+      this.NOTES_BUTTON.Size = new System.Drawing.Size(75, 23);
+      this.NOTES_BUTTON.TabIndex = 183;
+      this.NOTES_BUTTON.Text = "NOTES";
+      this.NOTES_BUTTON.UseVisualStyleBackColor = true;
+      this.NOTES_BUTTON.Click += new System.EventHandler(this.NOTES_BUTTON_Click);
+      // 
       // UserInterface
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      this.Controls.Add(this.NOTES_BUTTON);
+      this.Controls.Add(this.APPLY_COMBOBOX);
+      this.Controls.Add(this.APPLY_BUTTON);
       this.Controls.Add(this.INFO_LABEL);
       this.Controls.Add(this.DELETE_PANEL_BUTTON);
       this.Controls.Add(this.PANEL_GRID);
@@ -671,5 +708,8 @@
     private System.Windows.Forms.ComboBox WIRE_COMBOBOX;
     private System.Windows.Forms.Button DELETE_PANEL_BUTTON;
     private System.Windows.Forms.Label INFO_LABEL;
+    private System.Windows.Forms.Button APPLY_BUTTON;
+    private System.Windows.Forms.ComboBox APPLY_COMBOBOX;
+    private System.Windows.Forms.Button NOTES_BUTTON;
   }
 }
