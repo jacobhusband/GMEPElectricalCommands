@@ -36,9 +36,9 @@ namespace GMEPElectricalCommands
       this.notesForm = new noteForm();
 
       listen_for_new_rows();
+      add_or_remove_panel_grid_columns(is3PH);
       remove_column_header_sorting();
 
-      add_or_remove_panel_grid_columns(is3PH);
       change_size_of_phase_columns(is3PH);
       add_phase_sum_column(is3PH);
 
@@ -51,6 +51,7 @@ namespace GMEPElectricalCommands
       PANEL_NAME_INPUT.TextChanged += new EventHandler(this.PANEL_NAME_INPUT_TextChanged);
       PANEL_GRID.CellFormatting += PANEL_GRID_CellFormatting;
       PANEL_GRID.CellClick += new DataGridViewCellEventHandler(this.PANEL_GRID_CellClick);
+      PANEL_GRID.CellMouseDown += new DataGridViewCellMouseEventHandler(this.PANEL_GRID_CellMouseDown);
 
       add_rows_to_datagrid();
       set_default_form_values(tabName);
@@ -60,6 +61,15 @@ namespace GMEPElectricalCommands
       INFO_LABEL.Text = "";
       INFO_LABEL.Anchor = AnchorStyles.None;
       INFO_LABEL.Location = new Point((this.Width - INFO_LABEL.Width) / 2, (this.Height - INFO_LABEL.Height - 5));
+    }
+
+    private void PANEL_GRID_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+    {
+      // Check if the user clicked on a header cell
+      if (e.RowIndex == -1)
+      {
+        // Perform your desired action here. If you want to do nothing, you can leave this block empty.
+      }
     }
 
     private void add_rows_to_datagrid()
@@ -1330,7 +1340,7 @@ namespace GMEPElectricalCommands
       }
 
       // Existing code for handling the Delete key
-      else if (e.KeyCode == Keys.Delete)
+      else if (e.KeyCode == Keys.Delete || e.KeyCode == Keys.Back)
       {
         foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells)
         {
@@ -1342,6 +1352,11 @@ namespace GMEPElectricalCommands
 
     private async void PANEL_GRID_CellClick(object sender, DataGridViewCellEventArgs e)
     {
+      if (e.RowIndex == -1)
+      {
+        return;
+      }
+
       // Get the selected cell
       DataGridViewCell cell = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex];
 

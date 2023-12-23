@@ -208,7 +208,6 @@ namespace GMEPElectricalCommands
 
             if (existingBtr != null && existingBtr.Name == "CIRCLEI")
             {
-              doc.Editor.WriteMessage("\nBlock 'CIRCLEI' already exists and matches the new block. Exiting the function.");
               return; // Exit the function if existing block matches the new block
             }
           }
@@ -224,8 +223,6 @@ namespace GMEPElectricalCommands
           }
 
           existingBtr.Erase(true);
-
-          doc.Editor.WriteMessage("\nExisting block 'CIRCLEI' and its contents have been deleted.");
         }
 
         BlockTableRecord btr = new BlockTableRecord();
