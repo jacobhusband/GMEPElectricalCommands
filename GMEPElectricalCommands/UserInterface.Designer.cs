@@ -95,6 +95,8 @@
       // 
       // PANEL_GRID
       // 
+      this.PANEL_GRID.AllowUserToResizeColumns = false;
+      this.PANEL_GRID.AllowUserToResizeRows = false;
       this.PANEL_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.PANEL_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.description_left,
@@ -109,6 +111,8 @@
             this.description_right});
       this.PANEL_GRID.Location = new System.Drawing.Point(316, 43);
       this.PANEL_GRID.Name = "PANEL_GRID";
+      this.PANEL_GRID.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+      this.PANEL_GRID.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
       this.PANEL_GRID.Size = new System.Drawing.Size(1047, 489);
       this.PANEL_GRID.TabIndex = 154;
       // 

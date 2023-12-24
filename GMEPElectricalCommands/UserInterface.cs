@@ -709,10 +709,12 @@ namespace GMEPElectricalCommands
         int rowIndex = e.RowIndex + i;
 
         // Set common column values
+        PANEL_GRID.Rows[rowIndex].Cells[0].Value = "SPARE";
         PANEL_GRID.Rows[rowIndex].Cells[4].Value = "20";
         PANEL_GRID.Rows[rowIndex].Cells[5].Value = ((rowIndex + 1) * 2) - 1;
         PANEL_GRID.Rows[rowIndex].Cells[6].Value = (rowIndex + 1) * 2;
         PANEL_GRID.Rows[rowIndex].Cells[7].Value = "20";
+        PANEL_GRID.Rows[rowIndex].Cells[11].Value = "SPARE";
 
         // Determine the row pattern (zig-zag) for gray background
         int pattern = rowIndex % 3;
@@ -743,10 +745,12 @@ namespace GMEPElectricalCommands
         int rowIndex = e.RowIndex + i;
 
         // Set common column values
+        PANEL_GRID.Rows[rowIndex].Cells[0].Value = "SPARE";
         PANEL_GRID.Rows[rowIndex].Cells[3].Value = "20";
         PANEL_GRID.Rows[rowIndex].Cells[4].Value = ((rowIndex + 1) * 2) - 1;
         PANEL_GRID.Rows[rowIndex].Cells[5].Value = (rowIndex + 1) * 2;
         PANEL_GRID.Rows[rowIndex].Cells[6].Value = "20";
+        PANEL_GRID.Rows[rowIndex].Cells[9].Value = "SPARE";
 
         // Zig-zag pattern for columns 2, 3, 8, and 9
         if ((rowIndex + 1) % 2 == 1) // Odd rows
@@ -1363,6 +1367,11 @@ namespace GMEPElectricalCommands
         return;
       }
 
+      if (e.ColumnIndex < 0)
+      {
+        return;
+      }
+
       if (!PANEL_GRID.Columns[e.ColumnIndex].Name.Contains("phase"))
       {
         return;
@@ -1429,6 +1438,11 @@ namespace GMEPElectricalCommands
     private void ADD_ROW_BUTTON_Click(object sender, EventArgs e)
     {
       PANEL_GRID.Rows.Add();
+
+      if (PANEL_GRID.Rows.Count > 21)
+      {
+        PANEL_GRID.Width = 1047 + 15;
+      }
     }
 
     private void CREATE_PANEL_BUTTON_Click(object sender, EventArgs e)
@@ -1461,6 +1475,11 @@ namespace GMEPElectricalCommands
         }
 
         PANEL_GRID.Rows.RemoveAt(PANEL_GRID.Rows.Count - 1);
+
+        if (PANEL_GRID.Rows.Count <= 21)
+        {
+          PANEL_GRID.Width = 1047;
+        }
       }
     }
 
