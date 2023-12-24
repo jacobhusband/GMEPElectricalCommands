@@ -22,145 +22,6 @@ namespace GMEPElectricalCommands
   {
     private MainForm myForm;
 
-    [CommandMethod("PanelInput")]
-    public void PanelInputCommand()
-    {
-      Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-      Editor ed = doc.Editor;
-
-      // Create the dialog box
-      Form dialog = new Form();
-      dialog.Text = "2 POLE PANEL";
-      dialog.Size = new System.Drawing.Size(900, 600); // Adjusted size for 17x9 grid
-
-      int boxWidth = 80;
-      int boxHeight = 25;
-      int spacing = 5; // space between cells
-
-      // Usage
-      var headers = new System.Windows.Forms.Label[]
-      {
-        CreateLabel("DESCRIPTION"),
-        CreateLabel("VOLT AMPS\nPH A"),
-        CreateLabel("VOLT AMPS\nPH B"),
-        CreateLabel("BKR"),
-        CreateLabel("CKT NO"),
-        CreateLabel("CKT NO"),
-        CreateLabel("BKR"),
-        CreateLabel("VOLT AMPS\nPH A"),
-        CreateLabel("VOLT AMPS\nPH B"),
-        CreateLabel("DESCRIPTION"),
-      };
-
-      TextBox[,] panelInputs = new TextBox[17, 9];
-
-      for (int i = 0; i < 17; i++)
-      {
-        for (int j = 0; j < 9; j++)
-        {
-          panelInputs[i, j] = new TextBox();
-          panelInputs[i, j].Size = new System.Drawing.Size(boxWidth, boxHeight);
-          panelInputs[i, j].Location = new System.Drawing.Point(spacing + (j * (boxWidth + spacing)), spacing + (boxHeight + spacing) + (i * (boxHeight + spacing)));
-          dialog.Controls.Add(panelInputs[i, j]);
-        }
-      }
-
-      // Create and set Send button
-      Button sendButton = new Button();
-      sendButton.Text = "Send";
-      sendButton.Location = new System.Drawing.Point((dialog.Width - sendButton.Width) / 2, 520); // Adjusted location of the button
-      dialog.Controls.Add(sendButton);
-
-      // Add button click event
-      sendButton.Click += (sender, e) =>
-      {
-        for (int i = 0; i < 17; i++)
-        {
-          for (int j = 0; j < 9; j++)
-          {
-            ed.WriteMessage($"Value at row {i + 1}, column {j + 1} is: {panelInputs[i, j].Text}\n");
-          }
-        }
-        dialog.Close();
-      };
-
-      // Show dialog
-      dialog.ShowDialog();
-    }
-
-    [CommandMethod("InputSwitch")]
-    public void InputSwitchCommand()
-    {
-      Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-      Editor ed = doc.Editor;
-
-      // Create the dialog box
-      Form dialog = new Form();
-      dialog.Text = "Enter Your Name";
-      dialog.Size = new System.Drawing.Size(350, 120); // Initial size
-
-      // Create and set label
-      System.Windows.Forms.Label nameLabel = new System.Windows.Forms.Label();
-      nameLabel.Text = "Name";
-      nameLabel.Location = new System.Drawing.Point(20, 20);
-      dialog.Controls.Add(nameLabel);
-
-      // Create and set input box (TextBox)
-      TextBox nameInput = new TextBox();
-      nameInput.Location = new System.Drawing.Point(70, 20);
-      nameInput.Width = 150;
-      dialog.Controls.Add(nameInput);
-
-      // Create and set CheckBox (Switch)
-      CheckBox nameSwitch = new CheckBox();
-      nameSwitch.Text = "Switch";
-      nameSwitch.Location = new System.Drawing.Point(230, 20);
-      dialog.Controls.Add(nameSwitch);
-
-      // Create and set a second input box below the first one
-      TextBox additionalInput = new TextBox();
-      additionalInput.Location = new System.Drawing.Point(70, 50); // Positioned below the first TextBox
-      additionalInput.Width = 150;
-      additionalInput.Visible = false;  // Initially hidden
-      dialog.Controls.Add(additionalInput);
-
-      // Create and set Send button
-      Button sendButton = new Button();
-      sendButton.Text = "Send";
-      sendButton.Location = new System.Drawing.Point(70, 80); // Adjusted initial position
-      dialog.Controls.Add(sendButton);
-
-      // Add switch toggle event to show/hide additional input box
-      nameSwitch.CheckedChanged += (sender, e) =>
-      {
-        additionalInput.Visible = nameSwitch.Checked;
-        if (nameSwitch.Checked)
-        {
-          dialog.Height = 180; // Adjust the dialog height to show additional input
-          sendButton.Location = new System.Drawing.Point(70, 110);
-        }
-        else
-        {
-          dialog.Height = 120; // Restore original dialog height
-          sendButton.Location = new System.Drawing.Point(70, 80);
-        }
-      };
-
-      // Add button click event
-      sendButton.Click += (sender, e) =>
-      {
-        ed.WriteMessage($"Your name is: {nameInput.Text}");
-        if (nameSwitch.Checked)
-        {
-          ed.WriteMessage($" Additional Input: {additionalInput.Text}");
-        }
-        dialog.Close();
-      };
-
-      // Show dialog
-      dialog.ShowDialog();
-    }
-
     [CommandMethod("Panel")]
     public void Panel()
     {
@@ -373,6 +234,10 @@ namespace GMEPElectricalCommands
         panelDataList = ImportExcelData(); // If not provided, import from Excel
       }
 
+      string json = Newtonsoft.Json.JsonConvert.SerializeObject(panelDataList, Newtonsoft.Json.Formatting.Indented);
+      string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+      File.WriteAllText(path + "\\panelDataList.json", json);
+
       var spaceId = (db.TileMode == true) ? SymbolUtilityServices.GetBlockModelSpaceId(db) : SymbolUtilityServices.GetBlockPaperSpaceId(db);
 
       // Get the insertion point from the user
@@ -523,6 +388,8 @@ namespace GMEPElectricalCommands
         lastRow += 2;
       }
 
+      lastRow += 1;
+
       List<bool> descriptionLeftHighlights = new List<bool>();
       List<bool> descriptionRightHighlights = new List<bool>();
       List<bool> breakerLeftHighlights = new List<bool>();
@@ -660,6 +527,8 @@ namespace GMEPElectricalCommands
         lastRow += 2;
       }
 
+      lastRow += 1;
+
       // add cell values to lists
       for (int i = panelRow; i <= lastRow; i++)
       {
@@ -775,7 +644,6 @@ namespace GMEPElectricalCommands
 
     private static List<Dictionary<string, object>> ProcessWorksheet(ExcelWorksheet selectedWorksheet)
     {
-      var (doc, db, ed) = GetGlobals();
       var panels = new List<Dictionary<string, object>>();
       int rowCount = selectedWorksheet.Dimension.Rows;
       int colCount = selectedWorksheet.Dimension.Columns;
