@@ -574,18 +574,20 @@
       this.APPLY_BUTTON.TabIndex = 181;
       this.APPLY_BUTTON.Text = "APPLY";
       this.APPLY_BUTTON.UseVisualStyleBackColor = true;
+      this.APPLY_BUTTON.Click += new System.EventHandler(this.APPLY_BUTTON_Click);
       // 
       // APPLY_COMBOBOX
       // 
       this.APPLY_COMBOBOX.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.APPLY_COMBOBOX.FormattingEnabled = true;
       this.APPLY_COMBOBOX.Items.AddRange(new object[] {
-            "BREAKER IS EXISTING TO REMAIN",
-            "LCL @80% LOAD CAPACITY"});
+            "BREAKER OR DESCRIPTION IS EXISTING TO REMAIN",
+            "LCL @ 80% LOAD CAPACITY"});
       this.APPLY_COMBOBOX.Location = new System.Drawing.Point(397, 624);
       this.APPLY_COMBOBOX.Name = "APPLY_COMBOBOX";
       this.APPLY_COMBOBOX.Size = new System.Drawing.Size(365, 21);
       this.APPLY_COMBOBOX.TabIndex = 182;
+      this.APPLY_COMBOBOX.SelectedIndexChanged += new System.EventHandler(this.APPLY_COMBOBOX_SelectedIndexChanged);
       // 
       // NOTES_BUTTON
       // 

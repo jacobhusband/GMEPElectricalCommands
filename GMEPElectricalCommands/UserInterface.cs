@@ -51,7 +51,6 @@ namespace GMEPElectricalCommands
       PANEL_NAME_INPUT.TextChanged += new EventHandler(this.PANEL_NAME_INPUT_TextChanged);
       PANEL_GRID.CellFormatting += PANEL_GRID_CellFormatting;
       PANEL_GRID.CellClick += new DataGridViewCellEventHandler(this.PANEL_GRID_CellClick);
-      PANEL_GRID.CellMouseDown += new DataGridViewCellMouseEventHandler(this.PANEL_GRID_CellMouseDown);
 
       add_rows_to_datagrid();
       set_default_form_values(tabName);
@@ -61,15 +60,6 @@ namespace GMEPElectricalCommands
       INFO_LABEL.Text = "";
       INFO_LABEL.Anchor = AnchorStyles.None;
       INFO_LABEL.Location = new Point((this.Width - INFO_LABEL.Width) / 2, (this.Height - INFO_LABEL.Height - 5));
-    }
-
-    private void PANEL_GRID_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
-    {
-      // Check if the user clicked on a header cell
-      if (e.RowIndex == -1)
-      {
-        // Perform your desired action here. If you want to do nothing, you can leave this block empty.
-      }
     }
 
     private void add_rows_to_datagrid()
@@ -272,9 +262,25 @@ namespace GMEPElectricalCommands
 
       for (int i = 0; i < PANEL_GRID.Rows.Count; i++)
       {
-        string descriptionLeftValue = PANEL_GRID.Rows[i].Cells["description_left"].Value?.ToString().ToUpper() ?? "SPACE";
+        string descriptionLeftValue = "";
+        if (PANEL_GRID.Rows[i].Cells["description_left"].Value == null && PANEL_GRID.Rows[i].Cells["breaker_left"].Value != null)
+        {
+          descriptionLeftValue = "SPARE";
+        }
+        else
+        {
+          descriptionLeftValue = PANEL_GRID.Rows[i].Cells["description_left"].Value?.ToString().ToUpper() ?? "SPACE";
+        }
+        string descriptionRightValue = "";
+        if (PANEL_GRID.Rows[i].Cells["description_right"].Value == null && PANEL_GRID.Rows[i].Cells["breaker_right"].Value != null)
+        {
+          descriptionRightValue = "SPARE";
+        }
+        else
+        {
+          descriptionRightValue = PANEL_GRID.Rows[i].Cells["description_right"].Value?.ToString().ToUpper() ?? "SPACE";
+        }
         string breakerLeftValue = PANEL_GRID.Rows[i].Cells["breaker_left"].Value?.ToString().ToUpper() ?? "";
-        string descriptionRightValue = PANEL_GRID.Rows[i].Cells["description_right"].Value?.ToString().ToUpper() ?? "SPACE";
         string breakerRightValue = PANEL_GRID.Rows[i].Cells["breaker_right"].Value?.ToString().ToUpper() ?? "";
         string circuitRightValue = PANEL_GRID.Rows[i].Cells["circuit_right"].Value?.ToString().ToUpper() ?? "";
         string circuitLeftValue = PANEL_GRID.Rows[i].Cells["circuit_left"].Value?.ToString().ToUpper() ?? "";
@@ -1357,6 +1363,11 @@ namespace GMEPElectricalCommands
         return;
       }
 
+      if (!PANEL_GRID.Columns[e.ColumnIndex].Name.Contains("phase"))
+      {
+        return;
+      }
+
       // Get the selected cell
       DataGridViewCell cell = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex];
 
@@ -1475,6 +1486,77 @@ namespace GMEPElectricalCommands
     private void NOTES_BUTTON_Click(object sender, EventArgs e)
     {
       this.notesForm.Show();
+    }
+
+    private void APPLY_BUTTON_Click(object sender, EventArgs e)
+    {
+      string selectedValue = APPLY_COMBOBOX.SelectedItem.ToString();
+
+      // make a list with the column names "description" and "breaker" which is used when the selected item value has "BREAKER" in it, otherwise, just use "description"
+      List<string> columnNames = new List<string> { "description" };
+      if (selectedValue.Contains("BREAKER"))
+      {
+        columnNames.Add("breaker");
+      }
+
+      // get all the cells which are selected in the panel grid
+      foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells)
+      {
+        // check if the cell owning column name contains either of the column names in the list
+        if (columnNames.Any(cell.OwningColumn.Name.Contains))
+        {
+          // update the tag to include the selected value, if the tag already has a value then comma separate and append the new value
+          if (cell.Tag == null)
+          {
+            cell.Tag = selectedValue;
+          }
+          else
+          {
+            cell.Tag = $"{cell.Tag},{selectedValue}";
+          }
+          // turn the background of the cell to a yellow color
+          cell.Style.BackColor = Color.Yellow;
+        }
+      }
+    }
+
+    private void APPLY_COMBOBOX_SelectedIndexChanged(object sender, EventArgs e)
+    {
+      if (APPLY_COMBOBOX.SelectedItem == null)
+      {
+        return;
+      }
+
+      // go through each panel grid breaker and description cell and remove the background color
+      foreach (DataGridViewRow row in PANEL_GRID.Rows)
+      {
+        foreach (DataGridViewCell cell in row.Cells)
+        {
+          if (cell.OwningColumn.Name.Contains("description") || cell.OwningColumn.Name.Contains("breaker"))
+          {
+            cell.Style.BackColor = Color.Empty;
+          }
+        }
+      }
+
+      foreach (DataGridViewRow row in PANEL_GRID.Rows)
+      {
+        foreach (DataGridViewCell cell in row.Cells)
+        {
+          if (cell.OwningColumn.Name.Contains("description") || cell.OwningColumn.Name.Contains("breaker"))
+          {
+            if (cell.Tag == null)
+            {
+              continue;
+            }
+            if (cell.Tag.ToString().Contains(APPLY_COMBOBOX.SelectedItem.ToString()))
+            {
+              // turn the background of the cell to a yellow color
+              cell.Style.BackColor = Color.Yellow;
+            }
+          }
+        }
+      }
     }
   }
 }
