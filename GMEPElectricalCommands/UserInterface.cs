@@ -55,11 +55,13 @@ namespace GMEPElectricalCommands
       add_rows_to_datagrid();
       set_default_form_values(tabName);
       deselect_cells();
+      empty_label();
       this.initialization = true;
+    }
 
+    private void empty_label()
+    {
       INFO_LABEL.Text = "";
-      INFO_LABEL.Anchor = AnchorStyles.None;
-      INFO_LABEL.Location = new Point((this.Width - INFO_LABEL.Width) / 2, (this.Height - INFO_LABEL.Height - 5));
     }
 
     private void add_rows_to_datagrid()
@@ -260,6 +262,11 @@ namespace GMEPElectricalCommands
       List<string> phase_c_left_tag = new List<string>();
       List<string> phase_c_right_tag = new List<string>();
 
+      List<string> description_left_tags = new List<string>();
+      List<string> description_right_tags = new List<string>();
+      List<string> breaker_left_tags = new List<string>();
+      List<string> breaker_right_tags = new List<string>();
+
       for (int i = 0; i < PANEL_GRID.Rows.Count; i++)
       {
         string descriptionLeftValue = "";
@@ -297,6 +304,11 @@ namespace GMEPElectricalCommands
         string phaseCLeftTag = "";
         string phaseCRightTag = "";
 
+        string descriptionLeftTag = PANEL_GRID.Rows[i].Cells["description_left"].Tag?.ToString() ?? "";
+        string descriptionRightTag = PANEL_GRID.Rows[i].Cells["description_right"].Tag?.ToString() ?? "";
+        string breakerLeftTag = PANEL_GRID.Rows[i].Cells["breaker_left"].Tag?.ToString() ?? "";
+        string breakerRightTag = PANEL_GRID.Rows[i].Cells["breaker_right"].Tag?.ToString() ?? "";
+
         if (PHASE_SUM_GRID.Columns.Count > 2)
         {
           phaseCLeftValue = PANEL_GRID.Rows[i].Cells["phase_c_left"].Value?.ToString() ?? "0";
@@ -311,6 +323,11 @@ namespace GMEPElectricalCommands
         phase_b_right_tag.Add(phaseBRightTag);
         phase_c_left_tag.Add(phaseCLeftTag);
         phase_c_right_tag.Add(phaseCRightTag);
+
+        description_left_tags.Add(descriptionLeftTag);
+        description_right_tags.Add(descriptionRightTag);
+        breaker_left_tags.Add(breakerLeftTag);
+        breaker_right_tags.Add(breakerRightTag);
 
         // Checks for Left Side
         bool hasCommaInPhaseLeft = phaseALeftValue.Contains(",") || phaseBLeftValue.Contains(",") || phaseCLeftValue.Contains(",");
@@ -523,15 +540,10 @@ namespace GMEPElectricalCommands
         panel.Add("phase_c_right_tag", phase_c_right_tag);
       }
 
-      // go through each tag in the list and if it has a value that is not an empty string or null, print the tag and the cell value
-      Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage("\n\n");
-      for (int i = 0; i < phase_a_left_tag.Count; i++)
-      {
-        if (!string.IsNullOrEmpty(phase_a_left_tag[i]))
-        {
-          Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor.WriteMessage($"Tag: {phase_a_left_tag[i]}, Value: {phase_a_left[i]}\n");
-        }
-      }
+      panel.Add("description_left_tags", description_left_tags);
+      panel.Add("description_right_tags", description_right_tags);
+      panel.Add("breaker_left_tags", breaker_left_tags);
+      panel.Add("breaker_right_tags", breaker_right_tags);
 
       return panel;
     }
@@ -1052,6 +1064,12 @@ namespace GMEPElectricalCommands
     private void link_cell_to_phase(string cellValue, string columnName, DataGridViewRow row, DataGridViewColumn col)
     {
       var (panel_name, phase) = convert_cell_value_to_panel_name_and_phase(cellValue);
+
+      if (panel_name.ToLower() == PANEL_NAME_INPUT.Text.ToLower())
+      {
+        return;
+      }
+
       var isPanelReal = this.mainForm.panel_name_exists(panel_name);
 
       if (isPanelReal)
@@ -1399,8 +1417,11 @@ namespace GMEPElectricalCommands
         // wait for 5 seconds
         await Task.Delay(5000);
 
-        // erase the INFO_LABEL.TEXT value
-        INFO_LABEL.Text = string.Empty;
+        // if the INFO_LABEL.TEXT value is still the same as it was 5 seconds ago, then erase it
+        if (INFO_LABEL.Text == $"This cell is linked to phase {phase} of panel '{panelName}'.")
+        {
+          INFO_LABEL.Text = string.Empty;
+        }
       }
     }
 

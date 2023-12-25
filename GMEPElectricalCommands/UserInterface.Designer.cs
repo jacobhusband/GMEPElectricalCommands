@@ -562,7 +562,7 @@
       // 
       this.INFO_LABEL.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
       this.INFO_LABEL.AutoSize = true;
-      this.INFO_LABEL.Location = new System.Drawing.Point(844, 19);
+      this.INFO_LABEL.Location = new System.Drawing.Point(313, 19);
       this.INFO_LABEL.Name = "INFO_LABEL";
       this.INFO_LABEL.Size = new System.Drawing.Size(29, 13);
       this.INFO_LABEL.TabIndex = 180;
@@ -586,7 +586,8 @@
       this.APPLY_COMBOBOX.FormattingEnabled = true;
       this.APPLY_COMBOBOX.Items.AddRange(new object[] {
             "BREAKER OR DESCRIPTION IS EXISTING TO REMAIN",
-            "LCL @ 80% LOAD CAPACITY"});
+            "LCL @ 80% LOAD CAPACITY",
+            "KITCHEN DEMAND FACTOR"});
       this.APPLY_COMBOBOX.Location = new System.Drawing.Point(397, 624);
       this.APPLY_COMBOBOX.Name = "APPLY_COMBOBOX";
       this.APPLY_COMBOBOX.Size = new System.Drawing.Size(365, 21);

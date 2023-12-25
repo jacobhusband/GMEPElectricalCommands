@@ -99,6 +99,11 @@ namespace GMEPElectricalCommands
           foreach (DataGridViewRow row in panelGrid.Rows)
           {
             int rowIndex = row.Index;
+            int breaker_left_index = 3;
+            int breaker_right_index = 6;
+            int phase_a_right_index = 7;
+            int phase_b_right_index = 8;
+            int description_right_index = 9;
 
             string phase_a_left_tag = panel["phase_a_left_tag"].ToString();
             List<string> phase_a_left_tag_list = JsonConvert.DeserializeObject<List<string>>(phase_a_left_tag);
@@ -125,13 +130,18 @@ namespace GMEPElectricalCommands
               {
                 row.Cells[3].Value = phase_c_left_tag_value;
               }
+              breaker_left_index = 4;
+              breaker_right_index = 7;
+              phase_a_right_index = 8;
+              phase_b_right_index = 9;
+              description_right_index = 11;
             }
             string phase_a_right_tag = panel["phase_a_right_tag"].ToString();
             List<string> phase_a_right_tag_list = JsonConvert.DeserializeObject<List<string>>(phase_a_right_tag);
             string phase_a_right_tag_value = phase_a_right_tag_list[rowIndex];
             if (phase_a_right_tag_value != "")
             {
-              row.Cells[4].Value = phase_a_right_tag_value;
+              row.Cells[phase_a_right_index].Value = phase_a_right_tag_value;
             }
             // repeat for each phase
             string phase_b_right_tag = panel["phase_b_right_tag"].ToString();
@@ -139,7 +149,7 @@ namespace GMEPElectricalCommands
             string phase_b_right_tag_value = phase_b_right_tag_list[rowIndex];
             if (phase_b_right_tag_value != "")
             {
-              row.Cells[5].Value = phase_b_right_tag_value;
+              row.Cells[phase_b_right_index].Value = phase_b_right_tag_value;
             }
             // check if c exists
             if (panel.ContainsKey("phase_c_right"))
@@ -149,8 +159,36 @@ namespace GMEPElectricalCommands
               string phase_c_right_tag_value = phase_c_right_tag_list[rowIndex];
               if (phase_c_right_tag_value != "")
               {
-                row.Cells[6].Value = phase_c_right_tag_value;
+                row.Cells[10].Value = phase_c_right_tag_value;
               }
+            }
+            string description_left_tag = panel["description_left_tags"].ToString();
+            List<string> description_left_tag_list = JsonConvert.DeserializeObject<List<string>>(description_left_tag);
+            string description_left_tag_value = description_left_tag_list[rowIndex];
+            if (description_left_tag_value != "")
+            {
+              row.Cells[0].Tag = description_left_tag_value;
+            }
+            string description_right_tag = panel["description_right_tags"].ToString();
+            List<string> description_right_tag_list = JsonConvert.DeserializeObject<List<string>>(description_right_tag);
+            string description_right_tag_value = description_right_tag_list[rowIndex];
+            if (description_right_tag_value != "")
+            {
+              row.Cells[description_right_index].Tag = description_right_tag_value;
+            }
+            string breaker_left_tag = panel["breaker_left_tags"].ToString();
+            List<string> breaker_left_tag_list = JsonConvert.DeserializeObject<List<string>>(breaker_left_tag);
+            string breaker_left_tag_value = breaker_left_tag_list[rowIndex];
+            if (breaker_left_tag_value != "")
+            {
+              row.Cells[breaker_left_index].Tag = breaker_left_tag_value;
+            }
+            string breaker_right_tag = panel["breaker_right_tags"].ToString();
+            List<string> breaker_right_tag_list = JsonConvert.DeserializeObject<List<string>>(breaker_right_tag);
+            string breaker_right_tag_value = breaker_right_tag_list[rowIndex];
+            if (breaker_right_tag_value != "")
+            {
+              row.Cells[breaker_right_index].Tag = breaker_right_tag_value;
             }
           }
         }
@@ -220,55 +258,6 @@ namespace GMEPElectricalCommands
       return userControl1;
     }
 
-    //public void store_data_in_autocad_file(List<Dictionary<string, object>> saveData)
-    //{
-    //  Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
-    //  Autodesk.AutoCAD.DatabaseServices.Database acCurDb = acDoc.Database;
-    //  string jsonDataKey = "JsonSaveData";
-
-    //  using (Autodesk.AutoCAD.DatabaseServices.Transaction tr = acCurDb.TransactionManager.StartTransaction())
-    //  {
-    //    Autodesk.AutoCAD.DatabaseServices.DBDictionary nod = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(acCurDb.NamedObjectsDictionaryId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
-
-    //    Autodesk.AutoCAD.DatabaseServices.DBDictionary userDict;
-    //    if (nod.Contains(jsonDataKey))
-    //    {
-    //      // The dictionary already exists, so we just need to open it for write
-    //      userDict = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(nod.GetAt(jsonDataKey), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite);
-    //    }
-    //    else
-    //    {
-    //      // The dictionary doesn't exist, so we create a new one and add it to the NOD
-    //      userDict = new Autodesk.AutoCAD.DatabaseServices.DBDictionary();
-    //      nod.UpgradeOpen();
-    //      nod.SetAt(jsonDataKey, userDict);
-    //      tr.AddNewlyCreatedDBObject(userDict, true);
-    //    }
-
-    //    // Now let's update or create the Xrecord
-    //    Autodesk.AutoCAD.DatabaseServices.Xrecord xRecord;
-    //    if (userDict.Contains("SaveData"))
-    //    {
-    //      // The Xrecord exists, open it for write to update
-    //      xRecord = (Autodesk.AutoCAD.DatabaseServices.Xrecord)tr.GetObject(userDict.GetAt("SaveData"), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite);
-    //    }
-    //    else
-    //    {
-    //      // The Xrecord does not exist, create a new one
-    //      xRecord = new Autodesk.AutoCAD.DatabaseServices.Xrecord();
-    //      userDict.SetAt("SaveData", xRecord);
-    //      tr.AddNewlyCreatedDBObject(xRecord, true);
-    //    }
-
-    //    // Update the Xrecord data
-    //    Autodesk.AutoCAD.DatabaseServices.ResultBuffer rb = new Autodesk.AutoCAD.DatabaseServices.ResultBuffer(new Autodesk.AutoCAD.DatabaseServices.TypedValue((int)Autodesk.AutoCAD.DatabaseServices.DxfCode.Text, JsonConvert.SerializeObject(saveData, Formatting.Indented)));
-    //    xRecord.Data = new Autodesk.AutoCAD.DatabaseServices.ResultBuffer();
-    //    xRecord.Data = rb;
-
-    //    tr.Commit();
-    //  }
-    //}
-
     public void store_data_in_autocad_file(List<Dictionary<string, object>> saveData)
     {
       Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
@@ -321,39 +310,6 @@ namespace GMEPElectricalCommands
         tr.Commit();
       }
     }
-
-    //public List<Dictionary<string, object>> retrieve_saved_panel_data()
-    //{
-    //  List<Dictionary<string, object>> saveData = new List<Dictionary<string, object>>();
-
-    //  Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-    //  Autodesk.AutoCAD.DatabaseServices.Database acCurDb = acDoc.Database;
-    //  string jsonDataKey = "JsonSaveData";
-
-    //  using (Autodesk.AutoCAD.DatabaseServices.Transaction tr = acCurDb.TransactionManager.StartTransaction())
-    //  {
-    //    Autodesk.AutoCAD.DatabaseServices.DBDictionary nod = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(acCurDb.NamedObjectsDictionaryId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
-
-    //    if (nod.Contains(jsonDataKey))
-    //    {
-    //      Autodesk.AutoCAD.DatabaseServices.DBDictionary userDict = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(nod.GetAt(jsonDataKey), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
-    //      Autodesk.AutoCAD.DatabaseServices.Xrecord xRecord = (Autodesk.AutoCAD.DatabaseServices.Xrecord)tr.GetObject(userDict.GetAt("SaveData"), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
-    //      Autodesk.AutoCAD.DatabaseServices.ResultBuffer rb = xRecord.Data;
-    //      if (rb != null)
-    //      {
-    //        foreach (Autodesk.AutoCAD.DatabaseServices.TypedValue tv in rb)
-    //        {
-    //          if (tv.TypeCode == (int)Autodesk.AutoCAD.DatabaseServices.DxfCode.Text)
-    //          {
-    //            saveData = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(tv.Value.ToString());
-    //          }
-    //        }
-    //      }
-    //    }
-    //  }
-
-    //  return saveData;
-    //}
 
     public List<Dictionary<string, object>> retrieve_saved_panel_data()
     {
