@@ -286,7 +286,7 @@ namespace GMEPElectricalCommands
           CreateCenterLines(btr, tr, startPoint, endPoint, is2Pole);
 
           // Create the notes section
-          CreateNotes(btr, tr, startPoint, endPoint, panelData["existing"] as string);
+          CreateNotes(btr, tr, startPoint, endPoint, panelData["existing"] as string, panelData["custom_title"] as string, panelData["custom_notes"] as List<string>);
 
           // Create the calculations section
           CreateCalculations(btr, tr, startPoint, endPoint, panelData);
@@ -855,11 +855,20 @@ namespace GMEPElectricalCommands
       CreateAndPositionText(tr, "=", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 7.03028501835593, endPoint.Y - 0.998928989062989, 0));
     }
 
-    private void CreateNotes(BlockTableRecord btr, Transaction tr, Point3d startPoint, Point3d endPoint, string panelType)
+    private void CreateNotes(BlockTableRecord btr, Transaction tr, Point3d startPoint, Point3d endPoint, string panelType, string customTitle, List<string> customNotes)
     {
+      var title = "";
       if (panelType.ToLower() == "existing")
       {
-        CreateAndPositionText(tr, "(EXISTING PANEL)", "ROMANC", 0.1498, 0.75, 2, "0", new Point3d(startPoint.X + 0.236635303895696, startPoint.Y + 0.113254677317428, 0));
+        if (!string.IsNullOrEmpty(customTitle))
+        {
+          title = customTitle;
+        }
+        else
+        {
+          title = "(EXISTING PANEL)";
+        }
+        CreateAndPositionText(tr, title, "ROMANC", 0.1498, 0.75, 2, "0", new Point3d(startPoint.X + 0.236635303895696, startPoint.Y + 0.113254677317428, 0));
 
         // Create the text
         CreateAndPositionText(tr, "NOTES:", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 5.96783070435049, endPoint.Y - 0.23875904811004, 0));
@@ -868,7 +877,15 @@ namespace GMEPElectricalCommands
       }
       else if (panelType.ToLower() == "relocated")
       {
-        CreateAndPositionText(tr, "(EXISTING TO BE RELOCATED PANEL)", "ROMANC", 0.1498, 0.75, 2, "0", new Point3d(startPoint.X + 0.236635303895696, startPoint.Y + 0.113254677317428, 0));
+        if (!string.IsNullOrEmpty(customTitle))
+        {
+          title = customTitle;
+        }
+        else
+        {
+          title = "(EXISTING TO BE RELOCATED PANEL)";
+        }
+        CreateAndPositionText(tr, title, "ROMANC", 0.1498, 0.75, 2, "0", new Point3d(startPoint.X + 0.236635303895696, startPoint.Y + 0.113254677317428, 0));
 
         // Create the text
         CreateAndPositionText(tr, "NOTES:", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 5.96783070435049, endPoint.Y - 0.23875904811004, 0));
@@ -877,7 +894,15 @@ namespace GMEPElectricalCommands
       }
       else
       {
-        CreateAndPositionText(tr, "(NEW PANEL)", "ROMANC", 0.1498, 0.75, 2, "0", new Point3d(startPoint.X + 0.236635303895696, startPoint.Y + 0.113254677317428, 0));
+        if (!string.IsNullOrEmpty(customTitle))
+        {
+          title = customTitle;
+        }
+        else
+        {
+          title = "(NEW PANEL)";
+        }
+        CreateAndPositionText(tr, title, "ROMANC", 0.1498, 0.75, 2, "0", new Point3d(startPoint.X + 0.236635303895696, startPoint.Y + 0.113254677317428, 0));
 
         // Create the text
         CreateAndPositionText(tr, "NOTES:", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 5.96783070435049, endPoint.Y - 0.23875904811004, 0));

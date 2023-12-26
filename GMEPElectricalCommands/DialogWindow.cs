@@ -70,9 +70,6 @@ namespace GMEPElectricalCommands
 
       List<Dictionary<string, object>> panelStorage = retrieve_saved_panel_data();
 
-      string json = JsonConvert.SerializeObject(panelStorage, Formatting.Indented);
-      System.IO.File.WriteAllText(@"C:\Users\Public\Documents\panelStorageOpening.json", json);
-
       if (panelStorage.Count == 0)
       {
         return;

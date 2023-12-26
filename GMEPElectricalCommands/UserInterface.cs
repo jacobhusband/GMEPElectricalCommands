@@ -21,6 +21,7 @@ namespace GMEPElectricalCommands
     private MainForm mainForm;
     private NEWPANELFORM newPanelForm;
     private noteForm notesForm;
+    private Dictionary<string, List<int>> notesStorage = new Dictionary<string, List<int>>();
 
     private bool initialization;
     private object oldValue;
@@ -33,7 +34,7 @@ namespace GMEPElectricalCommands
       this.newPanelForm = newPanelForm;
       this.initialization = false;
       this.Name = tabName;
-      this.notesForm = new noteForm();
+      this.notesStorage = new Dictionary<string, List<int>>();
 
       listen_for_new_rows();
       add_or_remove_panel_grid_columns(is3PH);
@@ -55,13 +56,12 @@ namespace GMEPElectricalCommands
       add_rows_to_datagrid();
       set_default_form_values(tabName);
       deselect_cells();
-      empty_label();
       this.initialization = true;
     }
 
-    private void empty_label()
+    public Dictionary<string, List<int>> getNotesStorage()
     {
-      INFO_LABEL.Text = "";
+      return this.notesStorage;
     }
 
     private void add_rows_to_datagrid()
@@ -923,7 +923,7 @@ namespace GMEPElectricalCommands
 
               if (key.Contains("description") && currentValue == "SPACE")
               {
-                continue; // skip this iteration if the value is "SPACE" for descriptions
+                currentValue = string.Empty;
               }
 
               if (key.Contains("phase") && currentValue == "0")
@@ -1211,6 +1211,39 @@ namespace GMEPElectricalCommands
 
           // Right Side
           PANEL_GRID.Columns.Remove("phase_c_right");
+        }
+      }
+    }
+
+    private void update_apply_combobox_to_match_storage()
+    {
+      var apply_combobox_items = new List<string>();
+      foreach (var key in this.notesStorage.Keys)
+      {
+        if (!apply_combobox_items.Contains(key))
+        {
+          apply_combobox_items.Add(key);
+        }
+      }
+      APPLY_COMBOBOX.DataSource = apply_combobox_items;
+    }
+
+    public void update_notes_storage(Dictionary<string, List<int>> notesStorage)
+    {
+      this.notesStorage = notesStorage;
+      PrintNotesStorage();
+      update_apply_combobox_to_match_storage();
+    }
+
+    public void PrintNotesStorage()
+    {
+      foreach (var note in this.notesStorage)
+      {
+        Console.WriteLine($"Key: {note.Key}");
+        Console.WriteLine("Values: ");
+        foreach (var value in note.Value)
+        {
+          Console.WriteLine(value);
         }
       }
     }
@@ -1525,7 +1558,16 @@ namespace GMEPElectricalCommands
 
     private void NOTES_BUTTON_Click(object sender, EventArgs e)
     {
-      this.notesForm.Show();
+      if (this.notesForm == null || this.notesForm.IsDisposed)
+      {
+        this.notesForm = new noteForm(this);
+        this.notesForm.Show();
+        this.notesForm.Text = $"Panel '{PANEL_NAME_INPUT.Text}' Notes";
+      }
+      else
+      {
+        this.notesForm.BringToFront();
+      }
     }
 
     private void APPLY_BUTTON_Click(object sender, EventArgs e)
@@ -1596,6 +1638,33 @@ namespace GMEPElectricalCommands
             }
           }
         }
+      }
+    }
+
+    private void STATUS_COMBOBOX_SelectedIndexChanged(object sender, EventArgs e)
+    {
+      var default_existing_message = "DENOTES EXISTING CIRCUIT BREAKER TO REMAIN; ALL OTHERS ARE NEW.";
+      var default_new_message = "65 KAIC SERIES RATED OR MATCH FAULT CURRENT AT SITE.";
+
+      if (STATUS_COMBOBOX.SelectedItem != null)
+      {
+        if (STATUS_COMBOBOX.SelectedItem.ToString() == "EXISTING" || STATUS_COMBOBOX.SelectedItem.ToString() == "RELOCATED")
+        {
+          if (!this.notesStorage.ContainsKey(default_existing_message))
+          {
+            this.notesStorage.Add(default_existing_message, new List<int>());
+          }
+          this.notesStorage.Remove(default_new_message);
+        }
+        else
+        {
+          if (!this.notesStorage.ContainsKey(default_new_message))
+          {
+            this.notesStorage.Add(default_new_message, new List<int>());
+          }
+          this.notesStorage.Remove(default_existing_message);
+        }
+        update_apply_combobox_to_match_storage();
       }
     }
   }
