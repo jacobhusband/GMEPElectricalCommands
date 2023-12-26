@@ -86,6 +86,7 @@
       this.CUSTOM_NOTES_BUTTON = new System.Windows.Forms.Button();
       this.CUSTOM_TITLE_TEXT = new System.Windows.Forms.TextBox();
       this.CUSTOM_TITLE_LABEL = new System.Windows.Forms.Label();
+      this.REMOVE_NOTE_BUTTON = new System.Windows.Forms.Button();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -575,11 +576,11 @@
       // 
       // APPLY_BUTTON
       // 
-      this.APPLY_BUTTON.Location = new System.Drawing.Point(660, 622);
+      this.APPLY_BUTTON.Location = new System.Drawing.Point(749, 622);
       this.APPLY_BUTTON.Name = "APPLY_BUTTON";
-      this.APPLY_BUTTON.Size = new System.Drawing.Size(75, 23);
+      this.APPLY_BUTTON.Size = new System.Drawing.Size(86, 23);
       this.APPLY_BUTTON.TabIndex = 181;
-      this.APPLY_BUTTON.Text = "APPLY";
+      this.APPLY_BUTTON.Text = "APPLY NOTE";
       this.APPLY_BUTTON.UseVisualStyleBackColor = true;
       this.APPLY_BUTTON.Click += new System.EventHandler(this.APPLY_BUTTON_Click);
       // 
@@ -589,7 +590,7 @@
       this.APPLY_COMBOBOX.FormattingEnabled = true;
       this.APPLY_COMBOBOX.Location = new System.Drawing.Point(440, 623);
       this.APPLY_COMBOBOX.Name = "APPLY_COMBOBOX";
-      this.APPLY_COMBOBOX.Size = new System.Drawing.Size(214, 21);
+      this.APPLY_COMBOBOX.Size = new System.Drawing.Size(303, 21);
       this.APPLY_COMBOBOX.TabIndex = 182;
       this.APPLY_COMBOBOX.SelectedIndexChanged += new System.EventHandler(this.APPLY_COMBOBOX_SelectedIndexChanged);
       // 
@@ -619,10 +620,21 @@
       this.CUSTOM_TITLE_LABEL.TabIndex = 185;
       this.CUSTOM_TITLE_LABEL.Text = "CUSTOM TITLE";
       // 
+      // REMOVE_NOTE_BUTTON
+      // 
+      this.REMOVE_NOTE_BUTTON.Location = new System.Drawing.Point(840, 622);
+      this.REMOVE_NOTE_BUTTON.Name = "REMOVE_NOTE_BUTTON";
+      this.REMOVE_NOTE_BUTTON.Size = new System.Drawing.Size(96, 23);
+      this.REMOVE_NOTE_BUTTON.TabIndex = 186;
+      this.REMOVE_NOTE_BUTTON.Text = "REMOVE NOTE";
+      this.REMOVE_NOTE_BUTTON.UseVisualStyleBackColor = true;
+      this.REMOVE_NOTE_BUTTON.Click += new System.EventHandler(this.REMOVE_NOTE_BUTTON_Click);
+      // 
       // UserInterface
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      this.Controls.Add(this.REMOVE_NOTE_BUTTON);
       this.Controls.Add(this.CUSTOM_TITLE_LABEL);
       this.Controls.Add(this.CUSTOM_TITLE_TEXT);
       this.Controls.Add(this.CUSTOM_NOTES_BUTTON);
@@ -737,5 +749,6 @@
     private System.Windows.Forms.Button CUSTOM_NOTES_BUTTON;
     private System.Windows.Forms.TextBox CUSTOM_TITLE_TEXT;
     private System.Windows.Forms.Label CUSTOM_TITLE_LABEL;
+    private System.Windows.Forms.Button REMOVE_NOTE_BUTTON;
   }
 }

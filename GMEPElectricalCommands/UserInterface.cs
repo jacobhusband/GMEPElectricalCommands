@@ -1576,10 +1576,6 @@ namespace GMEPElectricalCommands
 
       // make a list with the column names "description" and "breaker" which is used when the selected item value has "BREAKER" in it, otherwise, just use "description"
       List<string> columnNames = new List<string> { "description" };
-      if (selectedValue.Contains("BREAKER"))
-      {
-        columnNames.Add("breaker");
-      }
 
       // get all the cells which are selected in the panel grid
       foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells)
@@ -1665,6 +1661,31 @@ namespace GMEPElectricalCommands
           this.notesStorage.Remove(default_existing_message);
         }
         update_apply_combobox_to_match_storage();
+      }
+    }
+
+    private void REMOVE_NOTE_BUTTON_Click(object sender, EventArgs e)
+    {
+      string selectedValue = APPLY_COMBOBOX.SelectedItem.ToString();
+
+      // make a list with the column names "description" and "breaker" which is used when the selected item value has "BREAKER" in it, otherwise, just use "description"
+      List<string> columnNames = new List<string> { "description" };
+
+      // get all the cells which are selected in the panel grid
+      foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells)
+      {
+        // check if the cell owning column name contains either of the column names in the list
+        if (columnNames.Any(cell.OwningColumn.Name.Contains))
+        {
+          // check if the tag contains the selected value
+          if (cell.Tag != null && cell.Tag.ToString().Contains(selectedValue))
+          {
+            // remove the selected value from the tag
+            cell.Tag = cell.Tag.ToString().Replace(selectedValue, "").Trim(',');
+
+            cell.Style.BackColor = Color.Empty;
+          }
+        }
       }
     }
   }
