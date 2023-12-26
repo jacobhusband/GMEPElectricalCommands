@@ -36,6 +36,8 @@ namespace GMEPElectricalCommands
       this.Name = tabName;
       this.notesStorage = new Dictionary<string, List<int>>();
 
+      INFO_LABEL.Text = "";
+
       listen_for_new_rows();
       add_or_remove_panel_grid_columns(is3PH);
       remove_column_header_sorting();

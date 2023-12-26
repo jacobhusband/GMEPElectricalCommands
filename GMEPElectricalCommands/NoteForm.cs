@@ -66,5 +66,15 @@ namespace GMEPElectricalCommands
       // Call the update_notes_storage method on the userInterface
       this.userInterface.update_notes_storage(this.notesStorage);
     }
+
+    private void ADD_NOTE_BUTTON_Click(object sender, EventArgs e)
+    {
+      // Check if the selected item in the QUICK_ADD_COMBOBOX is not null
+      if (QUICK_ADD_COMBOBOX.SelectedItem != null)
+      {
+        // Add the selected item on a newline to the NOTES_TEXTBOX
+        NOTES_TEXTBOX.AppendText(QUICK_ADD_COMBOBOX.SelectedItem.ToString() + Environment.NewLine);
+      }
+    }
   }
 }

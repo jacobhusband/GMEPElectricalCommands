@@ -588,6 +588,9 @@
       // 
       this.APPLY_COMBOBOX.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.APPLY_COMBOBOX.FormattingEnabled = true;
+      this.APPLY_COMBOBOX.Items.AddRange(new object[] {
+            "ADD SUFFIX (E)",
+            "ADD SUFFIX (R)"});
       this.APPLY_COMBOBOX.Location = new System.Drawing.Point(440, 623);
       this.APPLY_COMBOBOX.Name = "APPLY_COMBOBOX";
       this.APPLY_COMBOBOX.Size = new System.Drawing.Size(303, 21);

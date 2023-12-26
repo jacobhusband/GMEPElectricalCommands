@@ -65,10 +65,13 @@
       // 
       // QUICK_ADD_COMBOBOX
       // 
+      this.QUICK_ADD_COMBOBOX.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.QUICK_ADD_COMBOBOX.FormattingEnabled = true;
       this.QUICK_ADD_COMBOBOX.Items.AddRange(new object[] {
-            "RELOCATED BREAKERS",
-            "KITCHEN DEMAND FACTOR"});
+            "THE KITCHEN DEMAND FACTOR IS BEING APPLIED TO THE KITCHEN EQUIPMENT (NEC 220.56)." +
+                "",
+            "THESE BREAKERS ARE RELOCATED FROM PANEL _ TO THIS PANEL.",
+            "THESE BREAKERS HAVE BEEN RELOCATED TO PANEL _ FROM THIS PANEL."});
       this.QUICK_ADD_COMBOBOX.Location = new System.Drawing.Point(12, 430);
       this.QUICK_ADD_COMBOBOX.Name = "QUICK_ADD_COMBOBOX";
       this.QUICK_ADD_COMBOBOX.Size = new System.Drawing.Size(666, 21);
@@ -82,8 +85,9 @@
       this.ADD_NOTE_BUTTON.TabIndex = 4;
       this.ADD_NOTE_BUTTON.Text = "ADD NOTE";
       this.ADD_NOTE_BUTTON.UseVisualStyleBackColor = true;
+      this.ADD_NOTE_BUTTON.Click += new System.EventHandler(this.ADD_NOTE_BUTTON_Click);
       // 
-      // NOTES_FORM
+      // noteForm
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -93,7 +97,7 @@
       this.Controls.Add(this.QUICK_ADD_NOTE_TEXT);
       this.Controls.Add(this.NOTE_PER_LINE_TEXT);
       this.Controls.Add(this.NOTES_TEXTBOX);
-      this.Name = "NOTES_FORM";
+      this.Name = "noteForm";
       this.Text = "Notes";
       this.ResumeLayout(false);
       this.PerformLayout();
