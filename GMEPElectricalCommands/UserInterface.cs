@@ -58,6 +58,10 @@ namespace GMEPElectricalCommands
       add_rows_to_datagrid();
       set_default_form_values(tabName);
       deselect_cells();
+
+      this.notesForm = new noteForm(this);
+      this.notesForm.update_notes_to_match_the_note_form();
+
       this.initialization = true;
     }
 
@@ -1568,6 +1572,10 @@ namespace GMEPElectricalCommands
       }
       else
       {
+        if (!this.notesForm.Visible)
+        {
+          this.notesForm.Show();
+        }
         this.notesForm.BringToFront();
       }
     }

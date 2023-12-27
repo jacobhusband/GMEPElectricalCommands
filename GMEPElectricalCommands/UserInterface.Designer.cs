@@ -83,7 +83,7 @@
       this.INFO_LABEL = new System.Windows.Forms.Label();
       this.APPLY_BUTTON = new System.Windows.Forms.Button();
       this.APPLY_COMBOBOX = new System.Windows.Forms.ComboBox();
-      this.CUSTOM_NOTES_BUTTON = new System.Windows.Forms.Button();
+      this.MODIFY_NOTES_BUTTON = new System.Windows.Forms.Button();
       this.CUSTOM_TITLE_TEXT = new System.Windows.Forms.TextBox();
       this.CUSTOM_TITLE_LABEL = new System.Windows.Forms.Label();
       this.REMOVE_NOTE_BUTTON = new System.Windows.Forms.Button();
@@ -219,6 +219,7 @@
       // 
       // LARGEST_LCL_INPUT
       // 
+      this.LARGEST_LCL_INPUT.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
       this.LARGEST_LCL_INPUT.Location = new System.Drawing.Point(153, 433);
       this.LARGEST_LCL_INPUT.Name = "LARGEST_LCL_INPUT";
       this.LARGEST_LCL_INPUT.Size = new System.Drawing.Size(142, 20);
@@ -398,6 +399,7 @@
       // 
       // PANEL_NAME_INPUT
       // 
+      this.PANEL_NAME_INPUT.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
       this.PANEL_NAME_INPUT.Location = new System.Drawing.Point(197, 70);
       this.PANEL_NAME_INPUT.Name = "PANEL_NAME_INPUT";
       this.PANEL_NAME_INPUT.Size = new System.Drawing.Size(100, 20);
@@ -431,6 +433,7 @@
       // 
       // PANEL_LOCATION_INPUT
       // 
+      this.PANEL_LOCATION_INPUT.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
       this.PANEL_LOCATION_INPUT.Location = new System.Drawing.Point(197, 95);
       this.PANEL_LOCATION_INPUT.Name = "PANEL_LOCATION_INPUT";
       this.PANEL_LOCATION_INPUT.Size = new System.Drawing.Size(100, 20);
@@ -450,6 +453,7 @@
       // 
       // MAIN_INPUT
       // 
+      this.MAIN_INPUT.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
       this.MAIN_INPUT.Location = new System.Drawing.Point(197, 120);
       this.MAIN_INPUT.Name = "MAIN_INPUT";
       this.MAIN_INPUT.Size = new System.Drawing.Size(100, 20);
@@ -467,6 +471,7 @@
       // 
       // BUS_RATING_INPUT
       // 
+      this.BUS_RATING_INPUT.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
       this.BUS_RATING_INPUT.Location = new System.Drawing.Point(197, 146);
       this.BUS_RATING_INPUT.Name = "BUS_RATING_INPUT";
       this.BUS_RATING_INPUT.Size = new System.Drawing.Size(100, 20);
@@ -474,6 +479,7 @@
       // 
       // LINE_VOLTAGE_COMBOBOX
       // 
+      this.LINE_VOLTAGE_COMBOBOX.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.LINE_VOLTAGE_COMBOBOX.FormattingEnabled = true;
       this.LINE_VOLTAGE_COMBOBOX.Items.AddRange(new object[] {
             "120",
@@ -494,6 +500,7 @@
       // 
       // PHASE_VOLTAGE_COMBOBOX
       // 
+      this.PHASE_VOLTAGE_COMBOBOX.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.PHASE_VOLTAGE_COMBOBOX.FormattingEnabled = true;
       this.PHASE_VOLTAGE_COMBOBOX.Items.AddRange(new object[] {
             "208",
@@ -506,6 +513,7 @@
       // 
       // STATUS_COMBOBOX
       // 
+      this.STATUS_COMBOBOX.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.STATUS_COMBOBOX.FormattingEnabled = true;
       this.STATUS_COMBOBOX.Items.AddRange(new object[] {
             "NEW",
@@ -519,6 +527,7 @@
       // 
       // PHASE_COMBOBOX
       // 
+      this.PHASE_COMBOBOX.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.PHASE_COMBOBOX.FormattingEnabled = true;
       this.PHASE_COMBOBOX.Items.AddRange(new object[] {
             "1",
@@ -530,6 +539,7 @@
       // 
       // MOUNTING_COMBOBOX
       // 
+      this.MOUNTING_COMBOBOX.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.MOUNTING_COMBOBOX.FormattingEnabled = true;
       this.MOUNTING_COMBOBOX.Items.AddRange(new object[] {
             "SURFACE",
@@ -541,6 +551,7 @@
       // 
       // WIRE_COMBOBOX
       // 
+      this.WIRE_COMBOBOX.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.WIRE_COMBOBOX.FormattingEnabled = true;
       this.WIRE_COMBOBOX.Items.AddRange(new object[] {
             "3",
@@ -576,7 +587,7 @@
       // 
       // APPLY_BUTTON
       // 
-      this.APPLY_BUTTON.Location = new System.Drawing.Point(749, 622);
+      this.APPLY_BUTTON.Location = new System.Drawing.Point(886, 623);
       this.APPLY_BUTTON.Name = "APPLY_BUTTON";
       this.APPLY_BUTTON.Size = new System.Drawing.Size(86, 23);
       this.APPLY_BUTTON.TabIndex = 181;
@@ -588,28 +599,26 @@
       // 
       this.APPLY_COMBOBOX.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.APPLY_COMBOBOX.FormattingEnabled = true;
-      this.APPLY_COMBOBOX.Items.AddRange(new object[] {
-            "ADD SUFFIX (E)",
-            "ADD SUFFIX (R)"});
-      this.APPLY_COMBOBOX.Location = new System.Drawing.Point(440, 623);
+      this.APPLY_COMBOBOX.Location = new System.Drawing.Point(423, 624);
       this.APPLY_COMBOBOX.Name = "APPLY_COMBOBOX";
-      this.APPLY_COMBOBOX.Size = new System.Drawing.Size(303, 21);
+      this.APPLY_COMBOBOX.Size = new System.Drawing.Size(457, 21);
       this.APPLY_COMBOBOX.TabIndex = 182;
       this.APPLY_COMBOBOX.SelectedIndexChanged += new System.EventHandler(this.APPLY_COMBOBOX_SelectedIndexChanged);
       // 
-      // CUSTOM_NOTES_BUTTON
+      // MODIFY_NOTES_BUTTON
       // 
-      this.CUSTOM_NOTES_BUTTON.Location = new System.Drawing.Point(316, 622);
-      this.CUSTOM_NOTES_BUTTON.Name = "CUSTOM_NOTES_BUTTON";
-      this.CUSTOM_NOTES_BUTTON.Size = new System.Drawing.Size(118, 23);
-      this.CUSTOM_NOTES_BUTTON.TabIndex = 183;
-      this.CUSTOM_NOTES_BUTTON.Text = "CUSTOM NOTES";
-      this.CUSTOM_NOTES_BUTTON.UseVisualStyleBackColor = true;
-      this.CUSTOM_NOTES_BUTTON.Click += new System.EventHandler(this.NOTES_BUTTON_Click);
+      this.MODIFY_NOTES_BUTTON.Location = new System.Drawing.Point(316, 623);
+      this.MODIFY_NOTES_BUTTON.Name = "MODIFY_NOTES_BUTTON";
+      this.MODIFY_NOTES_BUTTON.Size = new System.Drawing.Size(101, 23);
+      this.MODIFY_NOTES_BUTTON.TabIndex = 183;
+      this.MODIFY_NOTES_BUTTON.Text = "MODIFY NOTES";
+      this.MODIFY_NOTES_BUTTON.UseVisualStyleBackColor = true;
+      this.MODIFY_NOTES_BUTTON.Click += new System.EventHandler(this.NOTES_BUTTON_Click);
       // 
       // CUSTOM_TITLE_TEXT
       // 
-      this.CUSTOM_TITLE_TEXT.Location = new System.Drawing.Point(1170, 625);
+      this.CUSTOM_TITLE_TEXT.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+      this.CUSTOM_TITLE_TEXT.Location = new System.Drawing.Point(1170, 624);
       this.CUSTOM_TITLE_TEXT.Name = "CUSTOM_TITLE_TEXT";
       this.CUSTOM_TITLE_TEXT.Size = new System.Drawing.Size(193, 20);
       this.CUSTOM_TITLE_TEXT.TabIndex = 184;
@@ -617,7 +626,7 @@
       // CUSTOM_TITLE_LABEL
       // 
       this.CUSTOM_TITLE_LABEL.AutoSize = true;
-      this.CUSTOM_TITLE_LABEL.Location = new System.Drawing.Point(1079, 629);
+      this.CUSTOM_TITLE_LABEL.Location = new System.Drawing.Point(1079, 628);
       this.CUSTOM_TITLE_LABEL.Name = "CUSTOM_TITLE_LABEL";
       this.CUSTOM_TITLE_LABEL.Size = new System.Drawing.Size(86, 13);
       this.CUSTOM_TITLE_LABEL.TabIndex = 185;
@@ -625,7 +634,7 @@
       // 
       // REMOVE_NOTE_BUTTON
       // 
-      this.REMOVE_NOTE_BUTTON.Location = new System.Drawing.Point(840, 622);
+      this.REMOVE_NOTE_BUTTON.Location = new System.Drawing.Point(977, 623);
       this.REMOVE_NOTE_BUTTON.Name = "REMOVE_NOTE_BUTTON";
       this.REMOVE_NOTE_BUTTON.Size = new System.Drawing.Size(96, 23);
       this.REMOVE_NOTE_BUTTON.TabIndex = 186;
@@ -640,7 +649,7 @@
       this.Controls.Add(this.REMOVE_NOTE_BUTTON);
       this.Controls.Add(this.CUSTOM_TITLE_LABEL);
       this.Controls.Add(this.CUSTOM_TITLE_TEXT);
-      this.Controls.Add(this.CUSTOM_NOTES_BUTTON);
+      this.Controls.Add(this.MODIFY_NOTES_BUTTON);
       this.Controls.Add(this.APPLY_COMBOBOX);
       this.Controls.Add(this.APPLY_BUTTON);
       this.Controls.Add(this.INFO_LABEL);
@@ -749,7 +758,7 @@
     private System.Windows.Forms.Label INFO_LABEL;
     private System.Windows.Forms.Button APPLY_BUTTON;
     private System.Windows.Forms.ComboBox APPLY_COMBOBOX;
-    private System.Windows.Forms.Button CUSTOM_NOTES_BUTTON;
+    private System.Windows.Forms.Button MODIFY_NOTES_BUTTON;
     private System.Windows.Forms.TextBox CUSTOM_TITLE_TEXT;
     private System.Windows.Forms.Label CUSTOM_TITLE_LABEL;
     private System.Windows.Forms.Button REMOVE_NOTE_BUTTON;

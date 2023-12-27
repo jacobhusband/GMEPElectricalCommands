@@ -42,6 +42,8 @@
       this.NOTES_TEXTBOX.Name = "NOTES_TEXTBOX";
       this.NOTES_TEXTBOX.Size = new System.Drawing.Size(776, 365);
       this.NOTES_TEXTBOX.TabIndex = 0;
+      this.NOTES_TEXTBOX.Text = "ADD SUFFIX (E). *NOT ADDED AS NOTE*\r\nADD SUFFIX (R). *NOT ADDED AS NOTE*\r\nAPPLY L" +
+    "CL LOAD REDUCTION  (USE 80% OF THE MCA LOAD). *NOT ADDED AS NOTE*";
       // 
       // NOTE_PER_LINE_TEXT
       // 
@@ -71,7 +73,10 @@
             "THE KITCHEN DEMAND FACTOR IS BEING APPLIED TO THE KITCHEN EQUIPMENT (NEC 220.56)." +
                 "",
             "THESE BREAKERS ARE RELOCATED FROM PANEL _ TO THIS PANEL.",
-            "THESE BREAKERS HAVE BEEN RELOCATED TO PANEL _ FROM THIS PANEL."});
+            "THESE BREAKERS HAVE BEEN RELOCATED TO PANEL _ FROM THIS PANEL.",
+            "ADD SUFFIX (E). *NOT ADDED AS NOTE*",
+            "ADD SUFFIX (R). *NOT ADDED AS NOTE*",
+            "APPLY LCL LOAD REDUCTION  (USE 80% OF THE MCA LOAD). *NOT ADDED AS NOTE*"});
       this.QUICK_ADD_COMBOBOX.Location = new System.Drawing.Point(12, 430);
       this.QUICK_ADD_COMBOBOX.Name = "QUICK_ADD_COMBOBOX";
       this.QUICK_ADD_COMBOBOX.Size = new System.Drawing.Size(666, 21);

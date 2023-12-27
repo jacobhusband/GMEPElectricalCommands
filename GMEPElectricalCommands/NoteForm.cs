@@ -31,12 +31,22 @@ namespace GMEPElectricalCommands
     {
       foreach (var key in this.notesStorage.Keys)
       {
+        // Check if the last line is not empty, if so, append a newline first
+        if (!string.IsNullOrEmpty(NOTES_TEXTBOX.Lines.LastOrDefault()))
+        {
+          NOTES_TEXTBOX.AppendText(Environment.NewLine);
+        }
         NOTES_TEXTBOX.AppendText(key + Environment.NewLine);
       }
     }
 
     // Event handler for form closing
     private void noteForm_FormClosing(object sender, FormClosingEventArgs e)
+    {
+      update_notes_to_match_the_note_form();
+    }
+
+    public void update_notes_to_match_the_note_form()
     {
       // Split the text in the NOTES_TEXTBOX by newlines and add any new notes to notesStorage
       var notes = NOTES_TEXTBOX.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
