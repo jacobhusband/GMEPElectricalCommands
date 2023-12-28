@@ -551,6 +551,8 @@ namespace GMEPElectricalCommands
       panel.Add("breaker_left_tags", breaker_left_tags);
       panel.Add("breaker_right_tags", breaker_right_tags);
 
+      panel.Add("notes", notesStorage);
+
       return panel;
     }
 
@@ -1236,8 +1238,13 @@ namespace GMEPElectricalCommands
 
     public void update_notes_storage(Dictionary<string, List<int>> notesStorage)
     {
+      // Print the content of notesStorage
+      foreach (var item in notesStorage)
+      {
+        Console.WriteLine("Key: " + item.Key + ", Value: " + string.Join(", ", item.Value));
+      }
+
       this.notesStorage = notesStorage;
-      PrintNotesStorage();
       update_apply_combobox_to_match_storage();
     }
 

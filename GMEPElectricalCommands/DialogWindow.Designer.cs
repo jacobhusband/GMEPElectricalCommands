@@ -32,15 +32,15 @@ namespace GMEPElectricalCommands
     {
       this.PANEL_TABS = new System.Windows.Forms.TabControl();
       this.tabPage1 = new System.Windows.Forms.TabPage();
-      this.NEW_PANEL_BUTTON = new System.Windows.Forms.Button();
       this.CREATE_ALL_PANELS_BUTTON = new System.Windows.Forms.Button();
+      this.NEW_PANEL_BUTTON = new System.Windows.Forms.Button();
       this.PANEL_TABS.SuspendLayout();
       this.SuspendLayout();
       // 
       // PANEL_TABS
       // 
       this.PANEL_TABS.Controls.Add(this.tabPage1);
-      this.PANEL_TABS.Location = new System.Drawing.Point(-2, 33);
+      this.PANEL_TABS.Location = new System.Drawing.Point(5, 33);
       this.PANEL_TABS.Name = "PANEL_TABS";
       this.PANEL_TABS.SelectedIndex = 0;
       this.PANEL_TABS.Size = new System.Drawing.Size(1409, 691);
@@ -56,25 +56,25 @@ namespace GMEPElectricalCommands
       this.tabPage1.Text = "tabPage1";
       this.tabPage1.UseVisualStyleBackColor = true;
       // 
-      // NEW_PANEL_BUTTON
-      // 
-      this.NEW_PANEL_BUTTON.Location = new System.Drawing.Point(5, 7);
-      this.NEW_PANEL_BUTTON.Name = "NEW_PANEL_BUTTON";
-      this.NEW_PANEL_BUTTON.Size = new System.Drawing.Size(100, 23);
-      this.NEW_PANEL_BUTTON.TabIndex = 178;
-      this.NEW_PANEL_BUTTON.Text = "NEW PANEL";
-      this.NEW_PANEL_BUTTON.UseVisualStyleBackColor = true;
-      this.NEW_PANEL_BUTTON.Click += new System.EventHandler(this.NEW_PANEL_BUTTON_Click);
-      // 
       // CREATE_ALL_PANELS_BUTTON
       // 
-      this.CREATE_ALL_PANELS_BUTTON.Location = new System.Drawing.Point(111, 7);
+      this.CREATE_ALL_PANELS_BUTTON.Location = new System.Drawing.Point(111, 4);
       this.CREATE_ALL_PANELS_BUTTON.Name = "CREATE_ALL_PANELS_BUTTON";
       this.CREATE_ALL_PANELS_BUTTON.Size = new System.Drawing.Size(148, 23);
       this.CREATE_ALL_PANELS_BUTTON.TabIndex = 179;
       this.CREATE_ALL_PANELS_BUTTON.Text = "CREATE ALL PANELS";
       this.CREATE_ALL_PANELS_BUTTON.UseVisualStyleBackColor = true;
       this.CREATE_ALL_PANELS_BUTTON.Click += new System.EventHandler(this.CREATE_ALL_PANELS_BUTTON_Click);
+      // 
+      // NEW_PANEL_BUTTON
+      // 
+      this.NEW_PANEL_BUTTON.Location = new System.Drawing.Point(5, 4);
+      this.NEW_PANEL_BUTTON.Name = "NEW_PANEL_BUTTON";
+      this.NEW_PANEL_BUTTON.Size = new System.Drawing.Size(100, 23);
+      this.NEW_PANEL_BUTTON.TabIndex = 178;
+      this.NEW_PANEL_BUTTON.Text = "NEW PANEL";
+      this.NEW_PANEL_BUTTON.UseVisualStyleBackColor = true;
+      this.NEW_PANEL_BUTTON.Click += new System.EventHandler(this.NEW_PANEL_BUTTON_Click);
       // 
       // MainForm
       // 

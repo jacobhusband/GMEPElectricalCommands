@@ -24,7 +24,6 @@ namespace GMEPElectricalCommands
     private MyCommands myCommandsInstance;
     private NEWPANELFORM newPanelForm;
     private List<UserInterface> userControls;
-    private UserInterface userControl1;
 
     public MainForm(MyCommands myCommands)
     {
@@ -82,6 +81,8 @@ namespace GMEPElectricalCommands
           bool is3PH = panel.ContainsKey("phase_c_left");
           UserInterface userControl1 = create_new_panel_tab(panelName, is3PH);
           userControl1.clear_and_set_modal_values(panel);
+          var notes = JsonConvert.DeserializeObject<Dictionary<string, List<int>>>(panel["notes"].ToString());
+          userControl1.update_notes_storage(notes);
         }
 
         foreach (Dictionary<string, object> panel in panelStorage)
