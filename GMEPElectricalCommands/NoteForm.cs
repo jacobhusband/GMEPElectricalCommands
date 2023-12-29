@@ -20,50 +20,78 @@ namespace GMEPElectricalCommands
       InitializeComponent();
 
       this.userInterface = userInterface;
-      this.notesStorage = userInterface.getNotesStorage();
-      append_notes_to_textbox();
+      this.noteForm_Load(null, null);
 
       // Add event listener for form closing
       this.FormClosing += new FormClosingEventHandler(this.noteForm_FormClosing);
+
+      // Add event listener for form opening
+      this.Load += new EventHandler(this.noteForm_Load);
     }
 
-    private void append_notes_to_textbox()
+    public void print_notes_storage(Dictionary<string, List<int>> notesStorage)
     {
-      foreach (var key in this.notesStorage.Keys)
+      foreach (var note in notesStorage)
       {
-        // Check if the NOTES_TEXTBOX does not contain the key before appending it
-        if (!NOTES_TEXTBOX.Text.Contains(key))
+        Console.WriteLine($"Key: {note.Key}, Values: {string.Join(", ", note.Value)}");
+      }
+    }
+
+    private void noteForm_Load(object sender, EventArgs e)
+    {
+      var notesStorage = userInterface.getNotesStorage();
+      print_notes_storage(notesStorage);
+      append_notes_to_textbox(notesStorage);
+    }
+
+    private void append_notes_to_textbox(Dictionary<string, List<int>> notesStorage)
+    {
+      // Check if notesStorage is not null and has keys before running the foreach loop
+      if (notesStorage != null && notesStorage.Keys.Count > 0)
+      {
+        foreach (var key in notesStorage.Keys)
         {
-          // Check if the last line is not empty, if so, append a newline first
-          if (!string.IsNullOrEmpty(NOTES_TEXTBOX.Lines.LastOrDefault()))
+          // Check if the NOTES_TEXTBOX does not contain the key before appending it
+          if (!NOTES_TEXTBOX.Text.Contains(key))
           {
-            NOTES_TEXTBOX.AppendText(Environment.NewLine);
+            // Check if the last line is not empty, if so, append a newline first
+            if (!string.IsNullOrEmpty(NOTES_TEXTBOX.Lines.LastOrDefault()))
+            {
+              NOTES_TEXTBOX.AppendText(Environment.NewLine);
+            }
+            NOTES_TEXTBOX.AppendText(key + Environment.NewLine);
           }
-          NOTES_TEXTBOX.AppendText(key + Environment.NewLine);
         }
       }
     }
 
     private void noteForm_FormClosing(object sender, FormClosingEventArgs e)
     {
-      update_notes_to_match_the_note_form();
+      var notesStorage = userInterface.getNotesStorage();
+      update_notes_to_match_the_note_form(notesStorage);
     }
 
-    public void update_notes_to_match_the_note_form()
+    public void update_notes_to_match_the_note_form(Dictionary<string, List<int>> notesStorage)
     {
+      if (notesStorage == null || notesStorage.Keys.Count == 0)
+      {
+        return;
+      }
+
       // Split the text in the NOTES_TEXTBOX by newlines and add any new notes to notesStorage
       var notes = NOTES_TEXTBOX.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
       foreach (var note in notes)
       {
-        if (!string.IsNullOrEmpty(note) && !this.notesStorage.ContainsKey(note))
+        if (!string.IsNullOrEmpty(note) && !notesStorage.ContainsKey(note))
         {
-          this.notesStorage.Add(note, new List<int>());
+          notesStorage.Add(note, new List<int>());
         }
       }
 
       // Remove any notes from notesStorage that are not in the NOTES_TEXTBOX
       var notesToRemove = new List<string>();
-      foreach (var key in this.notesStorage.Keys)
+
+      foreach (var key in notesStorage.Keys)
       {
         if (!NOTES_TEXTBOX.Text.Contains(key))
         {
@@ -73,11 +101,11 @@ namespace GMEPElectricalCommands
 
       foreach (var note in notesToRemove)
       {
-        this.notesStorage.Remove(note);
+        notesStorage.Remove(note);
       }
 
       // Call the update_notes_storage method on the userInterface
-      this.userInterface.update_notes_storage(this.notesStorage);
+      this.userInterface.update_notes_storage(notesStorage);
     }
 
     private void ADD_NOTE_BUTTON_Click(object sender, EventArgs e)

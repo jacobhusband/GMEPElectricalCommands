@@ -60,7 +60,7 @@ namespace GMEPElectricalCommands
       deselect_cells();
 
       this.notesForm = new noteForm(this);
-      this.notesForm.update_notes_to_match_the_note_form();
+      this.notesForm.update_notes_to_match_the_note_form(this.notesStorage);
 
       this.initialization = true;
     }

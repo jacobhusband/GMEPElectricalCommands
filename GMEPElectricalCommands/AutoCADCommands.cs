@@ -876,28 +876,66 @@ namespace GMEPElectricalCommands
         }
       }
 
+      // Create the horizontal lines
+      double y_initial = 0.0846396524177919;
+      double y_increment = 0.1872;
+      int lines = 5;
+      int lines_of_text = 0;
+      double yOffset = y_initial;
+
       CreateAndPositionText(tr, title, "ROMANC", 0.1498, 0.75, 2, "0", new Point3d(startPoint.X + 0.236635303895696, startPoint.Y + 0.113254677317428, 0));
 
       // Create the text
       CreateAndPositionText(tr, "NOTES:", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 5.96783070435049, endPoint.Y - 0.23875904811004, 0));
 
-      if (panelType.ToLower() == "existing" || panelType.ToLower() == "relocated")
+      if (!customNotes.Any())
       {
-        CreateAndPositionText(tr, "DENOTES EXISTING CIRCUIT BREAKER TO REMAIN; ALL OTHERS ARE NEW", "ROMANS", 0.09375, 1, 2, "0", new Point3d(endPoint.X - 5.61904201783966, endPoint.Y - 0.405747901076808, 0));
-        CreateAndPositionText(tr, "TO MATCH EXISTING.", "ROMANS", 0.09375, 1, 2, "0", new Point3d(endPoint.X - 5.61904201783966, endPoint.Y - 0.610352149436778, 0));
+        if (panelType.ToLower() == "existing" || panelType.ToLower() == "relocated")
+        {
+          CreateAndPositionText(tr, "DENOTES EXISTING CIRCUIT BREAKER TO REMAIN; ALL OTHERS ARE NEW", "ROMANS", 0.09375, 1, 2, "0", new Point3d(endPoint.X - 5.61904201783966, endPoint.Y - 0.405747901076808, 0));
+          CreateAndPositionText(tr, "TO MATCH EXISTING.", "ROMANS", 0.09375, 1, 2, "0", new Point3d(endPoint.X - 5.61904201783966, endPoint.Y - 0.610352149436778, 0));
+        }
+        else
+        {
+          CreateAndPositionText(tr, "65 KAIC SERIES RATED OR MATCH FAULT CURRENT AT SITE.", "ROMANS", 0.09375, 1, 2, "0", new Point3d(endPoint.X - 5.61904201783966, endPoint.Y - 0.405747901076808, 0));
+        }
+        // Create the circle
+        CreateCircle(btr, tr, new Point3d(endPoint.X - 5.8088, endPoint.Y - 0.3664, 0), 0.09, 2, false);
+
+        // Create the 1
+        CreateAndPositionCenteredText(tr, "1", "ROMANS", 0.09375, 1, 2, "0", new Point3d(endPoint.X - 5.85897687070053 - 0.145, endPoint.Y - 0.410151417346867, 0));
       }
       else
       {
-        CreateAndPositionText(tr, "65 KAIC SERIES RATED OR MATCH FAULT CURRENT AT SITE.", "ROMANS", 0.09375, 1, 2, "0", new Point3d(endPoint.X - 5.61904201783966, endPoint.Y - 0.405747901076808, 0));
+        var number = 1;
+        // for each notes that does not contain *NOT ADDED AS NOTE*, create a note
+        foreach (var note in customNotes)
+        {
+          if (!note.Key.Contains("*NOT ADDED AS NOTE*"))
+          {
+            // Create the circle
+            CreateCircle(btr, tr, new Point3d(endPoint.X - 5.8088, endPoint.Y - 0.3664 - (lines_of_text * 0.1872), 0), 0.09, 2, false);
+
+            // Create the number
+            CreateAndPositionCenteredText(tr, number.ToString(), "ROMANS", 0.09375, 1, 2, "0", new Point3d(endPoint.X - 5.85897687070053 - 0.145, endPoint.Y - 0.410151417346867 - (lines_of_text * 0.1872), 0));
+
+            // if the string is longer than 65 characters, find the end of the word closest to the 65th character and split the string there into two strings and check the next string if it is longer than 65 characters and do the same, then return all the strings
+            var noteStrings = SplitStringIntoLines(note.Key, 65);
+            foreach (var noteString in noteStrings)
+            {
+              CreateAndPositionText(tr, noteString, "ROMANS", 0.09375, 1, 2, "0", new Point3d(endPoint.X - 5.61904201783966, endPoint.Y - 0.405747901076808 - (lines_of_text * 0.1872), 0));
+              lines_of_text++;
+            }
+
+            number++;
+          }
+        }
+        if (lines_of_text > lines - 1)
+        {
+          lines = lines_of_text + 1;
+        }
       }
-
-      // Create the horizontal lines
-      double y_initial = 0.0846396524177919;
-      double y_increment = 0.1872;
-      int amount = 5;
-      double yOffset = y_initial;
-
-      for (int i = 0; i <= amount; i++)
+      for (int i = 0; i <= lines; i++)
       {
         yOffset = y_initial + (i * y_increment);
         CreateLine(tr, btr, endPoint.X, endPoint.Y - yOffset, endPoint.X - 6.07359999999994, endPoint.Y - yOffset, "0");
@@ -906,12 +944,24 @@ namespace GMEPElectricalCommands
       // Create the vertical lines
       CreateLine(tr, btr, endPoint.X, endPoint.Y - 0.0846396524177919, endPoint.X, endPoint.Y - yOffset, "0");
       CreateLine(tr, btr, endPoint.X - 6.07359999999994, endPoint.Y - yOffset, endPoint.X - 6.07359999999994, endPoint.Y + -0.0846396524177919, "0");
+    }
 
-      // Create the circle
-      CreateCircle(btr, tr, new Point3d(endPoint.X - 5.8088, endPoint.Y - 0.3664, 0), 0.09, 2, false);
+    // if the string is longer than 65 characters, find the end of the word closest to the 65th character and split the string there into two strings and check the next string if it is longer than 65 characters and do the same, then return all the strings
+    private List<string> SplitStringIntoLines(string str, int maxLength)
+    {
+      List<string> lines = new List<string>();
 
-      // Create the 1
-      CreateAndPositionCenteredText(tr, "1", "ROMANS", 0.09375, 1, 2, "0", new Point3d(endPoint.X - 5.85897687070053 - 0.145, endPoint.Y - 0.410151417346867, 0));
+      while (str.Length > maxLength)
+      {
+        int index = str.LastIndexOf(' ', maxLength);
+        string line = str.Substring(0, index);
+        lines.Add(line);
+        str = str.Substring(index + 1);
+      }
+
+      lines.Add(str);
+
+      return lines;
     }
 
     private void CreateCenterLines(BlockTableRecord btr, Transaction tr, Point3d startPoint, Point3d endPoint, bool is2Pole)
