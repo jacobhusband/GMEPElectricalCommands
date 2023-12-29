@@ -97,8 +97,6 @@ namespace GMEPElectricalCommands
           foreach (DataGridViewRow row in panelGrid.Rows)
           {
             int rowIndex = row.Index;
-            int breaker_left_index = 3;
-            int breaker_right_index = 6;
             int phase_a_right_index = 7;
             int phase_b_right_index = 8;
             int description_right_index = 9;
@@ -128,8 +126,6 @@ namespace GMEPElectricalCommands
               {
                 row.Cells[3].Value = phase_c_left_tag_value;
               }
-              breaker_left_index = 4;
-              breaker_right_index = 7;
               phase_a_right_index = 8;
               phase_b_right_index = 9;
               description_right_index = 11;
@@ -173,20 +169,6 @@ namespace GMEPElectricalCommands
             if (description_right_tag_value != "")
             {
               row.Cells[description_right_index].Tag = description_right_tag_value;
-            }
-            string breaker_left_tag = panel["breaker_left_tags"].ToString();
-            List<string> breaker_left_tag_list = JsonConvert.DeserializeObject<List<string>>(breaker_left_tag);
-            string breaker_left_tag_value = breaker_left_tag_list[rowIndex];
-            if (breaker_left_tag_value != "")
-            {
-              row.Cells[breaker_left_index].Tag = breaker_left_tag_value;
-            }
-            string breaker_right_tag = panel["breaker_right_tags"].ToString();
-            List<string> breaker_right_tag_list = JsonConvert.DeserializeObject<List<string>>(breaker_right_tag);
-            string breaker_right_tag_value = breaker_right_tag_list[rowIndex];
-            if (breaker_right_tag_value != "")
-            {
-              row.Cells[breaker_right_index].Tag = breaker_right_tag_value;
             }
           }
         }
@@ -371,6 +353,11 @@ namespace GMEPElectricalCommands
           userControl.add_circuits_to_note_storage();
           panelStorage.Add(userControl.retrieve_data_from_modal());
         }
+
+        string json = JsonConvert.SerializeObject(panelStorage, Formatting.Indented);
+        string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        File.WriteAllText(Path.Combine(desktopPath, "panelStorage.json"), json);
+
         store_data_in_autocad_file(panelStorage);
         this.userControls = new List<UserInterface>();
       }

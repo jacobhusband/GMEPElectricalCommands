@@ -31,16 +31,19 @@ namespace GMEPElectricalCommands
     {
       foreach (var key in this.notesStorage.Keys)
       {
-        // Check if the last line is not empty, if so, append a newline first
-        if (!string.IsNullOrEmpty(NOTES_TEXTBOX.Lines.LastOrDefault()))
+        // Check if the NOTES_TEXTBOX does not contain the key before appending it
+        if (!NOTES_TEXTBOX.Text.Contains(key))
         {
-          NOTES_TEXTBOX.AppendText(Environment.NewLine);
+          // Check if the last line is not empty, if so, append a newline first
+          if (!string.IsNullOrEmpty(NOTES_TEXTBOX.Lines.LastOrDefault()))
+          {
+            NOTES_TEXTBOX.AppendText(Environment.NewLine);
+          }
+          NOTES_TEXTBOX.AppendText(key + Environment.NewLine);
         }
-        NOTES_TEXTBOX.AppendText(key + Environment.NewLine);
       }
     }
 
-    // Event handler for form closing
     private void noteForm_FormClosing(object sender, FormClosingEventArgs e)
     {
       update_notes_to_match_the_note_form();
@@ -82,14 +85,14 @@ namespace GMEPElectricalCommands
       // Check if the selected item in the QUICK_ADD_COMBOBOX is not null
       if (QUICK_ADD_COMBOBOX.SelectedItem != null)
       {
-        // Add the selected item on a newline to the NOTES_TEXTBOX
-        NOTES_TEXTBOX.AppendText(QUICK_ADD_COMBOBOX.SelectedItem.ToString() + Environment.NewLine);
+        var selectedItem = QUICK_ADD_COMBOBOX.SelectedItem.ToString();
+        // Check if the NOTES_TEXTBOX does not already contain the selected item
+        if (!NOTES_TEXTBOX.Text.Contains(selectedItem))
+        {
+          // Add the selected item on a newline to the NOTES_TEXTBOX
+          NOTES_TEXTBOX.AppendText(selectedItem + Environment.NewLine);
+        }
       }
-    }
-
-    internal List<string> get_list_of_notes()
-    {
-      return NOTES_TEXTBOX.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
     }
   }
 }

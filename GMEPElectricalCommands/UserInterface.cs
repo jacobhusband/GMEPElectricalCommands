@@ -248,6 +248,7 @@ namespace GMEPElectricalCommands
       panel.Add("total_other_load", TOTAL_OTHER_LOAD_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
       panel.Add("kva", PANEL_LOAD_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
       panel.Add("feeder_amps", FEEDER_AMP_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("custom_title", CUSTOM_TITLE_TEXT.Text.ToUpper());
 
       // Add "A" to the bus rating value if it consists of digits only, then convert to uppercase
       string busRatingInput = BUS_RATING_INPUT.Text.ToLower();
@@ -297,8 +298,6 @@ namespace GMEPElectricalCommands
 
       List<string> description_left_tags = new List<string>();
       List<string> description_right_tags = new List<string>();
-      List<string> breaker_left_tags = new List<string>();
-      List<string> breaker_right_tags = new List<string>();
 
       for (int i = 0; i < PANEL_GRID.Rows.Count; i++)
       {
@@ -339,8 +338,6 @@ namespace GMEPElectricalCommands
 
         string descriptionLeftTag = PANEL_GRID.Rows[i].Cells["description_left"].Tag?.ToString() ?? "";
         string descriptionRightTag = PANEL_GRID.Rows[i].Cells["description_right"].Tag?.ToString() ?? "";
-        string breakerLeftTag = PANEL_GRID.Rows[i].Cells["breaker_left"].Tag?.ToString() ?? "";
-        string breakerRightTag = PANEL_GRID.Rows[i].Cells["breaker_right"].Tag?.ToString() ?? "";
 
         if (PHASE_SUM_GRID.Columns.Count > 2)
         {
@@ -359,8 +356,6 @@ namespace GMEPElectricalCommands
 
         description_left_tags.Add(descriptionLeftTag);
         description_right_tags.Add(descriptionRightTag);
-        breaker_left_tags.Add(breakerLeftTag);
-        breaker_right_tags.Add(breakerRightTag);
 
         // Checks for Left Side
         bool hasCommaInPhaseLeft = phaseALeftValue.Contains(",") || phaseBLeftValue.Contains(",") || phaseCLeftValue.Contains(",");
@@ -554,11 +549,13 @@ namespace GMEPElectricalCommands
       panel.Add("phase_b_left", phase_b_left);
       panel.Add("phase_a_right", phase_a_right);
       panel.Add("phase_b_right", phase_b_right);
+
       if (PHASE_SUM_GRID.Columns.Count > 2)
       {
         panel.Add("phase_c_left", phase_c_left);
         panel.Add("phase_c_right", phase_c_right);
       }
+
       panel.Add("breaker_left", breaker_left);
       panel.Add("breaker_right", breaker_right);
       panel.Add("circuit_left", circuit_left);
@@ -567,6 +564,7 @@ namespace GMEPElectricalCommands
       panel.Add("phase_b_left_tag", phase_b_left_tag);
       panel.Add("phase_a_right_tag", phase_a_right_tag);
       panel.Add("phase_b_right_tag", phase_b_right_tag);
+
       if (PHASE_SUM_GRID.Columns.Count > 2)
       {
         panel.Add("phase_c_left_tag", phase_c_left_tag);
@@ -575,11 +573,8 @@ namespace GMEPElectricalCommands
 
       panel.Add("description_left_tags", description_left_tags);
       panel.Add("description_right_tags", description_right_tags);
-      panel.Add("breaker_left_tags", breaker_left_tags);
-      panel.Add("breaker_right_tags", breaker_right_tags);
 
       panel.Add("notes", notesStorage);
-      panel.Add("notes_ordered", get_list_of_notes());
 
       return panel;
     }
@@ -934,6 +929,12 @@ namespace GMEPElectricalCommands
       PANEL_LOAD_GRID.Rows[0].Cells[0].Value = selectedPanelData["kva"].ToString();
       FEEDER_AMP_GRID.Rows[0].Cells[0].Value = selectedPanelData["feeder_amps"].ToString();
 
+      // Set Custom Title if it exists
+      if (selectedPanelData.ContainsKey("custom_title"))
+      {
+        CUSTOM_TITLE_TEXT.Text = selectedPanelData["custom_title"].ToString();
+      }
+
       List<string> multi_row_datagrid_keys = new List<string> { "description_left", "description_right", "phase_a_left", "phase_b_left", "phase_a_right", "phase_b_right", "breaker_left", "breaker_right", "circuit_left", "circuit_right" };
 
       // check if the panel is three phase and if so add the third phase to the list of keys
@@ -1040,25 +1041,6 @@ namespace GMEPElectricalCommands
         PANEL_GRID.Rows[i].Cells["circuit_left"].Value = string.Empty;
         PANEL_GRID.Rows[i].Cells["circuit_right"].Value = string.Empty;
       }
-    }
-
-    public static string extract_panel_name(string input)
-    {
-      // Check if the input contains the word "panel" (case-insensitive)
-      if (Regex.IsMatch(input, @"\bpanel\b", RegexOptions.IgnoreCase))
-      {
-        // Extract the panel name using a regular expression
-        var match = Regex.Match(input, @"panel\s*['""`]?([a-zA-Z0-9]+)['""`]?", RegexOptions.IgnoreCase);
-
-        if (match.Success)
-        {
-          // Return the extracted panel name in uppercase
-          return match.Groups[1].Value.ToUpper();
-        }
-      }
-
-      // Return null or an appropriate default value if no panel name is found
-      return null;
     }
 
     private void add_phase_sum_column(bool is3PH)
@@ -1268,17 +1250,6 @@ namespace GMEPElectricalCommands
     {
       this.notesStorage = notesStorage;
       update_apply_combobox_to_match_storage();
-    }
-
-    internal List<string> get_list_of_notes()
-    {
-      // access the NOTES_TEXTBOX of the notes form and save each note in order based on the newline character
-      if (this.notesForm != null && !this.notesForm.IsDisposed)
-      {
-        return this.notesForm.get_list_of_notes();
-      }
-
-      return new List<string>();
     }
 
     private void PANEL_NAME_INPUT_TextChanged(object sender, EventArgs e)

@@ -228,10 +228,6 @@ namespace GMEPElectricalCommands
         panelDataList = ImportExcelData(); // If not provided, import from Excel
       }
 
-      string json = Newtonsoft.Json.JsonConvert.SerializeObject(panelDataList, Newtonsoft.Json.Formatting.Indented);
-      string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-      File.WriteAllText(path + "\\panelDataList.json", json);
-
       var spaceId = (db.TileMode == true) ? SymbolUtilityServices.GetBlockModelSpaceId(db) : SymbolUtilityServices.GetBlockPaperSpaceId(db);
 
       // Get the insertion point from the user
@@ -286,7 +282,7 @@ namespace GMEPElectricalCommands
           CreateCenterLines(btr, tr, startPoint, endPoint, is2Pole);
 
           // Create the notes section
-          CreateNotes(btr, tr, startPoint, endPoint, panelData["existing"] as string, panelData["custom_title"] as string, panelData["custom_notes"] as List<string>);
+          CreateNotes(btr, tr, startPoint, endPoint, panelData["existing"] as string, panelData["custom_title"] as string, panelData["notes"] as List<string>);
 
           // Create the calculations section
           CreateCalculations(btr, tr, startPoint, endPoint, panelData);
