@@ -282,7 +282,7 @@ namespace GMEPElectricalCommands
           CreateCenterLines(btr, tr, startPoint, endPoint, is2Pole);
 
           // Create the notes section
-          CreateNotes(btr, tr, startPoint, endPoint, panelData["existing"] as string, panelData["custom_title"] as string, panelData["notes"] as List<string>);
+          CreateNotes(btr, tr, startPoint, endPoint, panelData["existing"] as string, panelData["custom_title"] as string, panelData["notes"] as Dictionary<string, List<int>>);
 
           // Create the calculations section
           CreateCalculations(btr, tr, startPoint, endPoint, panelData);
@@ -851,69 +851,61 @@ namespace GMEPElectricalCommands
       CreateAndPositionText(tr, "=", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 7.03028501835593, endPoint.Y - 0.998928989062989, 0));
     }
 
-    private void CreateNotes(BlockTableRecord btr, Transaction tr, Point3d startPoint, Point3d endPoint, string panelType, string customTitle, List<string> customNotes)
+    private void CreateNotes(BlockTableRecord btr, Transaction tr, Point3d startPoint, Point3d endPoint, string panelType, string customTitle, Dictionary<string, List<int>> customNotes)
     {
-      var title = "";
-      if (panelType.ToLower() == "existing")
+      string title;
+      if (!string.IsNullOrEmpty(customTitle))
       {
-        if (!string.IsNullOrEmpty(customTitle))
-        {
-          title = customTitle;
-        }
-        else
-        {
-          title = "(EXISTING PANEL)";
-        }
-        CreateAndPositionText(tr, title, "ROMANC", 0.1498, 0.75, 2, "0", new Point3d(startPoint.X + 0.236635303895696, startPoint.Y + 0.113254677317428, 0));
-
-        // Create the text
-        CreateAndPositionText(tr, "NOTES:", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 5.96783070435049, endPoint.Y - 0.23875904811004, 0));
-        CreateAndPositionText(tr, "DENOTES EXISTING CIRCUIT BREAKER TO REMAIN; ALL OTHERS ARE NEW", "ROMANS", 0.09375, 1, 2, "0", new Point3d(endPoint.X - 5.61904201783966, endPoint.Y - 0.405747901076808, 0));
-        CreateAndPositionText(tr, "TO MATCH EXISTING.", "ROMANS", 0.09375, 1, 2, "0", new Point3d(endPoint.X - 5.61904201783966, endPoint.Y - 0.610352149436778, 0));
+        title = customTitle;
       }
-      else if (panelType.ToLower() == "relocated")
+      else
       {
-        if (!string.IsNullOrEmpty(customTitle))
+        switch (panelType.ToLower())
         {
-          title = customTitle;
-        }
-        else
-        {
-          title = "(EXISTING TO BE RELOCATED PANEL)";
-        }
-        CreateAndPositionText(tr, title, "ROMANC", 0.1498, 0.75, 2, "0", new Point3d(startPoint.X + 0.236635303895696, startPoint.Y + 0.113254677317428, 0));
+          case "existing":
+            title = "(EXISTING PANEL)";
+            break;
 
-        // Create the text
-        CreateAndPositionText(tr, "NOTES:", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 5.96783070435049, endPoint.Y - 0.23875904811004, 0));
+          case "relocated":
+            title = "(EXISTING TO BE RELOCATED PANEL)";
+            break;
+
+          default:
+            title = "(NEW PANEL)";
+            break;
+        }
+      }
+
+      CreateAndPositionText(tr, title, "ROMANC", 0.1498, 0.75, 2, "0", new Point3d(startPoint.X + 0.236635303895696, startPoint.Y + 0.113254677317428, 0));
+
+      // Create the text
+      CreateAndPositionText(tr, "NOTES:", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 5.96783070435049, endPoint.Y - 0.23875904811004, 0));
+
+      if (panelType.ToLower() == "existing" || panelType.ToLower() == "relocated")
+      {
         CreateAndPositionText(tr, "DENOTES EXISTING CIRCUIT BREAKER TO REMAIN; ALL OTHERS ARE NEW", "ROMANS", 0.09375, 1, 2, "0", new Point3d(endPoint.X - 5.61904201783966, endPoint.Y - 0.405747901076808, 0));
         CreateAndPositionText(tr, "TO MATCH EXISTING.", "ROMANS", 0.09375, 1, 2, "0", new Point3d(endPoint.X - 5.61904201783966, endPoint.Y - 0.610352149436778, 0));
       }
       else
       {
-        if (!string.IsNullOrEmpty(customTitle))
-        {
-          title = customTitle;
-        }
-        else
-        {
-          title = "(NEW PANEL)";
-        }
-        CreateAndPositionText(tr, title, "ROMANC", 0.1498, 0.75, 2, "0", new Point3d(startPoint.X + 0.236635303895696, startPoint.Y + 0.113254677317428, 0));
-
-        // Create the text
-        CreateAndPositionText(tr, "NOTES:", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 5.96783070435049, endPoint.Y - 0.23875904811004, 0));
         CreateAndPositionText(tr, "65 KAIC SERIES RATED OR MATCH FAULT CURRENT AT SITE.", "ROMANS", 0.09375, 1, 2, "0", new Point3d(endPoint.X - 5.61904201783966, endPoint.Y - 0.405747901076808, 0));
       }
 
-      // Create the lines
-      CreateLine(tr, btr, endPoint.X, endPoint.Y - 0.0846396524177919, endPoint.X - 6.07359999999994, endPoint.Y - 0.0846396524177919, "0");
-      CreateLine(tr, btr, endPoint.X, endPoint.Y - 0.0846396524177919, endPoint.X, endPoint.Y - 1.02063965241777, "0");
-      CreateLine(tr, btr, endPoint.X - 6.07359999999994, endPoint.Y - 1.02063965241777, endPoint.X - 6.07359999999994, endPoint.Y + -0.0846396524177919, "0");
-      CreateLine(tr, btr, endPoint.X, endPoint.Y - 1.02063965241777, endPoint.X - 6.07359999999994, endPoint.Y - 1.02063965241777, "0");
-      CreateLine(tr, btr, endPoint.X, endPoint.Y - 0.27183965241781, endPoint.X - 6.07359999999994, endPoint.Y - 0.27183965241781, "0");
-      CreateLine(tr, btr, endPoint.X, endPoint.Y - 0.459039652417772, endPoint.X - 6.07359999999994, endPoint.Y - 0.459039652417772, "0");
-      CreateLine(tr, btr, endPoint.X, endPoint.Y - 0.64623965241779, endPoint.X - 6.07359999999994, endPoint.Y + -0.64623965241779, "0");
-      CreateLine(tr, btr, endPoint.X, endPoint.Y + -0.833439652417809, endPoint.X - 6.07359999999994, endPoint.Y + -0.833439652417809, "0");
+      // Create the horizontal lines
+      double y_initial = 0.0846396524177919;
+      double y_increment = 0.1872;
+      int amount = 5;
+      double yOffset = y_initial;
+
+      for (int i = 0; i <= amount; i++)
+      {
+        yOffset = y_initial + (i * y_increment);
+        CreateLine(tr, btr, endPoint.X, endPoint.Y - yOffset, endPoint.X - 6.07359999999994, endPoint.Y - yOffset, "0");
+      }
+
+      // Create the vertical lines
+      CreateLine(tr, btr, endPoint.X, endPoint.Y - 0.0846396524177919, endPoint.X, endPoint.Y - yOffset, "0");
+      CreateLine(tr, btr, endPoint.X - 6.07359999999994, endPoint.Y - yOffset, endPoint.X - 6.07359999999994, endPoint.Y + -0.0846396524177919, "0");
 
       // Create the circle
       CreateCircle(btr, tr, new Point3d(endPoint.X - 5.8088, endPoint.Y - 0.3664, 0), 0.09, 2, false);
