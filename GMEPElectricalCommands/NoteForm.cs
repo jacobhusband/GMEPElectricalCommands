@@ -86,5 +86,10 @@ namespace GMEPElectricalCommands
         NOTES_TEXTBOX.AppendText(QUICK_ADD_COMBOBOX.SelectedItem.ToString() + Environment.NewLine);
       }
     }
+
+    internal List<string> get_list_of_notes()
+    {
+      return NOTES_TEXTBOX.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
+    }
   }
 }

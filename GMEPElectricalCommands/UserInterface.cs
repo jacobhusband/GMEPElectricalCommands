@@ -579,6 +579,7 @@ namespace GMEPElectricalCommands
       panel.Add("breaker_right_tags", breaker_right_tags);
 
       panel.Add("notes", notesStorage);
+      panel.Add("notes_ordered", get_list_of_notes());
 
       return panel;
     }
@@ -1269,17 +1270,15 @@ namespace GMEPElectricalCommands
       update_apply_combobox_to_match_storage();
     }
 
-    public void PrintNotesStorage()
+    internal List<string> get_list_of_notes()
     {
-      foreach (var note in this.notesStorage)
+      // access the NOTES_TEXTBOX of the notes form and save each note in order based on the newline character
+      if (this.notesForm != null && !this.notesForm.IsDisposed)
       {
-        Console.WriteLine($"Key: {note.Key}");
-        Console.WriteLine("Values: ");
-        foreach (var value in note.Value)
-        {
-          Console.WriteLine(value);
-        }
+        return this.notesForm.get_list_of_notes();
       }
+
+      return new List<string>();
     }
 
     private void PANEL_NAME_INPUT_TextChanged(object sender, EventArgs e)
