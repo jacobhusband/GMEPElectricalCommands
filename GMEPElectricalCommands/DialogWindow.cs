@@ -368,6 +368,7 @@ namespace GMEPElectricalCommands
       {
         foreach (UserInterface userControl in this.userControls)
         {
+          userControl.add_circuits_to_note_storage();
           panelStorage.Add(userControl.retrieve_data_from_modal());
         }
         store_data_in_autocad_file(panelStorage);

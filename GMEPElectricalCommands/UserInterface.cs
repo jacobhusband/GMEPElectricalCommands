@@ -65,6 +65,33 @@ namespace GMEPElectricalCommands
       this.initialization = true;
     }
 
+    public Dictionary<string, List<int>> add_circuits_to_note_storage()
+    {
+      foreach (DataGridViewRow row in PANEL_GRID.Rows)
+      {
+        if (row.Cells["description_left"].Tag != null)
+        {
+          int row_index_odd = (row.Index != 0) ? row.Index * 2 - 1 : 0;
+          string descriptionLeftTag = row.Cells["description_left"].Tag.ToString();
+          if (notesStorage.ContainsKey(descriptionLeftTag))
+          {
+            notesStorage[descriptionLeftTag].Add(row_index_odd);
+          }
+        }
+
+        if (row.Cells["description_right"].Tag != null)
+        {
+          int row_index_even = row.Index * 2;
+          string descriptionRightTag = row.Cells["description_right"].Tag.ToString();
+          if (notesStorage.ContainsKey(descriptionRightTag))
+          {
+            notesStorage[descriptionRightTag].Add(row_index_even);
+          }
+        }
+      }
+      return notesStorage;
+    }
+
     public Dictionary<string, List<int>> getNotesStorage()
     {
       return this.notesStorage;
@@ -1238,12 +1265,6 @@ namespace GMEPElectricalCommands
 
     public void update_notes_storage(Dictionary<string, List<int>> notesStorage)
     {
-      // Print the content of notesStorage
-      foreach (var item in notesStorage)
-      {
-        Console.WriteLine("Key: " + item.Key + ", Value: " + string.Join(", ", item.Value));
-      }
-
       this.notesStorage = notesStorage;
       update_apply_combobox_to_match_storage();
     }
