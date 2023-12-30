@@ -12,7 +12,9 @@ using System;
 using System.Collections.Generic;
 using Autodesk.AutoCAD.Colors;
 using OfficeOpenXml;
+using Newtonsoft.Json;
 using System.Collections;
+using System.Net;
 
 [assembly: CommandClass(typeof(GMEPElectricalCommands.MyCommands))]
 
@@ -282,7 +284,14 @@ namespace GMEPElectricalCommands
           CreateCenterLines(btr, tr, startPoint, endPoint, is2Pole);
 
           // Create the notes section
-          CreateNotes(btr, tr, startPoint, endPoint, panelData["existing"] as string, panelData["custom_title"] as string, panelData["notes"] as Dictionary<string, List<int>>);
+          if (panelData.ContainsKey("notes"))
+          {
+            CreateNotes(btr, tr, startPoint, endPoint, panelData["existing"] as string, panelData["custom_title"] as string, panelData["notes"] as List<string>);
+          }
+          else
+          {
+            CreateNotes(btr, tr, startPoint, endPoint, panelData["existing"] as string, null, null);
+          }
 
           // Create the calculations section
           CreateCalculations(btr, tr, startPoint, endPoint, panelData);
@@ -662,7 +671,7 @@ namespace GMEPElectricalCommands
       Console.WriteLine(ex.Message);
     }
 
-    public void KeepBreakersGivenPoints(Point3d point1, Point3d point2, Point3d point3)
+    public void KeepBreakersGivenPoints(Point3d point1, Point3d point2, Point3d point3, string content)
     {
       var (doc, db, ed) = MyCommands.GetGlobals();
 
@@ -670,13 +679,9 @@ namespace GMEPElectricalCommands
       {
         var bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
 
-        // Get the active space block table record instead of the paperspace block table record
         var activeSpaceId = db.CurrentSpaceId;
         var btr = (BlockTableRecord)tr.GetObject(activeSpaceId, OpenMode.ForWrite);
 
-        // Rest of the code remains the same...
-
-        // Swap the points if the y-coordinate of the first point is lower than that of the second point
         if (point1.Y < point2.Y)
         {
           Point3d tempPoint = point1;
@@ -715,9 +720,8 @@ namespace GMEPElectricalCommands
           tr.AddNewlyCreatedDBObject(line2, true);
         }
 
-        var blkRef = new BlockReference(mid3, bt["CIRCLEI"]) { Layer = layerName, Color = Autodesk.AutoCAD.Colors.Color.FromColorIndex(ColorMethod.ByLayer, 2) };
-        btr.AppendEntity(blkRef);
-        tr.AddNewlyCreatedDBObject(blkRef, true);
+        CreateCircle(btr, tr, mid3, 0.09, 2, false);
+        CreateCircleText(btr, tr, mid3, 0.09375, 2, "ROMANS", content);
 
         if (dist > 0.3)
         {
@@ -729,6 +733,35 @@ namespace GMEPElectricalCommands
 
         tr.Commit();
       }
+    }
+
+    private void CreateCircleText(BlockTableRecord btr, Transaction tr, Point3d centerPoint, double height, int colorIndex, string textStyle, string content)
+    {
+      DBText text = new DBText();
+      text.SetDatabaseDefaults();
+      text.Height = height;
+      text.TextString = content;
+
+      TextStyleTable textStyleTable = (TextStyleTable)tr.GetObject(btr.Database.TextStyleTableId, OpenMode.ForRead);
+
+      if (textStyleTable.Has(textStyle))
+      {
+        text.TextStyleId = tr.GetObject(textStyleTable[textStyle], OpenMode.ForRead).ObjectId;
+      }
+      else
+      {
+        text.TextStyleId = tr.GetObject(textStyleTable["Standard"], OpenMode.ForRead).ObjectId;
+      }
+
+      text.ColorIndex = colorIndex;
+
+      var extents = text.GeometricExtents;
+      var textWidth = extents.MaxPoint.X - extents.MinPoint.X;
+      var textHeight = extents.MaxPoint.Y - extents.MinPoint.Y;
+      text.Position = new Point3d(centerPoint.X - textWidth / 2, centerPoint.Y - textHeight / 2, centerPoint.Z);
+
+      btr.AppendEntity(text);
+      tr.AddNewlyCreatedDBObject(text, true);
     }
 
     private static List<Dictionary<string, object>> ImportExcelData()
@@ -851,7 +884,7 @@ namespace GMEPElectricalCommands
       CreateAndPositionText(tr, "=", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 7.03028501835593, endPoint.Y - 0.998928989062989, 0));
     }
 
-    private void CreateNotes(BlockTableRecord btr, Transaction tr, Point3d startPoint, Point3d endPoint, string panelType, string customTitle, Dictionary<string, List<int>> customNotes)
+    private void CreateNotes(BlockTableRecord btr, Transaction tr, Point3d startPoint, Point3d endPoint, string panelType, string customTitle, List<string> customNotes)
     {
       string title;
       if (!string.IsNullOrEmpty(customTitle))
@@ -884,11 +917,9 @@ namespace GMEPElectricalCommands
       double yOffset = y_initial;
 
       CreateAndPositionText(tr, title, "ROMANC", 0.1498, 0.75, 2, "0", new Point3d(startPoint.X + 0.236635303895696, startPoint.Y + 0.113254677317428, 0));
-
-      // Create the text
       CreateAndPositionText(tr, "NOTES:", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 5.96783070435049, endPoint.Y - 0.23875904811004, 0));
 
-      if (!customNotes.Any())
+      if (customNotes == null)
       {
         if (panelType.ToLower() == "existing" || panelType.ToLower() == "relocated")
         {
@@ -911,7 +942,7 @@ namespace GMEPElectricalCommands
         // for each notes that does not contain *NOT ADDED AS NOTE*, create a note
         foreach (var note in customNotes)
         {
-          if (!note.Key.Contains("*NOT ADDED AS NOTE*"))
+          if (!note.Contains("*NOT ADDED AS NOTE*"))
           {
             // Create the circle
             CreateCircle(btr, tr, new Point3d(endPoint.X - 5.8088, endPoint.Y - 0.3664 - (lines_of_text * 0.1872), 0), 0.09, 2, false);
@@ -920,7 +951,7 @@ namespace GMEPElectricalCommands
             CreateAndPositionCenteredText(tr, number.ToString(), "ROMANS", 0.09375, 1, 2, "0", new Point3d(endPoint.X - 5.85897687070053 - 0.145, endPoint.Y - 0.410151417346867 - (lines_of_text * 0.1872), 0));
 
             // if the string is longer than 65 characters, find the end of the word closest to the 65th character and split the string there into two strings and check the next string if it is longer than 65 characters and do the same, then return all the strings
-            var noteStrings = SplitStringIntoLines(note.Key, 65);
+            var noteStrings = SplitStringIntoLines(note, 65);
             foreach (var noteString in noteStrings)
             {
               CreateAndPositionText(tr, noteString, "ROMANS", 0.09375, 1, 2, "0", new Point3d(endPoint.X - 5.61904201783966, endPoint.Y - 0.405747901076808 - (lines_of_text * 0.1872), 0));
@@ -946,7 +977,6 @@ namespace GMEPElectricalCommands
       CreateLine(tr, btr, endPoint.X - 6.07359999999994, endPoint.Y - yOffset, endPoint.X - 6.07359999999994, endPoint.Y + -0.0846396524177919, "0");
     }
 
-    // if the string is longer than 65 characters, find the end of the word closest to the 65th character and split the string there into two strings and check the next string if it is longer than 65 characters and do the same, then return all the strings
     private List<string> SplitStringIntoLines(string str, int maxLength)
     {
       List<string> lines = new List<string>();
@@ -1326,8 +1356,6 @@ namespace GMEPElectricalCommands
 
     private void ProcessTextData(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, bool is2Pole)
     {
-      var (_, _, ed) = GetGlobals();
-
       List<string> leftDescriptions = (List<string>)panelData["description_left"];
       List<string> leftBreakers = (List<string>)panelData["breaker_left"];
       List<string> leftCircuits = (List<string>)panelData["circuit_left"];
@@ -1347,78 +1375,150 @@ namespace GMEPElectricalCommands
       {
         List<string> leftPhaseC = (List<string>)panelData["phase_c_left"];
         List<string> rightPhaseC = (List<string>)panelData["phase_c_right"];
-        // Use the ProcessSideData for the left side
-        ProcessSideData(tr, btr, startPoint, leftDescriptions, leftBreakers, leftCircuits, leftPhaseA, leftPhaseB, (List<string>)leftPhaseC, (List<bool>)panelData["description_left_highlights"], (List<bool>)panelData["breaker_left_highlights"], true);
-
-        // Use the ProcessSideData for the right side
-        ProcessSideData(tr, btr, startPoint, rightDescriptions, rightBreakers, rightCircuits, rightPhaseA, rightPhaseB, (List<string>)rightPhaseC, (List<bool>)panelData["description_right_highlights"], (List<bool>)panelData["breaker_right_highlights"], false);
+        ProcessSideData(tr, btr, startPoint, leftDescriptions, leftBreakers, leftCircuits, leftPhaseA, leftPhaseB, (List<string>)leftPhaseC, (List<bool>)panelData["description_left_highlights"], true);
+        ProcessSideData(tr, btr, startPoint, rightDescriptions, rightBreakers, rightCircuits, rightPhaseA, rightPhaseB, (List<string>)rightPhaseC, (List<bool>)panelData["description_right_highlights"], false);
       }
       else
       {
-        // Use the ProcessSideData for the left side
-        ProcessSideData2P(tr, btr, startPoint, leftDescriptions, leftBreakers, leftCircuits, leftPhaseA, leftPhaseB, (List<bool>)panelData["description_left_highlights"], (List<bool>)panelData["breaker_left_highlights"], true);
-
-        // Use the ProcessSideData for the right side
-        ProcessSideData2P(tr, btr, startPoint, rightDescriptions, rightBreakers, rightCircuits, rightPhaseA, rightPhaseB, (List<bool>)panelData["description_right_highlights"], (List<bool>)panelData["breaker_right_highlights"], false);
+        ProcessSideData2P(tr, btr, startPoint, leftDescriptions, leftBreakers, leftCircuits, leftPhaseA, leftPhaseB, (List<bool>)panelData["description_left_highlights"], true);
+        ProcessSideData2P(tr, btr, startPoint, rightDescriptions, rightBreakers, rightCircuits, rightPhaseA, rightPhaseB, (List<bool>)panelData["description_right_highlights"], false);
       }
 
       InsertKeepBreakers(startPoint, leftBreakersHighlight, true);
       InsertKeepBreakers(startPoint, rightBreakersHighlight, false);
+
+      // if the key "description_left_tags" exists in panelStorage, return null
+      if (panelData.ContainsKey("description_left_tags"))
+      {
+        List<string> descriptionLeftTags = (List<string>)panelData["description_left_tags"];
+        List<string> descriptionRightTags = (List<string>)panelData["description_right_tags"];
+
+        List<string> notes = (List<string>)panelData["notes"];
+
+        notes = RemoveNotAddedAsNotes(notes);
+
+        Dictionary<string, List<bool>> leftSide = ConvertTagsAndNotesToDictionary(descriptionLeftTags, notes);
+        Dictionary<string, List<bool>> rightSide = ConvertTagsAndNotesToDictionary(descriptionRightTags, notes);
+
+        // json log the leftside to the desktop
+        string json = JsonConvert.SerializeObject(leftSide, Formatting.Indented);
+        File.WriteAllText(@"C:\Users\jakeh\Desktop\leftSide.json", json);
+
+        InsertBreakerNotes(startPoint, leftSide, true);
+        InsertBreakerNotes(startPoint, rightSide, false);
+      }
     }
 
-    private void InsertKeepBreakers(Point3d startPoint, List<bool> breakersHighlight, bool left)
+    private Dictionary<string, List<bool>> ConvertTagsAndNotesToDictionary(List<string> tags, List<string> notes)
     {
-      var (_, _, ed) = GetGlobals();
+      Dictionary<string, List<bool>> notesWithBools = new Dictionary<string, List<bool>>();
+
+      foreach (string note in notes)
+      {
+        List<bool> bools = new List<bool>();
+        foreach (string tag in tags)
+        {
+          bools.Add(tag.Contains(note));
+        }
+        notesWithBools.Add((notes.IndexOf(note) + 1).ToString(), bools);
+      }
+      return notesWithBools;
+    }
+
+    private List<string> RemoveNotAddedAsNotes(List<string> notes)
+    {
+      List<string> newNotes = new List<string>();
+      foreach (string note in notes)
+      {
+        if (!note.Contains("NOT ADDED AS NOTE"))
+        {
+          newNotes.Add(note);
+        }
+      }
+      return newNotes;
+    }
+
+    private void InsertBreakerNotes(Point3d startPoint, Dictionary<string, List<bool>> notesWithBools, bool left)
+    {
+      Point3d botPoint = new Point3d(0, 0, 0);
+      Point3d topPoint = new Point3d(0, 0, 0);
+
       double header_height = 0.7488;
       double panel_width = 8.9856;
       double row_height = 0.1872;
-      double left_start_x = startPoint.X;
-      double left_start_y = startPoint.Y - header_height;
-      double right_start_x = startPoint.X + panel_width;
-      double right_start_y = left_start_y;
-      double start_x, start_y, displacement;
-      Point3d topPoint = new Point3d(0, 0, 0);
-      Point3d botPoint = new Point3d(0, 0, 0);
+      double start_x = startPoint.X + (left ? 0 : panel_width);
+      double start_y = startPoint.Y - header_height;
+      double displacement = left ? -1 : 1;
+
       bool currentlyKeeping = false;
 
-      for (int i = 0; i < breakersHighlight.Count; i += 2)
+      foreach (var note in notesWithBools)
       {
-        if (left)
+        for (int i = 0; i < note.Value.Count; i += 1)
         {
-          start_x = left_start_x;
-          start_y = left_start_y;
-          displacement = -1;
-        }
-        else
-        {
-          start_x = right_start_x;
-          start_y = right_start_y;
-          displacement = 1;
-        }
-
-        if (breakersHighlight[i] && !currentlyKeeping)
-        {
-          topPoint = new Point3d(start_x, start_y - (row_height * (i / 2)), 0);
-          currentlyKeeping = true;
-        }
-        else if (!breakersHighlight[i] && currentlyKeeping)
-        {
-          botPoint = new Point3d(start_x, start_y - (row_height * (i / 2)), 0);
-          currentlyKeeping = false;
-          KeepBreakersGivenPoints(topPoint, botPoint, new Point3d(topPoint.X + displacement, topPoint.Y, 0));
-        }
-        else if (breakersHighlight[i] && currentlyKeeping && i >= breakersHighlight.Count - 2)
-        {
-          botPoint = new Point3d(start_x, start_y - (row_height * ((i + 2) / 2)), 0);
-          KeepBreakersGivenPoints(topPoint, botPoint, new Point3d(topPoint.X + displacement, topPoint.Y, 0));
+          if (note.Value[i])
+          {
+            if (!currentlyKeeping)
+            {
+              topPoint = new Point3d(start_x, start_y - (row_height * (i)), 0);
+              currentlyKeeping = true;
+            }
+            if (i >= note.Value.Count - 1)
+            {
+              botPoint = new Point3d(start_x, start_y - (row_height * (i + 1)), 0);
+              KeepBreakersGivenPoints(topPoint, botPoint, new Point3d(topPoint.X + displacement, topPoint.Y, 0), note.Key);
+            }
+          }
+          else if (currentlyKeeping)
+          {
+            botPoint = new Point3d(start_x, start_y - (row_height * i), 0);
+            currentlyKeeping = false;
+            KeepBreakersGivenPoints(topPoint, botPoint, new Point3d(topPoint.X + displacement, topPoint.Y, 0), note.Key);
+          }
         }
       }
     }
 
-    private void ProcessSideData(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> breakers, List<string> circuits, List<string> phaseA, List<string> phaseB, List<string> phaseC, List<bool> descriptionHighlights, List<bool> breakerHighlights, bool left)
+    private void InsertKeepBreakers(Point3d startPoint, List<bool> breakersHighlight, bool left)
     {
-      var (_, _, ed) = GetGlobals();
+      Point3d botPoint = new Point3d(0, 0, 0);
+      Point3d topPoint = new Point3d(0, 0, 0);
 
+      double header_height = 0.7488;
+      double panel_width = 8.9856;
+      double row_height = 0.1872;
+      double start_x = startPoint.X + (left ? 0 : panel_width);
+      double start_y = startPoint.Y - header_height;
+      double displacement = left ? -1 : 1;
+
+      bool currentlyKeeping = false;
+
+      for (int i = 0; i < breakersHighlight.Count; i += 2)
+      {
+        if (breakersHighlight[i])
+        {
+          if (!currentlyKeeping)
+          {
+            topPoint = new Point3d(start_x, start_y - (row_height * (i / 2)), 0);
+            currentlyKeeping = true;
+          }
+          if (i >= breakersHighlight.Count - 2)
+          {
+            botPoint = new Point3d(start_x, start_y - (row_height * ((i + 2) / 2)), 0);
+            KeepBreakersGivenPoints(topPoint, botPoint, new Point3d(topPoint.X + displacement, topPoint.Y, 0), "1");
+          }
+        }
+        else if (currentlyKeeping)
+        {
+          botPoint = new Point3d(start_x, start_y - (row_height * (i / 2)), 0);
+          currentlyKeeping = false;
+          KeepBreakersGivenPoints(topPoint, botPoint, new Point3d(topPoint.X + displacement, topPoint.Y, 0), "1");
+        }
+      }
+    }
+
+    private void ProcessSideData(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> breakers, List<string> circuits, List<string> phaseA, List<string> phaseB, List<string> phaseC, List<bool> descriptionHighlights, bool left)
+    {
       Dictionary<string, double> data = new Dictionary<string, double>();
 
       data.Add("row height y", 0.1872);
@@ -1432,29 +1532,27 @@ namespace GMEPElectricalCommands
 
         if (phase == 0.5)
         {
-          CreateHalfBreaker(tr, btr, startPoint, descriptions, phaseA, phaseB, phaseC, breakers, circuits, descriptionHighlights, breakerHighlights, data, left, i);
+          CreateHalfBreaker(tr, btr, startPoint, descriptions, phaseA, phaseB, phaseC, breakers, circuits, descriptionHighlights, data, left, i);
         }
         else if (phase == 1.0)
         {
-          Create1PoleBreaker(tr, btr, startPoint, descriptions, phaseA, phaseB, phaseC, breakers, circuits, descriptionHighlights, breakerHighlights, data, left, i);
+          Create1PoleBreaker(tr, btr, startPoint, descriptions, phaseA, phaseB, phaseC, breakers, circuits, descriptionHighlights, data, left, i);
         }
         else if (phase == 2.0)
         {
-          Create2PoleBreaker(tr, btr, startPoint, descriptions, phaseA, phaseB, phaseC, breakers, circuits, descriptionHighlights, breakerHighlights, data, left, i);
+          Create2PoleBreaker(tr, btr, startPoint, descriptions, phaseA, phaseB, phaseC, breakers, circuits, descriptionHighlights, data, left, i);
           i += 2;
         }
         else
         {
-          Create3PoleBreaker(tr, btr, startPoint, descriptions, phaseA, phaseB, phaseC, breakers, circuits, descriptionHighlights, breakerHighlights, data, left, i);
+          Create3PoleBreaker(tr, btr, startPoint, descriptions, phaseA, phaseB, phaseC, breakers, circuits, descriptionHighlights, data, left, i);
           i += 4;
         }
       }
     }
 
-    private void ProcessSideData2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> breakers, List<string> circuits, List<string> phaseA, List<string> phaseB, List<bool> descriptionHighlights, List<bool> breakerHighlights, bool left)
+    private void ProcessSideData2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> breakers, List<string> circuits, List<string> phaseA, List<string> phaseB, List<bool> descriptionHighlights, bool left)
     {
-      var (_, _, ed) = GetGlobals();
-
       Dictionary<string, double> data = new Dictionary<string, double>
       {
         { "row height y", 0.1872 },
@@ -1469,21 +1567,21 @@ namespace GMEPElectricalCommands
 
         if (phase == 0.5)
         {
-          CreateHalfBreaker2P(tr, btr, startPoint, descriptions, phaseA, phaseB, breakers, circuits, descriptionHighlights, breakerHighlights, data, left, i);
+          CreateHalfBreaker2P(tr, btr, startPoint, descriptions, phaseA, phaseB, breakers, circuits, descriptionHighlights, data, left, i);
         }
         else if (phase == 1.0)
         {
-          Create1PoleBreaker2P(tr, btr, startPoint, descriptions, phaseA, phaseB, breakers, circuits, descriptionHighlights, breakerHighlights, data, left, i);
+          Create1PoleBreaker2P(tr, btr, startPoint, descriptions, phaseA, phaseB, breakers, circuits, descriptionHighlights, data, left, i);
         }
         else
         {
-          Create2PoleBreaker2P(tr, btr, startPoint, descriptions, phaseA, phaseB, breakers, circuits, descriptionHighlights, breakerHighlights, data, left, i);
+          Create2PoleBreaker2P(tr, btr, startPoint, descriptions, phaseA, phaseB, breakers, circuits, descriptionHighlights, data, left, i);
           i += 2;
         }
       }
     }
 
-    private void CreateHalfBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> phaseC, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, List<bool> breakerHighlights, Dictionary<string, double> data, bool left, int i)
+    private void CreateHalfBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> phaseC, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, Dictionary<string, double> data, bool left, int i)
     {
       List<string> phaseList = GetPhaseList(i, phaseA, phaseB, phaseC);
 
@@ -1512,7 +1610,7 @@ namespace GMEPElectricalCommands
       CreateHorizontalLine(startPoint.X, startPoint.Y, circuit, left, tr, btr);
     }
 
-    private void CreateHalfBreaker2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, List<bool> breakerHighlights, Dictionary<string, double> data, bool left, int i)
+    private void CreateHalfBreaker2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, Dictionary<string, double> data, bool left, int i)
     {
       List<string> phaseList = GetPhaseList2P(i, phaseA, phaseB);
 
@@ -1541,7 +1639,7 @@ namespace GMEPElectricalCommands
       CreateHorizontalLine(startPoint.X, startPoint.Y, circuit, left, tr, btr);
     }
 
-    private void Create1PoleBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> phaseC, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, List<bool> breakerHighlights, Dictionary<string, double> data, bool left, int i)
+    private void Create1PoleBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> phaseC, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, Dictionary<string, double> data, bool left, int i)
     {
       List<string> phaseList = GetPhaseList(i, phaseA, phaseB, phaseC);
 
@@ -1563,7 +1661,7 @@ namespace GMEPElectricalCommands
       CreateHorizontalLine(startPoint.X, startPoint.Y, circuit, left, tr, btr);
     }
 
-    private void Create1PoleBreaker2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, List<bool> breakerHighlights, Dictionary<string, double> data, bool left, int i)
+    private void Create1PoleBreaker2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, Dictionary<string, double> data, bool left, int i)
     {
       List<string> phaseList = GetPhaseList2P(i, phaseA, phaseB);
 
@@ -1585,7 +1683,7 @@ namespace GMEPElectricalCommands
       CreateHorizontalLine(startPoint.X, startPoint.Y, circuit, left, tr, btr);
     }
 
-    private void Create2PoleBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> phaseC, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, List<bool> breakerHighlights, Dictionary<string, double> data, bool left, int i)
+    private void Create2PoleBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> phaseC, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, Dictionary<string, double> data, bool left, int i)
     {
       double descriptionX = GetDescriptionX(startPoint, left);
       double breakerX = GetBreakerX(startPoint, left);
@@ -1619,7 +1717,7 @@ namespace GMEPElectricalCommands
       CreateBreakerLine(startPoint, i, left, tr, btr, 4);
     }
 
-    private void Create2PoleBreaker2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, List<bool> breakerHighlights, Dictionary<string, double> data, bool left, int i)
+    private void Create2PoleBreaker2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, Dictionary<string, double> data, bool left, int i)
     {
       var (_, _, ed) = GetGlobals();
       double descriptionX = GetDescriptionX2P(startPoint, left);
@@ -1654,7 +1752,7 @@ namespace GMEPElectricalCommands
       CreateBreakerLine(startPoint, i, left, tr, btr, 4);
     }
 
-    private void Create3PoleBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> phaseC, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, List<bool> breakerHighlights, Dictionary<string, double> data, bool left, int i)
+    private void Create3PoleBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> phaseC, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, Dictionary<string, double> data, bool left, int i)
     {
       double descriptionX = GetDescriptionX(startPoint, left);
       double breakerX = GetBreakerX(startPoint, left);

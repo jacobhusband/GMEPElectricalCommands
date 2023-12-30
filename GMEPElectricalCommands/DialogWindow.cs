@@ -81,7 +81,7 @@ namespace GMEPElectricalCommands
           bool is3PH = panel.ContainsKey("phase_c_left");
           UserInterface userControl1 = create_new_panel_tab(panelName, is3PH);
           userControl1.clear_and_set_modal_values(panel);
-          var notes = JsonConvert.DeserializeObject<Dictionary<string, List<int>>>(panel["notes"].ToString());
+          var notes = JsonConvert.DeserializeObject<List<string>>(panel["notes"].ToString());
           userControl1.update_notes_storage(notes);
         }
 
@@ -350,13 +350,8 @@ namespace GMEPElectricalCommands
       {
         foreach (UserInterface userControl in this.userControls)
         {
-          userControl.add_circuits_to_note_storage();
           panelStorage.Add(userControl.retrieve_data_from_modal());
         }
-
-        string json = JsonConvert.SerializeObject(panelStorage, Formatting.Indented);
-        string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        File.WriteAllText(Path.Combine(desktopPath, "panelStorage.json"), json);
 
         store_data_in_autocad_file(panelStorage);
         this.userControls = new List<UserInterface>();

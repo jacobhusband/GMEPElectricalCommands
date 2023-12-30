@@ -12,6 +12,8 @@ using System.Windows.Forms;
 using System.Text.RegularExpressions;
 using System.IO;
 using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.GraphicsSystem;
+using OfficeOpenXml.Packaging.Ionic.Zlib;
 
 namespace GMEPElectricalCommands
 {
@@ -21,7 +23,7 @@ namespace GMEPElectricalCommands
     private MainForm mainForm;
     private NEWPANELFORM newPanelForm;
     private noteForm notesForm;
-    private Dictionary<string, List<int>> notesStorage = new Dictionary<string, List<int>>();
+    private List<string> notesStorage = new List<string>();
 
     private bool initialization;
     private object oldValue;
@@ -34,7 +36,12 @@ namespace GMEPElectricalCommands
       this.newPanelForm = newPanelForm;
       this.initialization = false;
       this.Name = tabName;
-      this.notesStorage = new Dictionary<string, List<int>>();
+      this.notesStorage =
+      [
+        "ADD SUFFIX (E). * NOT ADDED AS NOTE *",
+        "ADD SUFFIX (R). * NOT ADDED AS NOTE *",
+        "APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). * NOT ADDED AS NOTE *",
+      ];
 
       INFO_LABEL.Text = "";
 
@@ -59,40 +66,10 @@ namespace GMEPElectricalCommands
       set_default_form_values(tabName);
       deselect_cells();
 
-      this.notesForm = new noteForm(this);
-      this.notesForm.update_notes_to_match_the_note_form(this.notesStorage);
-
       this.initialization = true;
     }
 
-    public Dictionary<string, List<int>> add_circuits_to_note_storage()
-    {
-      foreach (DataGridViewRow row in PANEL_GRID.Rows)
-      {
-        if (row.Cells["description_left"].Tag != null)
-        {
-          int row_index_odd = (row.Index != 0) ? row.Index * 2 - 1 : 0;
-          string descriptionLeftTag = row.Cells["description_left"].Tag.ToString();
-          if (notesStorage.ContainsKey(descriptionLeftTag))
-          {
-            notesStorage[descriptionLeftTag].Add(row_index_odd);
-          }
-        }
-
-        if (row.Cells["description_right"].Tag != null)
-        {
-          int row_index_even = row.Index * 2;
-          string descriptionRightTag = row.Cells["description_right"].Tag.ToString();
-          if (notesStorage.ContainsKey(descriptionRightTag))
-          {
-            notesStorage[descriptionRightTag].Add(row_index_even);
-          }
-        }
-      }
-      return notesStorage;
-    }
-
-    public Dictionary<string, List<int>> getNotesStorage()
+    public List<string> getNotesStorage()
     {
       return this.notesStorage;
     }
@@ -1079,7 +1056,7 @@ namespace GMEPElectricalCommands
       }
     }
 
-    private void link_cell_to_phase(string cellValue, string columnName, DataGridViewRow row, DataGridViewColumn col)
+    private void link_cell_to_phase(string cellValue, DataGridViewRow row, DataGridViewColumn col)
     {
       var (panel_name, phase) = convert_cell_value_to_panel_name_and_phase(cellValue);
 
@@ -1236,17 +1213,40 @@ namespace GMEPElectricalCommands
     private void update_apply_combobox_to_match_storage()
     {
       var apply_combobox_items = new List<string>();
-      foreach (var key in this.notesStorage.Keys)
+      foreach (var note in this.notesStorage)
       {
-        if (!apply_combobox_items.Contains(key))
+        if (!apply_combobox_items.Contains(note))
         {
-          apply_combobox_items.Add(key);
+          apply_combobox_items.Add(note);
         }
       }
       APPLY_COMBOBOX.DataSource = apply_combobox_items;
     }
 
-    public void update_notes_storage(Dictionary<string, List<int>> notesStorage)
+    private void remove_tags_from_cells(string tag)
+    {
+      foreach (DataGridViewRow row in PANEL_GRID.Rows)
+      {
+        foreach (DataGridViewCell cell in row.Cells)
+        {
+          if (cell.Tag != null)
+          {
+            string cellTag = cell.Tag.ToString();
+            if (cellTag.Contains(tag))
+            {
+              cellTag = cellTag.Replace(tag, "");
+              if (cellTag.EndsWith("|"))
+              {
+                cellTag = cellTag.Substring(0, cellTag.Length - 1);
+              }
+              cell.Tag = cellTag;
+            }
+          }
+        }
+      }
+    }
+
+    public void update_notes_storage(List<string> notesStorage)
     {
       this.notesStorage = notesStorage;
       update_apply_combobox_to_match_storage();
@@ -1300,7 +1300,7 @@ namespace GMEPElectricalCommands
       var col = PANEL_GRID.Columns[e.ColumnIndex];
       if (cellValue.StartsWith("="))
       {
-        link_cell_to_phase(cellValue, columnName, row, col);
+        link_cell_to_phase(cellValue, row, col);
       }
     }
 
@@ -1598,7 +1598,7 @@ namespace GMEPElectricalCommands
           }
           else
           {
-            cell.Tag = $"{cell.Tag},{selectedValue}";
+            cell.Tag = $"{cell.Tag}|{selectedValue}";
           }
           // turn the background of the cell to a yellow color
           cell.Style.BackColor = Color.Yellow;
@@ -1654,22 +1654,39 @@ namespace GMEPElectricalCommands
       {
         if (STATUS_COMBOBOX.SelectedItem.ToString() == "EXISTING" || STATUS_COMBOBOX.SelectedItem.ToString() == "RELOCATED")
         {
-          if (!this.notesStorage.ContainsKey(default_existing_message))
+          if (!this.notesStorage.Contains(default_existing_message))
           {
-            this.notesStorage.Add(default_existing_message, new List<int>());
+            this.notesStorage.Add(default_existing_message);
           }
-          this.notesStorage.Remove(default_new_message);
+          if (this.notesStorage.Contains(default_new_message))
+          {
+            this.notesStorage.Remove(default_new_message);
+          }
+          remove_tags_from_cells(default_new_message);
         }
         else
         {
-          if (!this.notesStorage.ContainsKey(default_new_message))
+          if (!this.notesStorage.Contains(default_new_message))
           {
-            this.notesStorage.Add(default_new_message, new List<int>());
+            this.notesStorage.Add(default_new_message);
           }
-          this.notesStorage.Remove(default_existing_message);
+          if (this.notesStorage.Contains(default_existing_message))
+          {
+            this.notesStorage.Remove(default_existing_message);
+          }
+          remove_tags_from_cells(default_existing_message);
         }
         update_apply_combobox_to_match_storage();
       }
+    }
+
+    public void save_the_notes_storage_as_json_to_desktop()
+    {
+      string json = JsonConvert.SerializeObject(this.notesStorage, Formatting.Indented);
+      string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+      string fileName = "notesStorage.json";
+      string fullPath = Path.Combine(path, fileName);
+      File.WriteAllText(fullPath, json);
     }
 
     private void REMOVE_NOTE_BUTTON_Click(object sender, EventArgs e)
@@ -1689,7 +1706,7 @@ namespace GMEPElectricalCommands
           if (cell.Tag != null && cell.Tag.ToString().Contains(selectedValue))
           {
             // remove the selected value from the tag
-            cell.Tag = cell.Tag.ToString().Replace(selectedValue, "").Trim(',');
+            cell.Tag = cell.Tag.ToString().Replace(selectedValue, "").Trim('|');
 
             cell.Style.BackColor = Color.Empty;
           }
