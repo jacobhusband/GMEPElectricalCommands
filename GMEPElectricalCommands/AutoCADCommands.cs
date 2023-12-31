@@ -1372,18 +1372,6 @@ namespace GMEPElectricalCommands
 
     private int ProcessTextData(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, bool is2Pole)
     {
-      List<string> leftDescriptions = (List<string>)panelData["description_left"];
-      List<string> leftBreakers = (List<string>)panelData["breaker_left"];
-      List<string> leftCircuits = (List<string>)panelData["circuit_left"];
-      List<string> leftPhaseA = (List<string>)panelData["phase_a_left"];
-      List<string> leftPhaseB = (List<string>)panelData["phase_b_left"];
-
-      List<string> rightDescriptions = (List<string>)panelData["description_right"];
-      List<string> rightBreakers = (List<string>)panelData["breaker_right"];
-      List<string> rightCircuits = (List<string>)panelData["circuit_right"];
-      List<string> rightPhaseA = (List<string>)panelData["phase_a_right"];
-      List<string> rightPhaseB = (List<string>)panelData["phase_b_right"];
-
       List<bool> leftBreakersHighlight = (List<bool>)panelData["breaker_left_highlights"];
       List<bool> rightBreakersHighlight = (List<bool>)panelData["breaker_right_highlights"];
 
@@ -1391,15 +1379,13 @@ namespace GMEPElectricalCommands
 
       if (!is2Pole)
       {
-        List<string> leftPhaseC = (List<string>)panelData["phase_c_left"];
-        List<string> rightPhaseC = (List<string>)panelData["phase_c_right"];
-        ProcessSideData(tr, btr, startPoint, leftDescriptions, leftBreakers, leftCircuits, leftPhaseA, leftPhaseB, (List<string>)leftPhaseC, (List<bool>)panelData["description_left_highlights"], true);
-        ProcessSideData(tr, btr, startPoint, rightDescriptions, rightBreakers, rightCircuits, rightPhaseA, rightPhaseB, (List<string>)rightPhaseC, (List<bool>)panelData["description_right_highlights"], false);
+        ProcessSideData(tr, btr, startPoint, panelData, true, false);
+        ProcessSideData(tr, btr, startPoint, panelData, false, false);
       }
       else
       {
-        ProcessSideData2P(tr, btr, startPoint, leftDescriptions, leftBreakers, leftCircuits, leftPhaseA, leftPhaseB, (List<bool>)panelData["description_left_highlights"], true);
-        ProcessSideData2P(tr, btr, startPoint, rightDescriptions, rightBreakers, rightCircuits, rightPhaseA, rightPhaseB, (List<bool>)panelData["description_right_highlights"], false);
+        ProcessSideData2P(tr, btr, startPoint, panelData, true, true);
+        ProcessSideData2P(tr, btr, startPoint, panelData, false, true);
       }
 
       InsertKeepBreakers(startPoint, leftBreakersHighlight, true);
@@ -1603,8 +1589,53 @@ namespace GMEPElectricalCommands
       }
     }
 
-    private void ProcessSideData(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> breakers, List<string> circuits, List<string> phaseA, List<string> phaseB, List<string> phaseC, List<bool> descriptionHighlights, bool left)
+    private (List<string>, List<string>, List<string>, List<string>, List<string>, List<string>, List<bool>, List<string>) GetCorrectBreakerData(Dictionary<string, object> panelData, bool left, bool is2Pole)
     {
+      var descriptions = new List<string>();
+      var breakers = new List<string>();
+      var circuits = new List<string>();
+      var phaseA = new List<string>();
+      var phaseB = new List<string>();
+      var phaseC = new List<string>();
+      var descriptionHighlights = new List<bool>();
+      var descriptionTags = new List<string>();
+
+      if (left)
+      {
+        descriptions = panelData["description_left"] as List<string>;
+        breakers = panelData["breaker_left"] as List<string>;
+        circuits = panelData["circuit_left"] as List<string>;
+        phaseA = panelData["phase_a_left"] as List<string>;
+        phaseB = panelData["phase_b_left"] as List<string>;
+        if (!is2Pole)
+        {
+          phaseC = panelData["phase_c_left"] as List<string>;
+        }
+        descriptionHighlights = panelData["description_left_highlights"] as List<bool>;
+        descriptionTags = panelData["description_left_tags"] as List<string>;
+      }
+      else
+      {
+        descriptions = panelData["description_right"] as List<string>;
+        breakers = panelData["breaker_right"] as List<string>;
+        circuits = panelData["circuit_right"] as List<string>;
+        phaseA = panelData["phase_a_right"] as List<string>;
+        phaseB = panelData["phase_b_right"] as List<string>;
+        if (!is2Pole)
+        {
+          phaseC = panelData["phase_c_right"] as List<string>;
+        }
+        descriptionHighlights = panelData["description_right_highlights"] as List<bool>;
+        descriptionTags = panelData["description_right_tags"] as List<string>;
+      }
+
+      return (descriptions, breakers, circuits, phaseA, phaseB, phaseC, descriptionHighlights, descriptionTags);
+    }
+
+    private void ProcessSideData(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, bool left, bool is2Pole)
+    {
+      var (descriptions, breakers, circuits, _, _, _, _, _) = GetCorrectBreakerData(panelData, left, is2Pole);
+
       Dictionary<string, double> data = new Dictionary<string, double>();
 
       data.Add("row height y", 0.1872);
@@ -1618,27 +1649,29 @@ namespace GMEPElectricalCommands
 
         if (phase == 0.5)
         {
-          CreateHalfBreaker(tr, btr, startPoint, descriptions, phaseA, phaseB, phaseC, breakers, circuits, descriptionHighlights, data, left, i);
+          CreateHalfBreaker(tr, btr, startPoint, panelData, data, left, is2Pole, i);
         }
         else if (phase == 1.0)
         {
-          Create1PoleBreaker(tr, btr, startPoint, descriptions, phaseA, phaseB, phaseC, breakers, circuits, descriptionHighlights, data, left, i);
+          Create1PoleBreaker(tr, btr, startPoint, panelData, data, left, is2Pole, i);
         }
         else if (phase == 2.0)
         {
-          Create2PoleBreaker(tr, btr, startPoint, descriptions, phaseA, phaseB, phaseC, breakers, circuits, descriptionHighlights, data, left, i);
+          Create2PoleBreaker(tr, btr, startPoint, panelData, data, left, is2Pole, i);
           i += 2;
         }
         else
         {
-          Create3PoleBreaker(tr, btr, startPoint, descriptions, phaseA, phaseB, phaseC, breakers, circuits, descriptionHighlights, data, left, i);
+          Create3PoleBreaker(tr, btr, startPoint, panelData, data, left, is2Pole, i);
           i += 4;
         }
       }
     }
 
-    private void ProcessSideData2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> breakers, List<string> circuits, List<string> phaseA, List<string> phaseB, List<bool> descriptionHighlights, bool left)
+    private void ProcessSideData2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, bool left, bool is2Pole)
     {
+      var (descriptions, breakers, circuits, _, _, _, _, _) = GetCorrectBreakerData(panelData, left, is2Pole);
+
       Dictionary<string, double> data = new Dictionary<string, double>
       {
         { "row height y", 0.1872 },
@@ -1653,22 +1686,24 @@ namespace GMEPElectricalCommands
 
         if (phase == 0.5)
         {
-          CreateHalfBreaker2P(tr, btr, startPoint, descriptions, phaseA, phaseB, breakers, circuits, descriptionHighlights, data, left, i);
+          CreateHalfBreaker2P(tr, btr, startPoint, panelData, data, left, is2Pole, i);
         }
         else if (phase == 1.0)
         {
-          Create1PoleBreaker2P(tr, btr, startPoint, descriptions, phaseA, phaseB, breakers, circuits, descriptionHighlights, data, left, i);
+          Create1PoleBreaker2P(tr, btr, startPoint, panelData, data, left, is2Pole, i);
         }
         else
         {
-          Create2PoleBreaker2P(tr, btr, startPoint, descriptions, phaseA, phaseB, breakers, circuits, descriptionHighlights, data, left, i);
+          Create2PoleBreaker2P(tr, btr, startPoint, panelData, data, left, is2Pole, i);
           i += 2;
         }
       }
     }
 
-    private void CreateHalfBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> phaseC, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, Dictionary<string, double> data, bool left, int i)
+    private void CreateHalfBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, Dictionary<string, double> data, bool left, bool is2Pole, int i)
     {
+      var (descriptions, breakers, circuits, phaseA, phaseB, phaseC, descriptionHighlights, descriptionTags) = GetCorrectBreakerData(panelData, left, is2Pole);
+
       List<string> phaseList = GetPhaseList(i, phaseA, phaseB, phaseC);
 
       double descriptionX = GetDescriptionX(startPoint, left);
@@ -1696,8 +1731,10 @@ namespace GMEPElectricalCommands
       CreateHorizontalLine(startPoint.X, startPoint.Y, circuit, left, tr, btr);
     }
 
-    private void CreateHalfBreaker2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, Dictionary<string, double> data, bool left, int i)
+    private void CreateHalfBreaker2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, Dictionary<string, double> data, bool left, bool is2Pole, int i)
     {
+      var (descriptions, breakers, circuits, phaseA, phaseB, phaseC, descriptionHighlights, descriptionTags) = GetCorrectBreakerData(panelData, left, is2Pole);
+
       List<string> phaseList = GetPhaseList2P(i, phaseA, phaseB);
 
       double descriptionX = GetDescriptionX2P(startPoint, left);
@@ -1725,8 +1762,10 @@ namespace GMEPElectricalCommands
       CreateHorizontalLine(startPoint.X, startPoint.Y, circuit, left, tr, btr);
     }
 
-    private void Create1PoleBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> phaseC, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, Dictionary<string, double> data, bool left, int i)
+    private void Create1PoleBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, Dictionary<string, double> data, bool left, bool is2Pole, int i)
     {
+      var (descriptions, breakers, circuits, phaseA, phaseB, phaseC, descriptionHighlights, descriptionTags) = GetCorrectBreakerData(panelData, left, is2Pole);
+
       List<string> phaseList = GetPhaseList(i, phaseA, phaseB, phaseC);
 
       string description = (descriptionHighlights[i] && descriptions[i] != "EXISTING LOAD") ? "(E)" + descriptions[i] : descriptions[i];
@@ -1747,8 +1786,10 @@ namespace GMEPElectricalCommands
       CreateHorizontalLine(startPoint.X, startPoint.Y, circuit, left, tr, btr);
     }
 
-    private void Create1PoleBreaker2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, Dictionary<string, double> data, bool left, int i)
+    private void Create1PoleBreaker2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, Dictionary<string, double> data, bool left, bool is2Pole, int i)
     {
+      var (descriptions, breakers, circuits, phaseA, phaseB, phaseC, descriptionHighlights, descriptionTags) = GetCorrectBreakerData(panelData, left, is2Pole);
+
       List<string> phaseList = GetPhaseList2P(i, phaseA, phaseB);
 
       string description = (descriptionHighlights[i] && descriptions[i] != "EXISTING LOAD") ? "(E)" + descriptions[i] : descriptions[i];
@@ -1769,8 +1810,10 @@ namespace GMEPElectricalCommands
       CreateHorizontalLine(startPoint.X, startPoint.Y, circuit, left, tr, btr);
     }
 
-    private void Create2PoleBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> phaseC, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, Dictionary<string, double> data, bool left, int i)
+    private void Create2PoleBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, Dictionary<string, double> data, bool left, bool is2Pole, int i)
     {
+      var (descriptions, breakers, circuits, phaseA, phaseB, phaseC, descriptionHighlights, descriptionTags) = GetCorrectBreakerData(panelData, left, is2Pole);
+
       double descriptionX = GetDescriptionX(startPoint, left);
       double breakerX = GetBreakerX(startPoint, left);
       double circuitX = GetCircuitX(startPoint, left);
@@ -1803,8 +1846,10 @@ namespace GMEPElectricalCommands
       CreateBreakerLine(startPoint, i, left, tr, btr, 4);
     }
 
-    private void Create2PoleBreaker2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, Dictionary<string, double> data, bool left, int i)
+    private void Create2PoleBreaker2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, Dictionary<string, double> data, bool left, bool is2Pole, int i)
     {
+      var (descriptions, breakers, circuits, phaseA, phaseB, phaseC, descriptionHighlights, descriptionTags) = GetCorrectBreakerData(panelData, left, is2Pole);
+
       var (_, _, ed) = GetGlobals();
       double descriptionX = GetDescriptionX2P(startPoint, left);
       double breakerX = GetBreakerX(startPoint, left);
@@ -1838,8 +1883,10 @@ namespace GMEPElectricalCommands
       CreateBreakerLine(startPoint, i, left, tr, btr, 4);
     }
 
-    private void Create3PoleBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, List<string> descriptions, List<string> phaseA, List<string> phaseB, List<string> phaseC, List<string> breakers, List<string> circuits, List<bool> descriptionHighlights, Dictionary<string, double> data, bool left, int i)
+    private void Create3PoleBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, Dictionary<string, double> data, bool left, bool is2Pole, int i)
     {
+      var (descriptions, breakers, circuits, phaseA, phaseB, phaseC, descriptionHighlights, descriptionTags) = GetCorrectBreakerData(panelData, left, is2Pole);
+
       double descriptionX = GetDescriptionX(startPoint, left);
       double breakerX = GetBreakerX(startPoint, left);
       double circuitX = GetCircuitX(startPoint, left);
