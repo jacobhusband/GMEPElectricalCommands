@@ -245,6 +245,9 @@ namespace GMEPElectricalCommands
       // Lowest Y point
       double lowestY = topRightCorner.Y;
 
+      var totalLevel = 0;
+      var decreaseY = 0.0;
+
       int counter = 0;
       CREATEBLOCK();
 
@@ -268,7 +271,7 @@ namespace GMEPElectricalCommands
           CreateTextsWithPanelData(tr, layerName, startPoint, panelData);
 
           // Create breaker text objects
-          ProcessTextData(tr, btr, startPoint, panelData, is2Pole);
+          totalLevel += ProcessTextData(tr, btr, startPoint, panelData, is2Pole);
 
           // Get end of data
           var endOfDataY = GetEndOfDataY((List<string>)panelData["description_left"], startPoint);
@@ -286,11 +289,19 @@ namespace GMEPElectricalCommands
           // Create the notes section
           if (panelData.ContainsKey("notes"))
           {
-            CreateNotes(btr, tr, startPoint, endPoint, panelData["existing"] as string, panelData["custom_title"] as string, panelData["notes"] as List<string>);
+            var decrease = CreateNotes(btr, tr, startPoint, endPoint, panelData["existing"] as string, panelData["custom_title"] as string, panelData["notes"] as List<string>);
+            if (decrease > decreaseY)
+            {
+              decreaseY = decrease;
+            }
           }
           else
           {
-            CreateNotes(btr, tr, startPoint, endPoint, panelData["existing"] as string, null, null);
+            var decrease = CreateNotes(btr, tr, startPoint, endPoint, panelData["existing"] as string, null, null);
+            if (decrease > decreaseY)
+            {
+              decreaseY = decrease;
+            }
           }
 
           // Create the calculations section
@@ -313,14 +324,14 @@ namespace GMEPElectricalCommands
         // After printing 3 panels, reset X and decrease Y by 5
         if (counter % 3 == 0)
         {
-          topRightCorner = new Point3d(originalTopRightCorner.X, lowestY - 1.5, 0);
+          topRightCorner = new Point3d(originalTopRightCorner.X, lowestY - 1.5 - decreaseY, 0);
           // Reset lowestY
           lowestY = topRightCorner.Y;
         }
         else
         {
           // Increase x-coordinate by 10 for the next panel
-          topRightCorner = new Point3d(topRightCorner.X - 9.6, topRightCorner.Y, 0);
+          topRightCorner = new Point3d(topRightCorner.X - (9.6 + (0.2 * totalLevel)), topRightCorner.Y, 0);
         }
       }
     }
@@ -884,7 +895,7 @@ namespace GMEPElectricalCommands
       CreateAndPositionText(tr, "=", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 7.03028501835593, endPoint.Y - 0.998928989062989, 0));
     }
 
-    private void CreateNotes(BlockTableRecord btr, Transaction tr, Point3d startPoint, Point3d endPoint, string panelType, string customTitle, List<string> customNotes)
+    private double CreateNotes(BlockTableRecord btr, Transaction tr, Point3d startPoint, Point3d endPoint, string panelType, string customTitle, List<string> customNotes)
     {
       string title;
       if (!string.IsNullOrEmpty(customTitle))
@@ -916,6 +927,8 @@ namespace GMEPElectricalCommands
       int lines_of_text = 0;
       double yOffset = y_initial;
 
+      double decrease_y = 0;
+
       CreateAndPositionText(tr, title, "ROMANC", 0.1498, 0.75, 2, "0", new Point3d(startPoint.X + 0.236635303895696, startPoint.Y + 0.113254677317428, 0));
       CreateAndPositionText(tr, "NOTES:", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 5.96783070435049, endPoint.Y - 0.23875904811004, 0));
 
@@ -942,7 +955,7 @@ namespace GMEPElectricalCommands
         // for each notes that does not contain *NOT ADDED AS NOTE*, create a note
         foreach (var note in customNotes)
         {
-          if (!note.Contains("*NOT ADDED AS NOTE*"))
+          if (!note.Contains("NOT ADDED AS NOTE"))
           {
             // Create the circle
             CreateCircle(btr, tr, new Point3d(endPoint.X - 5.8088, endPoint.Y - 0.3664 - (lines_of_text * 0.1872), 0), 0.09, 2, false);
@@ -964,6 +977,7 @@ namespace GMEPElectricalCommands
         if (lines_of_text > lines - 1)
         {
           lines = lines_of_text + 1;
+          decrease_y = (lines - 5) * 0.1872;
         }
       }
       for (int i = 0; i <= lines; i++)
@@ -975,6 +989,8 @@ namespace GMEPElectricalCommands
       // Create the vertical lines
       CreateLine(tr, btr, endPoint.X, endPoint.Y - 0.0846396524177919, endPoint.X, endPoint.Y - yOffset, "0");
       CreateLine(tr, btr, endPoint.X - 6.07359999999994, endPoint.Y - yOffset, endPoint.X - 6.07359999999994, endPoint.Y + -0.0846396524177919, "0");
+
+      return decrease_y;
     }
 
     private List<string> SplitStringIntoLines(string str, int maxLength)
@@ -1354,7 +1370,7 @@ namespace GMEPElectricalCommands
       tr.AddNewlyCreatedDBObject(line, true);
     }
 
-    private void ProcessTextData(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, bool is2Pole)
+    private int ProcessTextData(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, bool is2Pole)
     {
       List<string> leftDescriptions = (List<string>)panelData["description_left"];
       List<string> leftBreakers = (List<string>)panelData["breaker_left"];
@@ -1370,6 +1386,8 @@ namespace GMEPElectricalCommands
 
       List<bool> leftBreakersHighlight = (List<bool>)panelData["breaker_left_highlights"];
       List<bool> rightBreakersHighlight = (List<bool>)panelData["breaker_right_highlights"];
+
+      var largest_level = 0;
 
       if (!is2Pole)
       {
@@ -1404,9 +1422,12 @@ namespace GMEPElectricalCommands
         string json = JsonConvert.SerializeObject(leftSide, Formatting.Indented);
         File.WriteAllText(@"C:\Users\jakeh\Desktop\leftSide.json", json);
 
-        InsertBreakerNotes(startPoint, leftSide, true);
-        InsertBreakerNotes(startPoint, rightSide, false);
+        var left_largest_level = InsertBreakerNotes(startPoint, leftSide, true);
+        var right_largest_level = InsertBreakerNotes(startPoint, rightSide, false);
+
+        largest_level = left_largest_level > right_largest_level ? left_largest_level : right_largest_level;
       }
+      return largest_level;
     }
 
     private Dictionary<string, List<bool>> ConvertTagsAndNotesToDictionary(List<string> tags, List<string> notes)
@@ -1418,7 +1439,7 @@ namespace GMEPElectricalCommands
         List<bool> bools = new List<bool>();
         foreach (string tag in tags)
         {
-          bools.Add(tag.Contains(note));
+          bools.Add(tag.Split('|').Contains(note));
         }
         notesWithBools.Add((notes.IndexOf(note) + 1).ToString(), bools);
       }
@@ -1438,8 +1459,42 @@ namespace GMEPElectricalCommands
       return newNotes;
     }
 
-    private void InsertBreakerNotes(Point3d startPoint, Dictionary<string, List<bool>> notesWithBools, bool left)
+    private Dictionary<string, List<int>> ConvertBooleansToLevels(Dictionary<string, List<bool>> notesWithBools)
     {
+      Dictionary<string, List<int>> notesWithLevels = new Dictionary<string, List<int>>();
+      List<int> maxLevelsSoFar = Enumerable.Repeat(0, notesWithBools.First().Value.Count).ToList();
+
+      foreach (var pair in notesWithBools)
+      {
+        List<int> currentLevels = new List<int>();
+
+        for (int i = 0; i < pair.Value.Count; i++)
+        {
+          if (pair.Value[i])
+          {
+            int level = maxLevelsSoFar[i] + 1;
+            currentLevels.Add(level);
+            maxLevelsSoFar[i] = level;
+          }
+          else
+          {
+            currentLevels.Add(0);
+          }
+        }
+
+        notesWithLevels.Add(pair.Key, currentLevels);
+      }
+
+      return notesWithLevels;
+    }
+
+    private int InsertBreakerNotes(Point3d startPoint, Dictionary<string, List<bool>> notesWithBools, bool left)
+    {
+      if (notesWithBools.Count == 0)
+      {
+        return 0;
+      }
+
       Point3d botPoint = new Point3d(0, 0, 0);
       Point3d topPoint = new Point3d(0, 0, 0);
 
@@ -1452,31 +1507,62 @@ namespace GMEPElectricalCommands
 
       bool currentlyKeeping = false;
 
-      foreach (var note in notesWithBools)
+      var notesWithLevels = ConvertBooleansToLevels(notesWithBools);
+
+      foreach (var item in notesWithLevels)
       {
-        for (int i = 0; i < note.Value.Count; i += 1)
+        int currentLevel = 0;
+        int previousLevel = 0;
+        for (int i = 0; i < item.Value.Count; i += 1)
         {
-          if (note.Value[i])
+          currentLevel = item.Value[i];
+          if (currentLevel > 0)
           {
+            if (currentLevel != previousLevel && previousLevel > 0)
+            {
+              botPoint = new Point3d(start_x + ((item.Value[i] - 1) * (left ? -1 : 1) * 0.2), start_y - (row_height * (i)), 0);
+              KeepBreakersGivenPoints(topPoint, botPoint, new Point3d(topPoint.X + displacement, topPoint.Y, 0), item.Key);
+              topPoint = new Point3d(start_x + ((item.Value[i] - 1) * (left ? -1 : 1) * 0.2), start_y - (row_height * (i)), 0);
+            }
             if (!currentlyKeeping)
             {
-              topPoint = new Point3d(start_x, start_y - (row_height * (i)), 0);
+              topPoint = new Point3d(start_x + ((item.Value[i] - 1) * (left ? -1 : 1) * 0.2), start_y - (row_height * (i)), 0);
               currentlyKeeping = true;
             }
-            if (i >= note.Value.Count - 1)
+            if (i >= item.Value.Count - 1)
             {
-              botPoint = new Point3d(start_x, start_y - (row_height * (i + 1)), 0);
-              KeepBreakersGivenPoints(topPoint, botPoint, new Point3d(topPoint.X + displacement, topPoint.Y, 0), note.Key);
+              botPoint = new Point3d(start_x + ((item.Value[i] - 1) * (left ? -1 : 1) * 0.2), start_y - (row_height * (i + 1)), 0);
+              KeepBreakersGivenPoints(topPoint, botPoint, new Point3d(topPoint.X + displacement, topPoint.Y, 0), item.Key);
             }
           }
           else if (currentlyKeeping)
           {
-            botPoint = new Point3d(start_x, start_y - (row_height * i), 0);
+            botPoint = new Point3d(start_x + ((item.Value[i] - 1) * (left ? -1 : 1) * 0.2), start_y - (row_height * i), 0);
             currentlyKeeping = false;
-            KeepBreakersGivenPoints(topPoint, botPoint, new Point3d(topPoint.X + displacement, topPoint.Y, 0), note.Key);
+            KeepBreakersGivenPoints(topPoint, botPoint, new Point3d(topPoint.X + displacement, topPoint.Y, 0), item.Key);
+          }
+          previousLevel = currentLevel;
+        }
+        currentlyKeeping = false;
+      }
+
+      return GetLargestLevel(notesWithLevels);
+    }
+
+    private int GetLargestLevel(Dictionary<string, List<int>> notesWithLevels)
+    {
+      int largestLevel = 0;
+      foreach (var item in notesWithLevels)
+      {
+        foreach (int level in item.Value)
+        {
+          if (level > largestLevel)
+          {
+            largestLevel = level;
           }
         }
       }
+      return largestLevel;
     }
 
     private void InsertKeepBreakers(Point3d startPoint, List<bool> breakersHighlight, bool left)

@@ -87,6 +87,8 @@
       this.CUSTOM_TITLE_TEXT = new System.Windows.Forms.TextBox();
       this.CUSTOM_TITLE_LABEL = new System.Windows.Forms.Label();
       this.REMOVE_NOTE_BUTTON = new System.Windows.Forms.Button();
+      this.MAX_DESCRIPTION_CELL_CHAR_LABEL = new System.Windows.Forms.Label();
+      this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX = new System.Windows.Forms.TextBox();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -237,9 +239,9 @@
       // 
       // CREATE_PANEL_BUTTON
       // 
-      this.CREATE_PANEL_BUTTON.Location = new System.Drawing.Point(758, 538);
+      this.CREATE_PANEL_BUTTON.Location = new System.Drawing.Point(396, 538);
       this.CREATE_PANEL_BUTTON.Name = "CREATE_PANEL_BUTTON";
-      this.CREATE_PANEL_BUTTON.Size = new System.Drawing.Size(126, 23);
+      this.CREATE_PANEL_BUTTON.Size = new System.Drawing.Size(103, 23);
       this.CREATE_PANEL_BUTTON.TabIndex = 157;
       this.CREATE_PANEL_BUTTON.Text = "CREATE PANEL";
       this.CREATE_PANEL_BUTTON.UseVisualStyleBackColor = true;
@@ -642,10 +644,34 @@
       this.REMOVE_NOTE_BUTTON.UseVisualStyleBackColor = true;
       this.REMOVE_NOTE_BUTTON.Click += new System.EventHandler(this.REMOVE_NOTE_BUTTON_Click);
       // 
+      // MAX_DESCRIPTION_CELL_CHAR_LABEL
+      // 
+      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.AutoSize = true;
+      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.BackColor = System.Drawing.Color.Transparent;
+      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.ForeColor = System.Drawing.SystemColors.ControlText;
+      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.Location = new System.Drawing.Point(1078, 604);
+      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.Margin = new System.Windows.Forms.Padding(0);
+      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.Name = "MAX_DESCRIPTION_CELL_CHAR_LABEL";
+      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.Size = new System.Drawing.Size(240, 13);
+      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.TabIndex = 189;
+      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.Text = "MAXIMUM DESCRIPTION CELL CHARACTERS";
+      // 
+      // MAX_DESCRIPTION_CELL_CHAR_TEXTBOX
+      // 
+      this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+      this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Location = new System.Drawing.Point(1324, 600);
+      this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Name = "MAX_DESCRIPTION_CELL_CHAR_TEXTBOX";
+      this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Size = new System.Drawing.Size(39, 20);
+      this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.TabIndex = 190;
+      this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text = "16";
+      this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+      // 
       // UserInterface
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      this.Controls.Add(this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX);
+      this.Controls.Add(this.MAX_DESCRIPTION_CELL_CHAR_LABEL);
       this.Controls.Add(this.REMOVE_NOTE_BUTTON);
       this.Controls.Add(this.CUSTOM_TITLE_LABEL);
       this.Controls.Add(this.CUSTOM_TITLE_TEXT);
@@ -762,5 +788,7 @@
     private System.Windows.Forms.TextBox CUSTOM_TITLE_TEXT;
     private System.Windows.Forms.Label CUSTOM_TITLE_LABEL;
     private System.Windows.Forms.Button REMOVE_NOTE_BUTTON;
+    private System.Windows.Forms.Label MAX_DESCRIPTION_CELL_CHAR_LABEL;
+    private System.Windows.Forms.TextBox MAX_DESCRIPTION_CELL_CHAR_TEXTBOX;
   }
 }

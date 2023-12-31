@@ -33,6 +33,7 @@
       this.QUICK_ADD_NOTE_TEXT = new System.Windows.Forms.Label();
       this.QUICK_ADD_COMBOBOX = new System.Windows.Forms.ComboBox();
       this.ADD_NOTE_BUTTON = new System.Windows.Forms.Button();
+      this.DONE_BUTTON = new System.Windows.Forms.Button();
       this.SuspendLayout();
       // 
       // NOTES_TEXTBOX
@@ -91,11 +92,22 @@
       this.ADD_NOTE_BUTTON.UseVisualStyleBackColor = true;
       this.ADD_NOTE_BUTTON.Click += new System.EventHandler(this.ADD_NOTE_BUTTON_Click);
       // 
+      // DONE_BUTTON
+      // 
+      this.DONE_BUTTON.Location = new System.Drawing.Point(12, 457);
+      this.DONE_BUTTON.Name = "DONE_BUTTON";
+      this.DONE_BUTTON.Size = new System.Drawing.Size(776, 38);
+      this.DONE_BUTTON.TabIndex = 5;
+      this.DONE_BUTTON.Text = "DONE";
+      this.DONE_BUTTON.UseVisualStyleBackColor = true;
+      this.DONE_BUTTON.Click += new System.EventHandler(this.DONE_BUTTON_Click);
+      // 
       // noteForm
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(800, 464);
+      this.ClientSize = new System.Drawing.Size(800, 507);
+      this.Controls.Add(this.DONE_BUTTON);
       this.Controls.Add(this.ADD_NOTE_BUTTON);
       this.Controls.Add(this.QUICK_ADD_COMBOBOX);
       this.Controls.Add(this.QUICK_ADD_NOTE_TEXT);
@@ -115,5 +127,6 @@
     private System.Windows.Forms.Label QUICK_ADD_NOTE_TEXT;
     private System.Windows.Forms.ComboBox QUICK_ADD_COMBOBOX;
     private System.Windows.Forms.Button ADD_NOTE_BUTTON;
+    private System.Windows.Forms.Button DONE_BUTTON;
   }
 }

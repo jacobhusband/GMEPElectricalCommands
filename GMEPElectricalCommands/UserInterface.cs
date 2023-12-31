@@ -38,9 +38,9 @@ namespace GMEPElectricalCommands
       this.Name = tabName;
       this.notesStorage =
       [
-        "ADD SUFFIX (E). * NOT ADDED AS NOTE *",
-        "ADD SUFFIX (R). * NOT ADDED AS NOTE *",
-        "APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). * NOT ADDED AS NOTE *",
+        "ADD SUFFIX (E). *NOT ADDED AS NOTE*",
+        "ADD SUFFIX (R). *NOT ADDED AS NOTE*",
+        "APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*",
       ];
 
       INFO_LABEL.Text = "";
@@ -61,6 +61,7 @@ namespace GMEPElectricalCommands
       PANEL_NAME_INPUT.TextChanged += new EventHandler(this.PANEL_NAME_INPUT_TextChanged);
       PANEL_GRID.CellFormatting += PANEL_GRID_CellFormatting;
       PANEL_GRID.CellClick += new DataGridViewCellEventHandler(this.PANEL_GRID_CellClick);
+      PANEL_GRID.EditingControlShowing += new DataGridViewEditingControlShowingEventHandler(PANEL_GRID_EditingControlShowing);
 
       add_rows_to_datagrid();
       set_default_form_values(tabName);
@@ -1462,6 +1463,32 @@ namespace GMEPElectricalCommands
       }
     }
 
+    private void PANEL_GRID_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
+    {
+      e.Control.TextChanged -= new EventHandler(EditingControl_TextChanged);
+      e.Control.TextChanged += new EventHandler(EditingControl_TextChanged);
+    }
+
+    private async void EditingControl_TextChanged(object sender, EventArgs e)
+    {
+      if (MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text != "" && PANEL_GRID.CurrentCell.OwningColumn.Name.Contains("description"))
+      {
+        TextBox tb = sender as TextBox;
+        if (tb.Text.Length > Convert.ToInt32(MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text))
+        {
+          tb.Text = tb.Text.Substring(0, Convert.ToInt32(MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text));
+          tb.SelectionStart = tb.Text.Length;
+          INFO_LABEL.Text = $"You are trying to enter too many characters into a cell that belongs to a \"description\" column. The maximum number of characters for this cell is {MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text}.";
+          await Task.Delay(5000);
+        }
+
+        if (INFO_LABEL.Text == $"You are trying to enter too many characters into a cell that belongs to a \"description\" column. The maximum number of characters for this cell is {MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text}.")
+        {
+          INFO_LABEL.Text = string.Empty;
+        }
+      }
+    }
+
     private void PHASE_SUM_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
     {
       // Check if the modified cell is in row 0 and column 0, 1, or 2
@@ -1604,6 +1631,9 @@ namespace GMEPElectricalCommands
           cell.Style.BackColor = Color.Yellow;
         }
       }
+
+      // clear the PANEL_GRID selection
+      PANEL_GRID.ClearSelection();
     }
 
     private void APPLY_COMBOBOX_SelectedIndexChanged(object sender, EventArgs e)
@@ -1613,12 +1643,11 @@ namespace GMEPElectricalCommands
         return;
       }
 
-      // go through each panel grid breaker and description cell and remove the background color
       foreach (DataGridViewRow row in PANEL_GRID.Rows)
       {
         foreach (DataGridViewCell cell in row.Cells)
         {
-          if (cell.OwningColumn.Name.Contains("description") || cell.OwningColumn.Name.Contains("breaker"))
+          if (cell.OwningColumn.Name.Contains("description"))
           {
             cell.Style.BackColor = Color.Empty;
           }
@@ -1629,13 +1658,13 @@ namespace GMEPElectricalCommands
       {
         foreach (DataGridViewCell cell in row.Cells)
         {
-          if (cell.OwningColumn.Name.Contains("description") || cell.OwningColumn.Name.Contains("breaker"))
+          if (cell.OwningColumn.Name.Contains("description"))
           {
             if (cell.Tag == null)
             {
               continue;
             }
-            if (cell.Tag.ToString().Contains(APPLY_COMBOBOX.SelectedItem.ToString()))
+            if (cell.Tag.ToString().Split('|').Contains(APPLY_COMBOBOX.SelectedItem.ToString()))
             {
               // turn the background of the cell to a yellow color
               cell.Style.BackColor = Color.Yellow;
@@ -1678,15 +1707,6 @@ namespace GMEPElectricalCommands
         }
         update_apply_combobox_to_match_storage();
       }
-    }
-
-    public void save_the_notes_storage_as_json_to_desktop()
-    {
-      string json = JsonConvert.SerializeObject(this.notesStorage, Formatting.Indented);
-      string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-      string fileName = "notesStorage.json";
-      string fullPath = Path.Combine(path, fileName);
-      File.WriteAllText(fullPath, json);
     }
 
     private void REMOVE_NOTE_BUTTON_Click(object sender, EventArgs e)
