@@ -171,6 +171,7 @@ namespace GMEPElectricalCommands
               row.Cells[description_right_index].Tag = description_right_tag_value;
             }
           }
+          userControl1.update_cell_background_color();
         }
       }
     }

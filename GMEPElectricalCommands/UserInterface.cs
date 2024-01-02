@@ -1247,6 +1247,44 @@ namespace GMEPElectricalCommands
       }
     }
 
+    public void update_cell_background_color()
+    {
+      if (APPLY_COMBOBOX.SelectedItem == null)
+      {
+        return;
+      }
+
+      foreach (DataGridViewRow row in PANEL_GRID.Rows)
+      {
+        foreach (DataGridViewCell cell in row.Cells)
+        {
+          if (cell.OwningColumn.Name.Contains("description"))
+          {
+            cell.Style.BackColor = Color.Empty;
+          }
+        }
+      }
+
+      foreach (DataGridViewRow row in PANEL_GRID.Rows)
+      {
+        foreach (DataGridViewCell cell in row.Cells)
+        {
+          if (cell.OwningColumn.Name.Contains("description"))
+          {
+            if (cell.Tag == null)
+            {
+              continue;
+            }
+            if (cell.Tag.ToString().Split('|').Contains(APPLY_COMBOBOX.SelectedItem.ToString()))
+            {
+              // turn the background of the cell to a yellow color
+              cell.Style.BackColor = Color.Yellow;
+            }
+          }
+        }
+      }
+    }
+
     public void update_notes_storage(List<string> notesStorage)
     {
       this.notesStorage = notesStorage;
@@ -1638,40 +1676,7 @@ namespace GMEPElectricalCommands
 
     private void APPLY_COMBOBOX_SelectedIndexChanged(object sender, EventArgs e)
     {
-      if (APPLY_COMBOBOX.SelectedItem == null)
-      {
-        return;
-      }
-
-      foreach (DataGridViewRow row in PANEL_GRID.Rows)
-      {
-        foreach (DataGridViewCell cell in row.Cells)
-        {
-          if (cell.OwningColumn.Name.Contains("description"))
-          {
-            cell.Style.BackColor = Color.Empty;
-          }
-        }
-      }
-
-      foreach (DataGridViewRow row in PANEL_GRID.Rows)
-      {
-        foreach (DataGridViewCell cell in row.Cells)
-        {
-          if (cell.OwningColumn.Name.Contains("description"))
-          {
-            if (cell.Tag == null)
-            {
-              continue;
-            }
-            if (cell.Tag.ToString().Split('|').Contains(APPLY_COMBOBOX.SelectedItem.ToString()))
-            {
-              // turn the background of the cell to a yellow color
-              cell.Style.BackColor = Color.Yellow;
-            }
-          }
-        }
-      }
+      update_cell_background_color();
     }
 
     private void STATUS_COMBOBOX_SelectedIndexChanged(object sender, EventArgs e)

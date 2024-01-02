@@ -251,10 +251,12 @@ namespace GMEPElectricalCommands
       int counter = 0;
       CREATEBLOCK();
 
-      foreach (var panelData in panelDataList)
+      foreach (var panelDataOG in panelDataList)
       {
-        bool is2Pole = !panelData.ContainsKey("phase_c_left");
+        bool is2Pole = !panelDataOG.ContainsKey("phase_c_left");
         var endPoint = new Point3d(0, 0, 0);
+
+        var panelData = UpdatePanelDataDescriptions(panelDataOG);
 
         using (var tr = db.TransactionManager.StartTransaction())
         {
@@ -334,6 +336,71 @@ namespace GMEPElectricalCommands
           topRightCorner = new Point3d(topRightCorner.X - (9.6 + (0.2 * totalLevel)), topRightCorner.Y, 0);
         }
       }
+    }
+
+    private Dictionary<string, object> UpdatePanelDataDescriptions(Dictionary<string, object> panelData)
+    {
+      Console.WriteLine("Got in.");
+
+      Console.WriteLine(panelData.ContainsKey("description_left_tags"));
+      // Check if the keys exist in the dictionary
+      if (panelData.ContainsKey("description_left_tags") && panelData.ContainsKey("description_right_tags"))
+      {
+        // Get the lists from the dictionary
+        List<string> leftTags = panelData["description_left_tags"] as List<string>;
+        List<string> rightTags = panelData["description_right_tags"] as List<string>;
+
+        // Get the description lists
+        List<string> leftDescriptions = panelData["description_left"] as List<string>;
+        List<string> rightDescriptions = panelData["description_right"] as List<string>;
+
+        foreach (var tag in leftTags)
+        {
+          Console.WriteLine("Left tag: ", tag);
+        }
+
+        // Iterate over the left tags
+        for (int i = 0; i < leftTags.Count; i++)
+        {
+          if (leftTags[i].Contains("ADD SUFFIX (E). *NOT ADDED AS NOTE*"))
+          {
+            // Add the suffix to the associated description
+            leftDescriptions[i * 2] = "(E)" + leftDescriptions[i * 2];
+          }
+          else if (leftTags[i].Contains("ADD SUFFIX (R). *NOT ADDED AS NOTE*"))
+          {
+            // Add the suffix to the associated description
+            leftDescriptions[i * 2] = "(R)" + leftDescriptions[i * 2];
+          }
+        }
+
+        // Iterate over the right tags
+        for (int i = 0; i < rightTags.Count; i++)
+        {
+          if (rightTags[i].Contains("ADD SUFFIX (E). *NOT ADDED AS NOTE*"))
+          {
+            // Add the suffix to the associated description
+            rightDescriptions[i * 2] = "(E)" + rightDescriptions[i * 2];
+          }
+          else if (rightTags[i].Contains("ADD SUFFIX (R). *NOT ADDED AS NOTE*"))
+          {
+            // Add the suffix to the associated description
+            rightDescriptions[i * 2] = "(R)" + rightDescriptions[i * 2];
+          }
+        }
+
+        // Update the descriptions in the dictionary
+        panelData["description_left"] = leftDescriptions;
+        panelData["description_right"] = rightDescriptions;
+      }
+
+      string json = JsonConvert.SerializeObject(panelData, Formatting.Indented);
+      string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+      string fileName = panelData["panel"] as string;
+      string filePath = Path.Combine(desktopPath, fileName + ".json");
+      File.WriteAllText(filePath, json);
+
+      return panelData;
     }
 
     private System.Windows.Forms.Label CreateLabel(string text)
@@ -1612,7 +1679,10 @@ namespace GMEPElectricalCommands
           phaseC = panelData["phase_c_left"] as List<string>;
         }
         descriptionHighlights = panelData["description_left_highlights"] as List<bool>;
-        descriptionTags = panelData["description_left_tags"] as List<string>;
+        if (panelData.ContainsKey("description_left_tags"))
+        {
+          descriptionTags = panelData["description_left_tags"] as List<string>;
+        }
       }
       else
       {
@@ -1626,7 +1696,10 @@ namespace GMEPElectricalCommands
           phaseC = panelData["phase_c_right"] as List<string>;
         }
         descriptionHighlights = panelData["description_right_highlights"] as List<bool>;
-        descriptionTags = panelData["description_right_tags"] as List<string>;
+        if (panelData.ContainsKey("description_right_tags"))
+        {
+          descriptionTags = panelData["description_right_tags"] as List<string>;
+        }
       }
 
       return (descriptions, breakers, circuits, phaseA, phaseB, phaseC, descriptionHighlights, descriptionTags);
