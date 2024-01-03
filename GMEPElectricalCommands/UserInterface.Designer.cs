@@ -44,7 +44,6 @@
       this.label17 = new System.Windows.Forms.Label();
       this.LARGEST_LCL_LABEL = new System.Windows.Forms.Label();
       this.label16 = new System.Windows.Forms.Label();
-      this.LARGEST_LCL_INPUT = new System.Windows.Forms.TextBox();
       this.label15 = new System.Windows.Forms.Label();
       this.CREATE_PANEL_BUTTON = new System.Windows.Forms.Button();
       this.label14 = new System.Windows.Forms.Label();
@@ -89,6 +88,8 @@
       this.REMOVE_NOTE_BUTTON = new System.Windows.Forms.Button();
       this.MAX_DESCRIPTION_CELL_CHAR_LABEL = new System.Windows.Forms.Label();
       this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX = new System.Windows.Forms.TextBox();
+      this.AUTO_CHECKBOX = new System.Windows.Forms.CheckBox();
+      this.LARGEST_LCL_INPUT = new System.Windows.Forms.TextBox();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -184,7 +185,7 @@
       // 
       this.LARGEST_LCL_CHECKBOX.AutoSize = true;
       this.LARGEST_LCL_CHECKBOX.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-      this.LARGEST_LCL_CHECKBOX.Location = new System.Drawing.Point(79, 435);
+      this.LARGEST_LCL_CHECKBOX.Location = new System.Drawing.Point(81, 436);
       this.LARGEST_LCL_CHECKBOX.Name = "LARGEST_LCL_CHECKBOX";
       this.LARGEST_LCL_CHECKBOX.Size = new System.Drawing.Size(68, 17);
       this.LARGEST_LCL_CHECKBOX.TabIndex = 176;
@@ -204,7 +205,7 @@
       // LARGEST_LCL_LABEL
       // 
       this.LARGEST_LCL_LABEL.AutoSize = true;
-      this.LARGEST_LCL_LABEL.Location = new System.Drawing.Point(27, 417);
+      this.LARGEST_LCL_LABEL.Location = new System.Drawing.Point(22, 417);
       this.LARGEST_LCL_LABEL.Name = "LARGEST_LCL_LABEL";
       this.LARGEST_LCL_LABEL.Size = new System.Drawing.Size(268, 13);
       this.LARGEST_LCL_LABEL.TabIndex = 175;
@@ -218,15 +219,6 @@
       this.label16.Size = new System.Drawing.Size(50, 13);
       this.label16.TabIndex = 165;
       this.label16.Text = "MAIN (A)";
-      // 
-      // LARGEST_LCL_INPUT
-      // 
-      this.LARGEST_LCL_INPUT.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-      this.LARGEST_LCL_INPUT.Location = new System.Drawing.Point(153, 433);
-      this.LARGEST_LCL_INPUT.Name = "LARGEST_LCL_INPUT";
-      this.LARGEST_LCL_INPUT.Size = new System.Drawing.Size(142, 20);
-      this.LARGEST_LCL_INPUT.TabIndex = 174;
-      this.LARGEST_LCL_INPUT.TextChanged += new System.EventHandler(this.LARGEST_LCL_INPUT_TextChanged);
       // 
       // label15
       // 
@@ -666,10 +658,35 @@
       this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text = "16";
       this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
       // 
+      // AUTO_CHECKBOX
+      // 
+      this.AUTO_CHECKBOX.AutoSize = true;
+      this.AUTO_CHECKBOX.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+      this.AUTO_CHECKBOX.Checked = true;
+      this.AUTO_CHECKBOX.CheckState = System.Windows.Forms.CheckState.Checked;
+      this.AUTO_CHECKBOX.Location = new System.Drawing.Point(22, 436);
+      this.AUTO_CHECKBOX.Name = "AUTO_CHECKBOX";
+      this.AUTO_CHECKBOX.Size = new System.Drawing.Size(56, 17);
+      this.AUTO_CHECKBOX.TabIndex = 191;
+      this.AUTO_CHECKBOX.Text = "AUTO";
+      this.AUTO_CHECKBOX.UseVisualStyleBackColor = true;
+      this.AUTO_CHECKBOX.CheckedChanged += new System.EventHandler(this.AUTO_CHECKBOX_CheckedChanged);
+      // 
+      // LARGEST_LCL_INPUT
+      // 
+      this.LARGEST_LCL_INPUT.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+      this.LARGEST_LCL_INPUT.Enabled = false;
+      this.LARGEST_LCL_INPUT.Location = new System.Drawing.Point(155, 434);
+      this.LARGEST_LCL_INPUT.Name = "LARGEST_LCL_INPUT";
+      this.LARGEST_LCL_INPUT.Size = new System.Drawing.Size(142, 20);
+      this.LARGEST_LCL_INPUT.TabIndex = 192;
+      // 
       // UserInterface
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      this.Controls.Add(this.LARGEST_LCL_INPUT);
+      this.Controls.Add(this.AUTO_CHECKBOX);
       this.Controls.Add(this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX);
       this.Controls.Add(this.MAX_DESCRIPTION_CELL_CHAR_LABEL);
       this.Controls.Add(this.REMOVE_NOTE_BUTTON);
@@ -686,7 +703,6 @@
       this.Controls.Add(this.label17);
       this.Controls.Add(this.LARGEST_LCL_LABEL);
       this.Controls.Add(this.label16);
-      this.Controls.Add(this.LARGEST_LCL_INPUT);
       this.Controls.Add(this.label15);
       this.Controls.Add(this.CREATE_PANEL_BUTTON);
       this.Controls.Add(this.label14);
@@ -745,7 +761,6 @@
     private System.Windows.Forms.Label label17;
     private System.Windows.Forms.Label LARGEST_LCL_LABEL;
     private System.Windows.Forms.Label label16;
-    private System.Windows.Forms.TextBox LARGEST_LCL_INPUT;
     private System.Windows.Forms.Label label15;
     private System.Windows.Forms.Button CREATE_PANEL_BUTTON;
     private System.Windows.Forms.Label label14;
@@ -790,5 +805,7 @@
     private System.Windows.Forms.Button REMOVE_NOTE_BUTTON;
     private System.Windows.Forms.Label MAX_DESCRIPTION_CELL_CHAR_LABEL;
     private System.Windows.Forms.TextBox MAX_DESCRIPTION_CELL_CHAR_TEXTBOX;
+    private System.Windows.Forms.CheckBox AUTO_CHECKBOX;
+    private System.Windows.Forms.TextBox LARGEST_LCL_INPUT;
   }
 }

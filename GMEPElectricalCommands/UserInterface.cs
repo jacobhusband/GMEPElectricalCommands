@@ -592,133 +592,78 @@ namespace GMEPElectricalCommands
       }
     }
 
-    private void panel_cell_changed_3P(DataGridViewCellEventArgs e)
+    private void panel_cell_changed_3P()
     {
-      // Function to parse and sum a cell's value
-      double ParseAndSumCell(string cellValue)
+      int[] columnIndex = { 1, 8, 2, 9, 3, 10 };
+      for (int i = 0; i < columnIndex.Length; i += 2)
       {
         double sum = 0;
-        if (!string.IsNullOrEmpty(cellValue))
+        foreach (DataGridViewRow row in PANEL_GRID.Rows)
         {
-          var parts = cellValue.Split(',');
-          foreach (var part in parts)
+          if (row.Cells[columnIndex[i]].Value != null)
           {
-            if (double.TryParse(part, out double value))
-            {
-              sum += value;
-            }
+            var hasLCLApplied = verify_LCL_from_phase_cell(row.Index, columnIndex[i]);
+            sum += ParseAndSumCell(row.Cells[columnIndex[i]].Value.ToString(), hasLCLApplied);
+          }
+
+          if (row.Cells[columnIndex[i + 1]].Value != null)
+          {
+            var hasLCLApplied = verify_LCL_from_phase_cell(row.Index, columnIndex[i + 1]);
+            sum += ParseAndSumCell(row.Cells[columnIndex[i + 1]].Value.ToString(), hasLCLApplied);
           }
         }
-        return sum;
+
+        PHASE_SUM_GRID.Rows[0].Cells[i / 2].Value = sum;
       }
-
-      if (e.ColumnIndex == 1 || e.ColumnIndex == 8)
-      {
-        double sum = 0;
-        foreach (DataGridViewRow row in PANEL_GRID.Rows)
-        {
-          if (row.Cells[1].Value != null)
-            sum += ParseAndSumCell(row.Cells[1].Value.ToString());
-
-          if (row.Cells[8].Value != null)
-            sum += ParseAndSumCell(row.Cells[8].Value.ToString());
-        }
-
-        // Update the sum in dataGridView2, row 0, column 0
-        PHASE_SUM_GRID.Rows[0].Cells[0].Value = sum;
-      }
-
-      if (e.ColumnIndex == 2 || e.ColumnIndex == 9)
-      {
-        double sum = 0;
-        foreach (DataGridViewRow row in PANEL_GRID.Rows)
-        {
-          if (row.Cells[2].Value != null)
-            sum += ParseAndSumCell(row.Cells[2].Value.ToString());
-
-          if (row.Cells[9].Value != null)
-            sum += ParseAndSumCell(row.Cells[9].Value.ToString());
-        }
-
-        // Update the sum in dataGridView2, row 0, column 1
-        PHASE_SUM_GRID.Rows[0].Cells[1].Value = sum;
-      }
-
-      if (e.ColumnIndex == 3 || e.ColumnIndex == 10)
-      {
-        double sum = 0;
-        foreach (DataGridViewRow row in PANEL_GRID.Rows)
-        {
-          if (row.Cells[3].Value != null)
-            sum += ParseAndSumCell(row.Cells[3].Value.ToString());
-
-          if (row.Cells[10].Value != null)
-            sum += ParseAndSumCell(row.Cells[10].Value.ToString());
-        }
-
-        // Update the sum in dataGridView2, row 0, column 2
-        PHASE_SUM_GRID.Rows[0].Cells[2].Value = sum;
-      }
-
-      // Capture the new value for potential further use
-      object newValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
     }
 
-    private void panel_cell_changed_2P(DataGridViewCellEventArgs e)
+    private double ParseAndSumCell(string cellValue, bool hasLCLApplied)
     {
-      // Function to parse and sum a cell's value
-      double ParseAndSumCell(string cellValue)
+      double sum = 0;
+      if (!string.IsNullOrEmpty(cellValue))
       {
-        double sum = 0;
-        if (!string.IsNullOrEmpty(cellValue))
+        var parts = cellValue.Split(',');
+        foreach (var part in parts)
         {
-          var parts = cellValue.Split(',');
-          foreach (var part in parts)
+          if (double.TryParse(part, out double value))
           {
-            if (double.TryParse(part, out double value))
+            if (hasLCLApplied)
+            {
+              sum += value * 0.8;
+            }
+            else
             {
               sum += value;
             }
           }
         }
-        return sum;
       }
+      return sum;
+    }
 
-      // Check if the modified cell is in column 2 or 8
-      if (e.ColumnIndex == 1 || e.ColumnIndex == 7)
+    private void panel_cell_changed_2P()
+    {
+      int[] columnIndex = { 1, 7, 2, 8 };
+      for (int i = 0; i < columnIndex.Length; i += 2)
       {
         double sum = 0;
         foreach (DataGridViewRow row in PANEL_GRID.Rows)
         {
-          if (row.Cells[1].Value != null)
-            sum += ParseAndSumCell(row.Cells[1].Value.ToString());
+          if (row.Cells[columnIndex[i]].Value != null)
+          {
+            var hasLCLApplied = verify_LCL_from_phase_cell(row.Index, columnIndex[i]);
+            sum += ParseAndSumCell(row.Cells[columnIndex[i]].Value.ToString(), hasLCLApplied);
+          }
 
-          if (row.Cells[7].Value != null)
-            sum += ParseAndSumCell(row.Cells[7].Value.ToString());
+          if (row.Cells[columnIndex[i + 1]].Value != null)
+          {
+            var hasLCLApplied = verify_LCL_from_phase_cell(row.Index, columnIndex[i + 1]);
+            sum += ParseAndSumCell(row.Cells[columnIndex[i + 1]].Value.ToString(), hasLCLApplied);
+          }
         }
 
-        // Update the sum in dataGridView2, row 0, column 0
-        PHASE_SUM_GRID.Rows[0].Cells[0].Value = sum;
+        PHASE_SUM_GRID.Rows[0].Cells[i / 2].Value = sum;
       }
-
-      // Check if the modified cell is in column 3 or 9
-      if (e.ColumnIndex == 2 || e.ColumnIndex == 8)
-      {
-        double sum = 0;
-        foreach (DataGridViewRow row in PANEL_GRID.Rows)
-        {
-          if (row.Cells[2].Value != null)
-            sum += ParseAndSumCell(row.Cells[2].Value.ToString());
-
-          if (row.Cells[8].Value != null)
-            sum += ParseAndSumCell(row.Cells[8].Value.ToString());
-        }
-
-        // Update the sum in dataGridView2, row 0, column 1
-        PHASE_SUM_GRID.Rows[0].Cells[1].Value = sum;
-      }
-
-      object newValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
     }
 
     private void listen_for_3P_rows_added(DataGridViewRowsAddedEventArgs e)
@@ -1326,21 +1271,97 @@ namespace GMEPElectricalCommands
     {
       if (PHASE_SUM_GRID.ColumnCount > 2)
       {
-        panel_cell_changed_3P(e);
+        panel_cell_changed_3P();
       }
       else
       {
-        panel_cell_changed_2P(e);
+        panel_cell_changed_2P();
       }
       if (PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value == null || PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString() == "") return;
       var cellValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
-      var columnName = PANEL_GRID.Columns[e.ColumnIndex].Name;
       var row = PANEL_GRID.Rows[e.RowIndex];
       var col = PANEL_GRID.Columns[e.ColumnIndex];
       if (cellValue.StartsWith("="))
       {
         link_cell_to_phase(cellValue, row, col);
       }
+    }
+
+    private List<bool> get_list_of_LCL_breakers()
+    {
+      throw new NotImplementedException();
+    }
+
+    private bool verify_LCL_from_phase_cell(int rowIndex, int colIndex)
+    {
+      // get the description cell value from the same row as the phase cell, choose the descripion_left column if the phase column is before the 6th column, otherwise choose the description_right column.
+      var descriptionCellTag = colIndex < 6 ? PANEL_GRID.Rows[rowIndex].Cells["description_left"].Tag : PANEL_GRID.Rows[rowIndex].Cells["description_right"].Tag;
+      var descriptionCellValue = colIndex < 6 ? PANEL_GRID.Rows[rowIndex].Cells["description_left"].Value : PANEL_GRID.Rows[rowIndex].Cells["description_right"].Value;
+
+      // if the tag has "APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*" then return true.
+      if (descriptionCellTag != null && descriptionCellTag.ToString().Contains("APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*"))
+      {
+        return true;
+      }
+
+      // get the breaker cell value from the same row as the phase cell, choose the breaker_left column if the phase column is before the 6th column, otherwise choose the breaker_right column.
+      var breakerCellValue = colIndex < 6 ? PANEL_GRID.Rows[rowIndex].Cells["breaker_left"].Value : PANEL_GRID.Rows[rowIndex].Cells["breaker_right"].Value;
+
+      // check if the description cell is empty or only contains dashes.
+      if (descriptionCellValue == null || descriptionCellValue.ToString() == "" || descriptionCellValue.ToString().All(c => c == '-'))
+      {
+        // check if the breaker cell is equal to "2" and if so, check the description cell above the current row.
+        if (breakerCellValue != null && breakerCellValue.ToString() == "2")
+        {
+          // if the current row is less than 1, return false.
+          if (rowIndex < 1)
+          {
+            return false;
+          }
+          var descriptionCellTagAbove = colIndex < 6 ? PANEL_GRID.Rows[rowIndex - 1].Cells["description_left"].Tag : PANEL_GRID.Rows[rowIndex - 1].Cells["description_right"].Tag;
+          if (descriptionCellTagAbove != null && descriptionCellTagAbove.ToString().Contains("APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*"))
+          {
+            return true;
+          }
+        }
+
+        // check if the breaker cell is equal to "3" and if so, check the description cell two rows above the current row.
+        if (breakerCellValue != null && breakerCellValue.ToString() == "3")
+        {
+          // if the current row is less than 2, return false.
+          if (rowIndex < 2)
+          {
+            return false;
+          }
+          var descriptionCellTagAbove = colIndex < 6 ? PANEL_GRID.Rows[rowIndex - 2].Cells["description_left"].Tag : PANEL_GRID.Rows[rowIndex - 2].Cells["description_right"].Tag;
+          if (descriptionCellTagAbove != null && descriptionCellTagAbove.ToString().Contains("APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*"))
+          {
+            return true;
+          }
+        }
+
+        // check if the breaker cell is empty.
+        if (breakerCellValue == null || breakerCellValue.ToString() == "")
+        {
+          // if the current row is the last row, return false.
+          if (rowIndex == PANEL_GRID.Rows.Count - 1)
+          {
+            return false;
+          }
+
+          // check if the next breaker cell is equal to "3" and if so, check the description cell one row above the current row.
+          var nextBreakerCellValue = colIndex < 6 ? PANEL_GRID.Rows[rowIndex + 1].Cells["breaker_left"].Value : PANEL_GRID.Rows[rowIndex + 1].Cells["breaker_right"].Value;
+          if (nextBreakerCellValue != null && nextBreakerCellValue.ToString() == "3")
+          {
+            var descriptionCellTagAbove = colIndex < 6 ? PANEL_GRID.Rows[rowIndex - 1].Cells["description_left"].Tag : PANEL_GRID.Rows[rowIndex - 1].Cells["description_right"].Tag;
+            if (descriptionCellTagAbove != null && descriptionCellTagAbove.ToString().Contains("APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*"))
+            {
+              return true;
+            }
+          }
+        }
+      }
+      return false;
     }
 
     private void PANEL_GRID_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
@@ -1736,6 +1757,18 @@ namespace GMEPElectricalCommands
             cell.Style.BackColor = Color.Empty;
           }
         }
+      }
+    }
+
+    private void AUTO_CHECKBOX_CheckedChanged(object sender, EventArgs e)
+    {
+      if (AUTO_CHECKBOX.Checked)
+      {
+        LARGEST_LCL_INPUT.Enabled = false;
+      }
+      else
+      {
+        LARGEST_LCL_INPUT.Enabled = true;
       }
     }
   }
