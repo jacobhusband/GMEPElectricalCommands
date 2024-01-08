@@ -595,6 +595,7 @@ namespace GMEPElectricalCommands
     private void panel_cell_changed_3P()
     {
       int[] columnIndex = { 1, 8, 2, 9, 3, 10 };
+      double largestLoad = 0.0;
       for (int i = 0; i < columnIndex.Length; i += 2)
       {
         double sum = 0;
@@ -611,9 +612,18 @@ namespace GMEPElectricalCommands
             var hasLCLApplied = verify_LCL_from_phase_cell(row.Index, columnIndex[i + 1]);
             sum += ParseAndSumCell(row.Cells[columnIndex[i + 1]].Value.ToString(), hasLCLApplied);
           }
+          var equipment_load = get_equipment_load(row.Index, columnIndex[i]);
+          if (equipment_load > largestLoad)
+          {
+            largestLoad = equipment_load;
+          }
         }
 
         PHASE_SUM_GRID.Rows[0].Cells[i / 2].Value = sum;
+      }
+      if (AUTO_CHECKBOX.Checked)
+      {
+        LARGEST_LCL_INPUT.Text = largestLoad.ToString();
       }
     }
 
@@ -764,11 +774,10 @@ namespace GMEPElectricalCommands
           double total_KVA = (panelLoad + difference) / 1000;
           PANEL_LOAD_GRID[0, 0].Value = Math.Round(total_KVA, 1);
 
-          // 7. Divide by value in "PHASE_VOLTAGE_COMBOBOX".
           double lineVoltage = Convert.ToDouble(LINE_VOLTAGE_COMBOBOX.SelectedItem);
           if (lineVoltage != 0)
           {
-            double result = (panelLoad + difference) / (lineVoltage * 2);
+            double result = (panelLoad + difference) / (lineVoltage * PHASE_SUM_GRID.ColumnCount);
             FEEDER_AMP_GRID[0, 0].Value = Math.Round(result, 1);
           }
         }
@@ -1269,14 +1278,7 @@ namespace GMEPElectricalCommands
 
     private void PANEL_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
     {
-      if (PHASE_SUM_GRID.ColumnCount > 2)
-      {
-        panel_cell_changed_3P();
-      }
-      else
-      {
-        panel_cell_changed_2P();
-      }
+      recalculate_breakers();
       if (PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value == null || PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString() == "") return;
       var cellValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
       var row = PANEL_GRID.Rows[e.RowIndex];
@@ -1287,13 +1289,83 @@ namespace GMEPElectricalCommands
       }
     }
 
-    private List<bool> get_list_of_LCL_breakers()
+    private void recalculate_breakers()
     {
-      throw new NotImplementedException();
+      if (PHASE_SUM_GRID.ColumnCount > 2)
+      {
+        panel_cell_changed_3P();
+      }
+      else
+      {
+        panel_cell_changed_2P();
+      }
+    }
+
+    private double get_equipment_load(int rowIndex, int colIndex)
+    {
+      var side = colIndex < 6 ? "_left" : "_right";
+      var descriptionCellTag = PANEL_GRID.Rows[rowIndex].Cells["description" + side].Tag;
+      if (descriptionCellTag != null && descriptionCellTag.ToString().Contains("APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*"))
+      {
+        if (rowIndex >= PANEL_GRID.Rows.Count - 3)
+        {
+          return 0;
+        }
+
+        var breakerCellValue = PANEL_GRID.Rows[rowIndex].Cells["breaker" + side].Value;
+        var nextBreakerCellValue = PANEL_GRID.Rows[rowIndex + 1].Cells["breaker" + side].Value;
+        var breakerCellValueTwoRowsDown = PANEL_GRID.Rows[rowIndex + 2].Cells["breaker" + side].Value;
+        Int32.TryParse(breakerCellValue.ToString(), out int breakerIntValue);
+
+        if (breakerCellValue != null && breakerCellValue.ToString() != "" && breakerIntValue > 4)
+        {
+          int rowsToCheck = 1;
+          if (nextBreakerCellValue == null && breakerCellValueTwoRowsDown != null && breakerCellValueTwoRowsDown.ToString() == "3")
+          {
+            rowsToCheck = 3;
+          }
+          else if (nextBreakerCellValue != null && nextBreakerCellValue.ToString() == "2")
+          {
+            rowsToCheck = 2;
+          }
+
+          if (rowsToCheck > 1 && rowIndex >= PANEL_GRID.Rows.Count - rowsToCheck + 1)
+          {
+            return 0;
+          }
+
+          double sum = 0;
+          for (int i = rowIndex; i < rowIndex + rowsToCheck; i++)
+          {
+            sum += SumPhaseValues(i, side);
+          }
+          return sum / 1.25;
+        }
+      }
+      return 0.0;
+    }
+
+    private double SumPhaseValues(int rowIndex, string side)
+    {
+      double sum = 0;
+      string[] phases = { "A", "B", "C" };
+      foreach (var phase in phases)
+      {
+        var phaseCellValue = PANEL_GRID.Rows[rowIndex].Cells["phase_" + phase + side].Value;
+        if (phaseCellValue != null && !string.IsNullOrEmpty(phaseCellValue.ToString()))
+        {
+          sum += Convert.ToDouble(phaseCellValue);
+        }
+      }
+      return sum;
     }
 
     private bool verify_LCL_from_phase_cell(int rowIndex, int colIndex)
     {
+      if (!LARGEST_LCL_CHECKBOX.Checked)
+      {
+        return false;
+      }
       // get the description cell value from the same row as the phase cell, choose the descripion_left column if the phase column is before the 6th column, otherwise choose the description_right column.
       var descriptionCellTag = colIndex < 6 ? PANEL_GRID.Rows[rowIndex].Cells["description_left"].Tag : PANEL_GRID.Rows[rowIndex].Cells["description_right"].Tag;
       var descriptionCellValue = colIndex < 6 ? PANEL_GRID.Rows[rowIndex].Cells["description_left"].Value : PANEL_GRID.Rows[rowIndex].Cells["description_right"].Value;
@@ -1629,6 +1701,7 @@ namespace GMEPElectricalCommands
 
     private void LARGEST_LCL_CHECKBOX_CheckedChanged(object sender, EventArgs e)
     {
+      recalculate_breakers();
       calculate_lcl_otherload_panelload_feederamps();
     }
 
@@ -1693,6 +1766,8 @@ namespace GMEPElectricalCommands
 
       // clear the PANEL_GRID selection
       PANEL_GRID.ClearSelection();
+
+      recalculate_breakers();
     }
 
     private void APPLY_COMBOBOX_SelectedIndexChanged(object sender, EventArgs e)
@@ -1758,6 +1833,8 @@ namespace GMEPElectricalCommands
           }
         }
       }
+
+      recalculate_breakers();
     }
 
     private void AUTO_CHECKBOX_CheckedChanged(object sender, EventArgs e)

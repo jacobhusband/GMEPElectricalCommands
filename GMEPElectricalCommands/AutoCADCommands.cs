@@ -340,9 +340,6 @@ namespace GMEPElectricalCommands
 
     private Dictionary<string, object> UpdatePanelDataDescriptions(Dictionary<string, object> panelData)
     {
-      Console.WriteLine("Got in.");
-
-      Console.WriteLine(panelData.ContainsKey("description_left_tags"));
       // Check if the keys exist in the dictionary
       if (panelData.ContainsKey("description_left_tags") && panelData.ContainsKey("description_right_tags"))
       {
@@ -353,11 +350,6 @@ namespace GMEPElectricalCommands
         // Get the description lists
         List<string> leftDescriptions = panelData["description_left"] as List<string>;
         List<string> rightDescriptions = panelData["description_right"] as List<string>;
-
-        foreach (var tag in leftTags)
-        {
-          Console.WriteLine("Left tag: ", tag);
-        }
 
         // Iterate over the left tags
         for (int i = 0; i < leftTags.Count; i++)
