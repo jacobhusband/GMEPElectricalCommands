@@ -14,6 +14,7 @@ using System.IO;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.GraphicsSystem;
 using OfficeOpenXml.Packaging.Ionic.Zlib;
+using Autodesk.AutoCAD.Geometry;
 
 namespace GMEPElectricalCommands
 {
@@ -282,7 +283,13 @@ namespace GMEPElectricalCommands
         string descriptionLeftValue = "";
         if (PANEL_GRID.Rows[i].Cells["description_left"].Value == null && PANEL_GRID.Rows[i].Cells["breaker_left"].Value != null)
         {
-          descriptionLeftValue = "SPARE";
+          // check that the breaker value is both an integer and greater than 3
+          var breakerValue = PANEL_GRID.Rows[i].Cells["breaker_left"].Value.ToString();
+          int breakerValueInt;
+          if (int.TryParse(breakerValue, out breakerValueInt) && breakerValueInt > 3)
+          {
+            descriptionLeftValue = "SPARE";
+          }
         }
         else
         {
@@ -291,7 +298,13 @@ namespace GMEPElectricalCommands
         string descriptionRightValue = "";
         if (PANEL_GRID.Rows[i].Cells["description_right"].Value == null && PANEL_GRID.Rows[i].Cells["breaker_right"].Value != null)
         {
-          descriptionRightValue = "SPARE";
+          // check that the breaker value is both an integer and greater than 3
+          var breakerValue = PANEL_GRID.Rows[i].Cells["breaker_left"].Value.ToString();
+          int breakerValueInt;
+          if (int.TryParse(breakerValue, out breakerValueInt) && breakerValueInt > 3)
+          {
+            descriptionLeftValue = "SPARE";
+          }
         }
         else
         {
@@ -596,22 +609,22 @@ namespace GMEPElectricalCommands
     {
       int[] columnIndex = { 1, 8, 2, 9, 3, 10 };
       double largestLoad = 0.0;
+      int numberOfBreakersWithKitchenDemand = count_number_of_breakers_with_kitchen_demand_tag();
+      double demandFactor = determine_demand_factor(numberOfBreakersWithKitchenDemand);
+
       for (int i = 0; i < columnIndex.Length; i += 2)
       {
         double sum = 0;
         foreach (DataGridViewRow row in PANEL_GRID.Rows)
         {
-          if (row.Cells[columnIndex[i]].Value != null)
+          for (int j = 0; j < 2; j++)
           {
-            var hasLCLApplied = verify_LCL_from_phase_cell(row.Index, columnIndex[i]);
-            var hasKitchemDemandApplied = verify_kitchen_demand_from_phase_cell(row.Index, columnIndex[i]);
-            sum += ParseAndSumCell(row.Cells[columnIndex[i]].Value.ToString(), hasLCLApplied);
-          }
-
-          if (row.Cells[columnIndex[i + 1]].Value != null)
-          {
-            var hasLCLApplied = verify_LCL_from_phase_cell(row.Index, columnIndex[i + 1]);
-            sum += ParseAndSumCell(row.Cells[columnIndex[i + 1]].Value.ToString(), hasLCLApplied);
+            if (row.Cells[columnIndex[i + j]].Value != null)
+            {
+              var hasLCLApplied = verify_LCL_from_phase_cell(row.Index, columnIndex[i + j]);
+              bool hasKitchemDemandApplied = verify_kitchen_demand_from_phase_cell(row.Index, columnIndex[i + j]);
+              sum += ParseAndSumCell(row.Cells[columnIndex[i + j]].Value.ToString(), hasLCLApplied, hasKitchemDemandApplied ? demandFactor : 1.0);
+            }
           }
           var equipment_load = get_equipment_load(row.Index, columnIndex[i]);
           if (equipment_load > largestLoad)
@@ -619,7 +632,6 @@ namespace GMEPElectricalCommands
             largestLoad = equipment_load;
           }
         }
-
         PHASE_SUM_GRID.Rows[0].Cells[i / 2].Value = sum;
       }
       if (AUTO_CHECKBOX.Checked)
@@ -628,12 +640,92 @@ namespace GMEPElectricalCommands
       }
     }
 
-    private object verify_kitchen_demand_from_phase_cell(int index, int v)
+    private double determine_demand_factor(int numberOfBreakersWithKitchenDemand)
     {
+      if (numberOfBreakersWithKitchenDemand == 1 || numberOfBreakersWithKitchenDemand == 2)
+      {
+        return 1.00;
+      }
+      else if (numberOfBreakersWithKitchenDemand == 3)
+      {
+        return 0.90;
+      }
+      else if (numberOfBreakersWithKitchenDemand == 4)
+      {
+        return 0.80;
+      }
+      else if (numberOfBreakersWithKitchenDemand == 5)
+      {
+        return 0.70;
+      }
+      else
+      {
+        return 0.65;
+      }
+    }
+
+    private int count_number_of_breakers_with_kitchen_demand_tag()
+    {
+      // go through each description left and description right cell in the panel grid and check if it has the note associated with the kitchen demand
+      int numberOfBreakersWithKitchenDemand = 0;
+      foreach (DataGridViewRow row in PANEL_GRID.Rows)
+      {
+        if (row.Cells["description_left"].Value != null)
+        {
+          var hasKitchenDemand = verify_kitchen_demand_from_description_cell(row.Index, "description_left");
+          if (hasKitchenDemand)
+          {
+            numberOfBreakersWithKitchenDemand++;
+          }
+        }
+
+        if (row.Cells["description_right"].Value != null)
+        {
+          var hasKitchenDemand = verify_kitchen_demand_from_description_cell(row.Index, "description_right");
+          if (hasKitchenDemand)
+          {
+            numberOfBreakersWithKitchenDemand++;
+          }
+        }
+      }
+      return numberOfBreakersWithKitchenDemand;
+    }
+
+    private bool verify_kitchen_demand_from_description_cell(int rowIndex, string columnName)
+    {
+      var note = "THE KITCHEN DEMAND FACTOR IS BEING APPLIED TO THE KITCHEN EQUIPMENT (NEC 220.56).";
+      var cellValue = PANEL_GRID.Rows[rowIndex].Cells[columnName].Value;
+      var cellTag = PANEL_GRID.Rows[rowIndex].Cells[columnName].Tag;
+
+      string cellValueString = cellValue?.ToString() ?? "";
+      if (string.IsNullOrEmpty(cellValueString))
+      {
+        return false;
+      }
+
+      string cellTagString = cellTag?.ToString() ?? "";
+
+      var regex = new Regex(@"^[a-zA-Z0-9\s,]*$");
+      if (!regex.IsMatch(cellValueString))
+      {
+        return false;
+      }
+
+      if (cellTagString.Contains(note))
+      {
+        return true;
+      }
+
       return false;
     }
 
-    private double ParseAndSumCell(string cellValue, bool hasLCLApplied)
+    private bool verify_kitchen_demand_from_phase_cell(int rowIndex, int colIndex)
+    {
+      var note = "THE KITCHEN DEMAND FACTOR IS BEING APPLIED TO THE KITCHEN EQUIPMENT (NEC 220.56).";
+      return does_breaker_have_note(rowIndex, colIndex, note);
+    }
+
+    private double ParseAndSumCell(string cellValue, bool hasLCLApplied, double demandFactor)
     {
       double sum = 0;
       if (!string.IsNullOrEmpty(cellValue))
@@ -645,7 +737,18 @@ namespace GMEPElectricalCommands
           {
             if (hasLCLApplied)
             {
-              sum += value * 0.8;
+              if (demandFactor < 0.8)
+              {
+                sum += value * demandFactor;
+              }
+              else
+              {
+                sum += value * 0.8;
+              }
+            }
+            else if (demandFactor != 1.00)
+            {
+              sum += value * demandFactor;
             }
             else
             {
@@ -661,22 +764,22 @@ namespace GMEPElectricalCommands
     {
       int[] columnIndex = { 1, 7, 2, 8 };
       double largestLoad = 0.0;
+      int numberOfBreakersWithKitchenDemand = count_number_of_breakers_with_kitchen_demand_tag();
+      double demandFactor = determine_demand_factor(numberOfBreakersWithKitchenDemand);
 
       for (int i = 0; i < columnIndex.Length; i += 2)
       {
         double sum = 0;
         foreach (DataGridViewRow row in PANEL_GRID.Rows)
         {
-          if (row.Cells[columnIndex[i]].Value != null)
+          for (int j = 0; j < 2; j++)
           {
-            var hasLCLApplied = verify_LCL_from_phase_cell(row.Index, columnIndex[i]);
-            sum += ParseAndSumCell(row.Cells[columnIndex[i]].Value.ToString(), hasLCLApplied);
-          }
-
-          if (row.Cells[columnIndex[i + 1]].Value != null)
-          {
-            var hasLCLApplied = verify_LCL_from_phase_cell(row.Index, columnIndex[i + 1]);
-            sum += ParseAndSumCell(row.Cells[columnIndex[i + 1]].Value.ToString(), hasLCLApplied);
+            if (row.Cells[columnIndex[i + j]].Value != null)
+            {
+              var hasLCLApplied = verify_LCL_from_phase_cell(row.Index, columnIndex[i + j]);
+              bool hasKitchemDemandApplied = verify_kitchen_demand_from_phase_cell(row.Index, columnIndex[i + j]);
+              sum += ParseAndSumCell(row.Cells[columnIndex[i + j]].Value.ToString(), hasLCLApplied, hasKitchemDemandApplied ? demandFactor : 1.0);
+            }
           }
           var equipment_load = get_equipment_load(row.Index, columnIndex[i]);
           if (equipment_load > largestLoad)
@@ -684,7 +787,6 @@ namespace GMEPElectricalCommands
             largestLoad = equipment_load;
           }
         }
-
         PHASE_SUM_GRID.Rows[0].Cells[i / 2].Value = sum;
       }
       if (AUTO_CHECKBOX.Checked)
@@ -1325,7 +1427,12 @@ namespace GMEPElectricalCommands
     private double sum_phase_values(int rowIndex, string side)
     {
       double sum = 0;
-      string[] phases = { "A", "B", "C" };
+      string[] phases = { "A", "B" };
+      if (PANEL_GRID.Columns.Contains("phase_c" + side))
+      {
+        phases = ["A", "B", "C"];
+      }
+
       foreach (var phase in phases)
       {
         var phaseCellValue = PANEL_GRID.Rows[rowIndex].Cells["phase_" + phase + side].Value;
