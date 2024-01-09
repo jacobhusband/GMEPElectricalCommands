@@ -604,6 +604,7 @@ namespace GMEPElectricalCommands
           if (row.Cells[columnIndex[i]].Value != null)
           {
             var hasLCLApplied = verify_LCL_from_phase_cell(row.Index, columnIndex[i]);
+            var hasKitchemDemandApplied = verify_kitchen_demand_from_phase_cell(row.Index, columnIndex[i]);
             sum += ParseAndSumCell(row.Cells[columnIndex[i]].Value.ToString(), hasLCLApplied);
           }
 
@@ -625,6 +626,11 @@ namespace GMEPElectricalCommands
       {
         LARGEST_LCL_INPUT.Text = largestLoad.ToString();
       }
+    }
+
+    private object verify_kitchen_demand_from_phase_cell(int index, int v)
+    {
+      return false;
     }
 
     private double ParseAndSumCell(string cellValue, bool hasLCLApplied)
@@ -654,6 +660,8 @@ namespace GMEPElectricalCommands
     private void panel_cell_changed_2P()
     {
       int[] columnIndex = { 1, 7, 2, 8 };
+      double largestLoad = 0.0;
+
       for (int i = 0; i < columnIndex.Length; i += 2)
       {
         double sum = 0;
@@ -670,9 +678,18 @@ namespace GMEPElectricalCommands
             var hasLCLApplied = verify_LCL_from_phase_cell(row.Index, columnIndex[i + 1]);
             sum += ParseAndSumCell(row.Cells[columnIndex[i + 1]].Value.ToString(), hasLCLApplied);
           }
+          var equipment_load = get_equipment_load(row.Index, columnIndex[i]);
+          if (equipment_load > largestLoad)
+          {
+            largestLoad = equipment_load;
+          }
         }
 
         PHASE_SUM_GRID.Rows[0].Cells[i / 2].Value = sum;
+      }
+      if (AUTO_CHECKBOX.Checked)
+      {
+        LARGEST_LCL_INPUT.Text = largestLoad.ToString();
       }
     }
 
@@ -1245,6 +1262,139 @@ namespace GMEPElectricalCommands
       update_apply_combobox_to_match_storage();
     }
 
+    private void recalculate_breakers()
+    {
+      if (PHASE_SUM_GRID.ColumnCount > 2)
+      {
+        panel_cell_changed_3P();
+      }
+      else
+      {
+        panel_cell_changed_2P();
+      }
+    }
+
+    private double get_equipment_load(int rowIndex, int colIndex)
+    {
+      var side = colIndex < 6 ? "_left" : "_right";
+      var descriptionCellTag = PANEL_GRID.Rows[rowIndex].Cells["description" + side].Tag;
+      if (descriptionCellTag != null && descriptionCellTag.ToString().Contains("APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*"))
+      {
+        if (rowIndex >= PANEL_GRID.Rows.Count - 3)
+        {
+          return 0;
+        }
+
+        var breakerCellValue = PANEL_GRID.Rows[rowIndex].Cells["breaker" + side].Value;
+        var nextBreakerCellValue = PANEL_GRID.Rows[rowIndex + 1].Cells["breaker" + side].Value;
+        var breakerCellValueTwoRowsDown = PANEL_GRID.Rows[rowIndex + 2].Cells["breaker" + side].Value;
+        int breakerIntValue = 0;
+        if (breakerCellValue != null)
+        {
+          Int32.TryParse(breakerCellValue.ToString(), out breakerIntValue);
+        }
+
+        if (breakerCellValue != null && breakerCellValue.ToString() != "" && breakerIntValue > 4)
+        {
+          int rowsToCheck = 1;
+          if (nextBreakerCellValue == null && breakerCellValueTwoRowsDown != null && breakerCellValueTwoRowsDown.ToString() == "3")
+          {
+            rowsToCheck = 3;
+          }
+          else if (nextBreakerCellValue != null && nextBreakerCellValue.ToString() == "2")
+          {
+            rowsToCheck = 2;
+          }
+
+          if (rowsToCheck > 1 && rowIndex >= PANEL_GRID.Rows.Count - rowsToCheck + 1)
+          {
+            return 0;
+          }
+
+          double sum = 0;
+          for (int i = rowIndex; i < rowIndex + rowsToCheck; i++)
+          {
+            sum += sum_phase_values(i, side);
+          }
+          return sum / 1.25;
+        }
+      }
+      return 0.0;
+    }
+
+    private double sum_phase_values(int rowIndex, string side)
+    {
+      double sum = 0;
+      string[] phases = { "A", "B", "C" };
+      foreach (var phase in phases)
+      {
+        var phaseCellValue = PANEL_GRID.Rows[rowIndex].Cells["phase_" + phase + side].Value;
+        if (phaseCellValue != null && !string.IsNullOrEmpty(phaseCellValue.ToString()))
+        {
+          sum += Convert.ToDouble(phaseCellValue);
+        }
+      }
+      return sum;
+    }
+
+    private bool verify_LCL_from_phase_cell(int rowIndex, int colIndex)
+    {
+      if (!LARGEST_LCL_CHECKBOX.Checked)
+      {
+        return false;
+      }
+      var note = "APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*";
+      return does_breaker_have_note(rowIndex, colIndex, note);
+    }
+
+    private bool does_breaker_have_note(int rowIndex, int colIndex, string note)
+    {
+      string columnPrefix = colIndex < 6 ? "left" : "right";
+      var descriptionCellTag = PANEL_GRID.Rows[rowIndex].Cells[$"description_{columnPrefix}"].Tag;
+      var descriptionCellValue = PANEL_GRID.Rows[rowIndex].Cells[$"description_{columnPrefix}"].Value;
+      var breakerCellValue = PANEL_GRID.Rows[rowIndex].Cells[$"breaker_{columnPrefix}"].Value;
+
+      if (descriptionCellTag != null && descriptionCellTag.ToString().Contains(note))
+      {
+        return true;
+      }
+
+      if (descriptionCellValue == null || descriptionCellValue.ToString() == "" || descriptionCellValue.ToString().All(c => c == '-'))
+      {
+        if (breakerCellValue != null && (breakerCellValue.ToString() == "2" || breakerCellValue.ToString() == "3"))
+        {
+          int rowsAbove = breakerCellValue.ToString() == "2" ? 1 : 2;
+          if (rowIndex < rowsAbove)
+          {
+            return false;
+          }
+          var descriptionCellTagAbove = PANEL_GRID.Rows[rowIndex - rowsAbove].Cells[$"description_{columnPrefix}"].Tag;
+          if (descriptionCellTagAbove != null && descriptionCellTagAbove.ToString().Contains(note))
+          {
+            return true;
+          }
+        }
+
+        if (breakerCellValue == null || breakerCellValue.ToString() == "")
+        {
+          if (rowIndex == PANEL_GRID.Rows.Count - 1)
+          {
+            return false;
+          }
+          var nextBreakerCellValue = PANEL_GRID.Rows[rowIndex + 1].Cells[$"breaker_{columnPrefix}"].Value;
+          if (nextBreakerCellValue != null && nextBreakerCellValue.ToString() == "3")
+          {
+            var descriptionCellTagAbove = PANEL_GRID.Rows[rowIndex - 1].Cells[$"description_{columnPrefix}"].Tag;
+            if (descriptionCellTagAbove != null && descriptionCellTagAbove.ToString().Contains(note))
+            {
+              return true;
+            }
+          }
+        }
+      }
+      return false;
+    }
+
     private void PANEL_NAME_INPUT_TextChanged(object sender, EventArgs e)
     {
       this.mainForm.PANEL_NAME_INPUT_TextChanged(sender, e, PANEL_NAME_INPUT.Text.ToUpper());
@@ -1287,153 +1437,6 @@ namespace GMEPElectricalCommands
       {
         link_cell_to_phase(cellValue, row, col);
       }
-    }
-
-    private void recalculate_breakers()
-    {
-      if (PHASE_SUM_GRID.ColumnCount > 2)
-      {
-        panel_cell_changed_3P();
-      }
-      else
-      {
-        panel_cell_changed_2P();
-      }
-    }
-
-    private double get_equipment_load(int rowIndex, int colIndex)
-    {
-      var side = colIndex < 6 ? "_left" : "_right";
-      var descriptionCellTag = PANEL_GRID.Rows[rowIndex].Cells["description" + side].Tag;
-      if (descriptionCellTag != null && descriptionCellTag.ToString().Contains("APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*"))
-      {
-        if (rowIndex >= PANEL_GRID.Rows.Count - 3)
-        {
-          return 0;
-        }
-
-        var breakerCellValue = PANEL_GRID.Rows[rowIndex].Cells["breaker" + side].Value;
-        var nextBreakerCellValue = PANEL_GRID.Rows[rowIndex + 1].Cells["breaker" + side].Value;
-        var breakerCellValueTwoRowsDown = PANEL_GRID.Rows[rowIndex + 2].Cells["breaker" + side].Value;
-        Int32.TryParse(breakerCellValue.ToString(), out int breakerIntValue);
-
-        if (breakerCellValue != null && breakerCellValue.ToString() != "" && breakerIntValue > 4)
-        {
-          int rowsToCheck = 1;
-          if (nextBreakerCellValue == null && breakerCellValueTwoRowsDown != null && breakerCellValueTwoRowsDown.ToString() == "3")
-          {
-            rowsToCheck = 3;
-          }
-          else if (nextBreakerCellValue != null && nextBreakerCellValue.ToString() == "2")
-          {
-            rowsToCheck = 2;
-          }
-
-          if (rowsToCheck > 1 && rowIndex >= PANEL_GRID.Rows.Count - rowsToCheck + 1)
-          {
-            return 0;
-          }
-
-          double sum = 0;
-          for (int i = rowIndex; i < rowIndex + rowsToCheck; i++)
-          {
-            sum += SumPhaseValues(i, side);
-          }
-          return sum / 1.25;
-        }
-      }
-      return 0.0;
-    }
-
-    private double SumPhaseValues(int rowIndex, string side)
-    {
-      double sum = 0;
-      string[] phases = { "A", "B", "C" };
-      foreach (var phase in phases)
-      {
-        var phaseCellValue = PANEL_GRID.Rows[rowIndex].Cells["phase_" + phase + side].Value;
-        if (phaseCellValue != null && !string.IsNullOrEmpty(phaseCellValue.ToString()))
-        {
-          sum += Convert.ToDouble(phaseCellValue);
-        }
-      }
-      return sum;
-    }
-
-    private bool verify_LCL_from_phase_cell(int rowIndex, int colIndex)
-    {
-      if (!LARGEST_LCL_CHECKBOX.Checked)
-      {
-        return false;
-      }
-      // get the description cell value from the same row as the phase cell, choose the descripion_left column if the phase column is before the 6th column, otherwise choose the description_right column.
-      var descriptionCellTag = colIndex < 6 ? PANEL_GRID.Rows[rowIndex].Cells["description_left"].Tag : PANEL_GRID.Rows[rowIndex].Cells["description_right"].Tag;
-      var descriptionCellValue = colIndex < 6 ? PANEL_GRID.Rows[rowIndex].Cells["description_left"].Value : PANEL_GRID.Rows[rowIndex].Cells["description_right"].Value;
-
-      // if the tag has "APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*" then return true.
-      if (descriptionCellTag != null && descriptionCellTag.ToString().Contains("APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*"))
-      {
-        return true;
-      }
-
-      // get the breaker cell value from the same row as the phase cell, choose the breaker_left column if the phase column is before the 6th column, otherwise choose the breaker_right column.
-      var breakerCellValue = colIndex < 6 ? PANEL_GRID.Rows[rowIndex].Cells["breaker_left"].Value : PANEL_GRID.Rows[rowIndex].Cells["breaker_right"].Value;
-
-      // check if the description cell is empty or only contains dashes.
-      if (descriptionCellValue == null || descriptionCellValue.ToString() == "" || descriptionCellValue.ToString().All(c => c == '-'))
-      {
-        // check if the breaker cell is equal to "2" and if so, check the description cell above the current row.
-        if (breakerCellValue != null && breakerCellValue.ToString() == "2")
-        {
-          // if the current row is less than 1, return false.
-          if (rowIndex < 1)
-          {
-            return false;
-          }
-          var descriptionCellTagAbove = colIndex < 6 ? PANEL_GRID.Rows[rowIndex - 1].Cells["description_left"].Tag : PANEL_GRID.Rows[rowIndex - 1].Cells["description_right"].Tag;
-          if (descriptionCellTagAbove != null && descriptionCellTagAbove.ToString().Contains("APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*"))
-          {
-            return true;
-          }
-        }
-
-        // check if the breaker cell is equal to "3" and if so, check the description cell two rows above the current row.
-        if (breakerCellValue != null && breakerCellValue.ToString() == "3")
-        {
-          // if the current row is less than 2, return false.
-          if (rowIndex < 2)
-          {
-            return false;
-          }
-          var descriptionCellTagAbove = colIndex < 6 ? PANEL_GRID.Rows[rowIndex - 2].Cells["description_left"].Tag : PANEL_GRID.Rows[rowIndex - 2].Cells["description_right"].Tag;
-          if (descriptionCellTagAbove != null && descriptionCellTagAbove.ToString().Contains("APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*"))
-          {
-            return true;
-          }
-        }
-
-        // check if the breaker cell is empty.
-        if (breakerCellValue == null || breakerCellValue.ToString() == "")
-        {
-          // if the current row is the last row, return false.
-          if (rowIndex == PANEL_GRID.Rows.Count - 1)
-          {
-            return false;
-          }
-
-          // check if the next breaker cell is equal to "3" and if so, check the description cell one row above the current row.
-          var nextBreakerCellValue = colIndex < 6 ? PANEL_GRID.Rows[rowIndex + 1].Cells["breaker_left"].Value : PANEL_GRID.Rows[rowIndex + 1].Cells["breaker_right"].Value;
-          if (nextBreakerCellValue != null && nextBreakerCellValue.ToString() == "3")
-          {
-            var descriptionCellTagAbove = colIndex < 6 ? PANEL_GRID.Rows[rowIndex - 1].Cells["description_left"].Tag : PANEL_GRID.Rows[rowIndex - 1].Cells["description_right"].Tag;
-            if (descriptionCellTagAbove != null && descriptionCellTagAbove.ToString().Contains("APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*"))
-            {
-              return true;
-            }
-          }
-        }
-      }
-      return false;
     }
 
     private void PANEL_GRID_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
@@ -1596,11 +1599,11 @@ namespace GMEPElectricalCommands
 
     private void PANEL_GRID_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
     {
-      e.Control.TextChanged -= new EventHandler(EditingControl_TextChanged);
-      e.Control.TextChanged += new EventHandler(EditingControl_TextChanged);
+      e.Control.TextChanged -= new EventHandler(EDITING_CONTROL_Text_Changed);
+      e.Control.TextChanged += new EventHandler(EDITING_CONTROL_Text_Changed);
     }
 
-    private async void EditingControl_TextChanged(object sender, EventArgs e)
+    private async void EDITING_CONTROL_Text_Changed(object sender, EventArgs e)
     {
       if (MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text != "" && PANEL_GRID.CurrentCell.OwningColumn.Name.Contains("description"))
       {
@@ -1758,6 +1761,11 @@ namespace GMEPElectricalCommands
           else
           {
             cell.Tag = $"{cell.Tag}|{selectedValue}";
+          }
+
+          if (selectedValue.Contains("APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*"))
+          {
+            LARGEST_LCL_CHECKBOX.Checked = true;
           }
           // turn the background of the cell to a yellow color
           cell.Style.BackColor = Color.Yellow;
