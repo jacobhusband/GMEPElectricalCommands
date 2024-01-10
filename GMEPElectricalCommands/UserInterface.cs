@@ -20,7 +20,7 @@ namespace GMEPElectricalCommands
 {
   public partial class UserInterface : UserControl
   {
-    private MyCommands myCommandsInstance;
+    private GMEPElectricalCommands myCommandsInstance;
     private MainForm mainForm;
     private NEWPANELFORM newPanelForm;
     private noteForm notesForm;
@@ -29,7 +29,7 @@ namespace GMEPElectricalCommands
     private bool initialization;
     private object oldValue;
 
-    public UserInterface(MyCommands myCommands, MainForm mainForm, NEWPANELFORM newPanelForm, string tabName, bool is3PH = false)
+    public UserInterface(GMEPElectricalCommands myCommands, MainForm mainForm, NEWPANELFORM newPanelForm, string tabName, bool is3PH = false)
     {
       InitializeComponent();
       myCommandsInstance = myCommands;

@@ -74,6 +74,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GMEPElectricalCommands.cs" />
     <Compile Include="AutoCADCommands.cs" />
     <Compile Include="DialogWindow.cs">
       <SubType>Form</SubType>

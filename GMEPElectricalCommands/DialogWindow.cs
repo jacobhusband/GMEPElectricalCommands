@@ -21,11 +21,11 @@ namespace GMEPElectricalCommands
 {
   public partial class MainForm : Form
   {
-    private MyCommands myCommandsInstance;
+    private GMEPElectricalCommands myCommandsInstance;
     private NEWPANELFORM newPanelForm;
     private List<UserInterface> userControls;
 
-    public MainForm(MyCommands myCommands)
+    public MainForm(GMEPElectricalCommands myCommands)
     {
       InitializeComponent();
       this.myCommandsInstance = myCommands;
