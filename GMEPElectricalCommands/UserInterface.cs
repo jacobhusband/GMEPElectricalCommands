@@ -224,6 +224,7 @@ namespace GMEPElectricalCommands
       panel.Add("total_va", TOTAL_VA_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
       panel.Add("lcl", LCL_GRID.Rows[0].Cells[1].Value.ToString().ToUpper());
       panel.Add("lcl_125", LCL_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("lcl_enabled", LARGEST_LCL_CHECKBOX.Checked ? "YES" : "NO");
       panel.Add("total_other_load", TOTAL_OTHER_LOAD_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
       panel.Add("kva", PANEL_LOAD_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
       panel.Add("feeder_amps", FEEDER_AMP_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
@@ -630,6 +631,7 @@ namespace GMEPElectricalCommands
           if (equipment_load > largestLoad)
           {
             largestLoad = equipment_load;
+            Console.WriteLine("Largest load: {0}", largestLoad.ToString());
           }
         }
         PHASE_SUM_GRID.Rows[0].Cells[i / 2].Value = sum;
@@ -658,9 +660,13 @@ namespace GMEPElectricalCommands
       {
         return 0.70;
       }
-      else
+      else if (numberOfBreakersWithKitchenDemand >= 6)
       {
         return 0.65;
+      }
+      else
+      {
+        return 1.00;
       }
     }
 
@@ -861,7 +867,7 @@ namespace GMEPElectricalCommands
       }
     }
 
-    private void calculate_lcl_otherload_panelload_feederamps()
+    public void calculate_lcl_otherload_panelload_feederamps()
     {
       if (LARGEST_LCL_CHECKBOX.Checked)
       {
@@ -928,7 +934,7 @@ namespace GMEPElectricalCommands
       }
     }
 
-    public void clear_and_set_modal_values(Dictionary<string, object> selectedPanelData)
+    public void clear_modal_and_remove_rows(Dictionary<string, object> selectedPanelData)
     {
       clear_current_modal_data();
       remove_rows();
@@ -936,8 +942,6 @@ namespace GMEPElectricalCommands
       // add the number of rows based on the number of rows in the selected panel data
       int numberOfRows = ((Newtonsoft.Json.Linq.JArray)selectedPanelData["description_left"]).ToObject<List<string>>().Count / 2;
       PANEL_GRID.Rows.Add(numberOfRows);
-
-      populate_modal_with_panel_data(selectedPanelData);
     }
 
     internal DataGridView retrieve_panelGrid()
@@ -954,7 +958,7 @@ namespace GMEPElectricalCommands
       }
     }
 
-    private void populate_modal_with_panel_data(Dictionary<string, object> selectedPanelData)
+    public void populate_modal_with_panel_data(Dictionary<string, object> selectedPanelData)
     {
       // Set TextBoxes
       MAIN_INPUT.Text = selectedPanelData["main"].ToString().Replace("AMP", "").Replace("A", "").Replace(" ", "");
@@ -969,10 +973,15 @@ namespace GMEPElectricalCommands
       PHASE_COMBOBOX.SelectedItem = selectedPanelData["phase"].ToString();
       PHASE_VOLTAGE_COMBOBOX.SelectedItem = selectedPanelData["voltage2"].ToString();
       LINE_VOLTAGE_COMBOBOX.SelectedItem = selectedPanelData["voltage1"].ToString();
+      LARGEST_LCL_CHECKBOX.Checked = selectedPanelData["lcl_enabled"].ToString() == "YES";
 
       // Set DataGridViews
       PHASE_SUM_GRID.Rows[0].Cells[0].Value = selectedPanelData["subtotal_a"].ToString();
       PHASE_SUM_GRID.Rows[0].Cells[1].Value = selectedPanelData["subtotal_b"].ToString();
+      if (PHASE_SUM_GRID.ColumnCount > 2)
+      {
+        PHASE_SUM_GRID.Rows[0].Cells[2].Value = selectedPanelData["subtotal_c"].ToString();
+      }
       TOTAL_VA_GRID.Rows[0].Cells[0].Value = selectedPanelData["total_va"].ToString();
       LCL_GRID.Rows[0].Cells[0].Value = selectedPanelData["lcl_125"].ToString();
       LCL_GRID.Rows[0].Cells[1].Value = selectedPanelData["lcl"].ToString();
@@ -1364,7 +1373,7 @@ namespace GMEPElectricalCommands
       update_apply_combobox_to_match_storage();
     }
 
-    private void recalculate_breakers()
+    public void recalculate_breakers()
     {
       if (PHASE_SUM_GRID.ColumnCount > 2)
       {
@@ -1536,6 +1545,7 @@ namespace GMEPElectricalCommands
     private void PANEL_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
     {
       recalculate_breakers();
+      calculate_lcl_otherload_panelload_feederamps();
       if (PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value == null || PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString() == "") return;
       var cellValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
       var row = PANEL_GRID.Rows[e.RowIndex];

@@ -75,104 +75,93 @@ namespace GMEPElectricalCommands
       }
       else
       {
-        foreach (Dictionary<string, object> panel in panelStorage)
+        set_up_cell_values_from_panel_data(panelStorage);
+        set_up_tags_from_panel_data(panelStorage);
+      }
+    }
+
+    private static void put_in_json_file(object thing)
+    {
+      // json write the panel data to the desktop
+      string json = JsonConvert.SerializeObject(thing, Formatting.Indented);
+      string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+      string path = Path.Combine(desktopPath, "loggedThing.json");
+      File.WriteAllText(path, json);
+    }
+
+    private void set_up_cell_values_from_panel_data(List<Dictionary<string, object>> panelStorage)
+    {
+      foreach (Dictionary<string, object> panel in panelStorage)
+      {
+        string panelName = panel["panel"].ToString();
+        bool is3PH = panel.ContainsKey("phase_c_left");
+        UserInterface userControl1 = create_new_panel_tab(panelName, is3PH);
+        userControl1.clear_modal_and_remove_rows(panel);
+        userControl1.populate_modal_with_panel_data(panel);
+        var notes = JsonConvert.DeserializeObject<List<string>>(panel["notes"].ToString());
+        userControl1.update_notes_storage(notes);
+      }
+    }
+
+    private void set_up_tags_from_panel_data(List<Dictionary<string, object>> panelStorage)
+    {
+      foreach (Dictionary<string, object> panel in panelStorage)
+      {
+        string panelName = panel["panel"].ToString();
+        UserInterface userControl1 = (UserInterface)findUserControl(panelName);
+        if (userControl1 == null)
         {
-          string panelName = panel["panel"].ToString();
-          bool is3PH = panel.ContainsKey("phase_c_left");
-          UserInterface userControl1 = create_new_panel_tab(panelName, is3PH);
-          userControl1.clear_and_set_modal_values(panel);
-          var notes = JsonConvert.DeserializeObject<List<string>>(panel["notes"].ToString());
-          userControl1.update_notes_storage(notes);
+          continue;
         }
-
-        foreach (Dictionary<string, object> panel in panelStorage)
+        DataGridView panelGrid = userControl1.retrieve_panelGrid();
+        foreach (DataGridViewRow row in panelGrid.Rows)
         {
-          string panelName = panel["panel"].ToString();
-          UserInterface userControl1 = (UserInterface)findUserControl(panelName);
-          if (userControl1 == null)
+          int rowIndex = row.Index;
+          var tagNames = new Dictionary<string, int>
+            {
+                {"phase_a_left_tag", 1},
+                {"phase_b_left_tag", 2},
+                {"phase_a_right_tag", 7},
+                {"phase_b_right_tag", 8},
+                {"description_left_tags", 0},
+                {"description_right_tags", 9}
+            };
+          foreach (var tagName in tagNames)
           {
-            continue;
-          }
-          DataGridView panelGrid = userControl1.retrieve_panelGrid();
-          foreach (DataGridViewRow row in panelGrid.Rows)
-          {
-            int rowIndex = row.Index;
-            int phase_a_right_index = 7;
-            int phase_b_right_index = 8;
-            int description_right_index = 9;
-
-            string phase_a_left_tag = panel["phase_a_left_tag"].ToString();
-            List<string> phase_a_left_tag_list = JsonConvert.DeserializeObject<List<string>>(phase_a_left_tag);
-            string phase_a_left_tag_value = phase_a_left_tag_list[rowIndex];
-            if (phase_a_left_tag_value != "")
+            if (panel.ContainsKey(tagName.Key))
             {
-              row.Cells[1].Value = phase_a_left_tag_value;
-            }
-            // repeat for each phase
-            string phase_b_left_tag = panel["phase_b_left_tag"].ToString();
-            List<string> phase_b_left_tag_list = JsonConvert.DeserializeObject<List<string>>(phase_b_left_tag);
-            string phase_b_left_tag_value = phase_b_left_tag_list[rowIndex];
-            if (phase_b_left_tag_value != "")
-            {
-              row.Cells[2].Value = phase_b_left_tag_value;
-            }
-            // check if c exists
-            if (panel.ContainsKey("phase_c_left"))
-            {
-              string phase_c_left_tag = panel["phase_c_left_tag"].ToString();
-              List<string> phase_c_left_tag_list = JsonConvert.DeserializeObject<List<string>>(phase_c_left_tag);
-              string phase_c_left_tag_value = phase_c_left_tag_list[rowIndex];
-              if (phase_c_left_tag_value != "")
+              string tag = panel[tagName.Key].ToString();
+              List<string> tagList = JsonConvert.DeserializeObject<List<string>>(tag);
+              string tagValue = tagList[rowIndex];
+              if (tagValue != "")
               {
-                row.Cells[3].Value = phase_c_left_tag_value;
-              }
-              phase_a_right_index = 8;
-              phase_b_right_index = 9;
-              description_right_index = 11;
-            }
-            string phase_a_right_tag = panel["phase_a_right_tag"].ToString();
-            List<string> phase_a_right_tag_list = JsonConvert.DeserializeObject<List<string>>(phase_a_right_tag);
-            string phase_a_right_tag_value = phase_a_right_tag_list[rowIndex];
-            if (phase_a_right_tag_value != "")
-            {
-              row.Cells[phase_a_right_index].Value = phase_a_right_tag_value;
-            }
-            // repeat for each phase
-            string phase_b_right_tag = panel["phase_b_right_tag"].ToString();
-            List<string> phase_b_right_tag_list = JsonConvert.DeserializeObject<List<string>>(phase_b_right_tag);
-            string phase_b_right_tag_value = phase_b_right_tag_list[rowIndex];
-            if (phase_b_right_tag_value != "")
-            {
-              row.Cells[phase_b_right_index].Value = phase_b_right_tag_value;
-            }
-            // check if c exists
-            if (panel.ContainsKey("phase_c_right"))
-            {
-              string phase_c_right_tag = panel["phase_c_right_tag"].ToString();
-              List<string> phase_c_right_tag_list = JsonConvert.DeserializeObject<List<string>>(phase_c_right_tag);
-              string phase_c_right_tag_value = phase_c_right_tag_list[rowIndex];
-              if (phase_c_right_tag_value != "")
-              {
-                row.Cells[10].Value = phase_c_right_tag_value;
+                row.Cells[tagName.Value].Tag = tagValue;
               }
             }
-            string description_left_tag = panel["description_left_tags"].ToString();
-            List<string> description_left_tag_list = JsonConvert.DeserializeObject<List<string>>(description_left_tag);
-            string description_left_tag_value = description_left_tag_list[rowIndex];
-            if (description_left_tag_value != "")
-            {
-              row.Cells[0].Tag = description_left_tag_value;
-            }
-            string description_right_tag = panel["description_right_tags"].ToString();
-            List<string> description_right_tag_list = JsonConvert.DeserializeObject<List<string>>(description_right_tag);
-            string description_right_tag_value = description_right_tag_list[rowIndex];
-            if (description_right_tag_value != "")
-            {
-              row.Cells[description_right_index].Tag = description_right_tag_value;
-            }
           }
-          userControl1.update_cell_background_color();
+          if (panel.ContainsKey("phase_c_left"))
+          {
+            set_cell_value(panel, "phase_c_left_tag", rowIndex, 3, row);
+          }
+          if (panel.ContainsKey("phase_c_right"))
+          {
+            set_cell_value(panel, "phase_c_right_tag", rowIndex, 10, row);
+          }
         }
+        userControl1.update_cell_background_color();
+        userControl1.recalculate_breakers();
+        userControl1.calculate_lcl_otherload_panelload_feederamps();
+      }
+    }
+
+    private void set_cell_value(Dictionary<string, object> panel, string key, int rowIndex, int cellIndex, DataGridViewRow row)
+    {
+      string tag = panel[key].ToString();
+      List<string> tagList = JsonConvert.DeserializeObject<List<string>>(tag);
+      string tagValue = tagList[rowIndex];
+      if (tagValue != "")
+      {
+        row.Cells[cellIndex].Value = tagValue;
       }
     }
 

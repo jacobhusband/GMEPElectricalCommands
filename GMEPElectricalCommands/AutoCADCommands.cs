@@ -386,12 +386,6 @@ namespace GMEPElectricalCommands
         panelData["description_right"] = rightDescriptions;
       }
 
-      string json = JsonConvert.SerializeObject(panelData, Formatting.Indented);
-      string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-      string fileName = panelData["panel"] as string;
-      string filePath = Path.Combine(desktopPath, fileName + ".json");
-      File.WriteAllText(filePath, json);
-
       return panelData;
     }
 
@@ -1462,10 +1456,6 @@ namespace GMEPElectricalCommands
 
         Dictionary<string, List<bool>> leftSide = ConvertTagsAndNotesToDictionary(descriptionLeftTags, notes);
         Dictionary<string, List<bool>> rightSide = ConvertTagsAndNotesToDictionary(descriptionRightTags, notes);
-
-        // json log the leftside to the desktop
-        string json = JsonConvert.SerializeObject(leftSide, Formatting.Indented);
-        File.WriteAllText(@"C:\Users\jakeh\Desktop\leftSide.json", json);
 
         var left_largest_level = InsertBreakerNotes(startPoint, leftSide, true);
         var right_largest_level = InsertBreakerNotes(startPoint, rightSide, false);
