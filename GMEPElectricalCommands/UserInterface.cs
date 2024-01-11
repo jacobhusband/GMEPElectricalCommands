@@ -1544,16 +1544,28 @@ namespace GMEPElectricalCommands
 
     private void PANEL_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
     {
-      recalculate_breakers();
-      calculate_lcl_otherload_panelload_feederamps();
       if (PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value == null || PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString() == "") return;
+
       var cellValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
       var row = PANEL_GRID.Rows[e.RowIndex];
       var col = PANEL_GRID.Columns[e.ColumnIndex];
+
       if (cellValue.StartsWith("="))
       {
-        link_cell_to_phase(cellValue, row, col);
+        // check if the cell value contains no letters (only digits, equals sign, and mathematic symbols such as -, *, +, /), if so then provide a calculator similar to excel where the user can enter =8*8 and the cell will display 64
+        if (cellValue.All(c => char.IsDigit(c) || c == '=' || c == '-' || c == '*' || c == '+' || c == '/'))
+        {
+          var result = new System.Data.DataTable().Compute(cellValue.Replace("=", ""), null);
+          PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = result;
+        }
+        else
+        {
+          link_cell_to_phase(cellValue, row, col);
+        }
       }
+
+      recalculate_breakers();
+      calculate_lcl_otherload_panelload_feederamps();
     }
 
     private void PANEL_GRID_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
