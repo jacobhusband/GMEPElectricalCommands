@@ -40,7 +40,7 @@ namespace GMEPElectricalCommands
       // PANEL_TABS
       // 
       this.PANEL_TABS.Controls.Add(this.tabPage1);
-      this.PANEL_TABS.Location = new System.Drawing.Point(5, 33);
+      this.PANEL_TABS.Location = new System.Drawing.Point(176, 4);
       this.PANEL_TABS.Name = "PANEL_TABS";
       this.PANEL_TABS.SelectedIndex = 0;
       this.PANEL_TABS.Size = new System.Drawing.Size(1409, 691);
@@ -48,17 +48,18 @@ namespace GMEPElectricalCommands
       // 
       // tabPage1
       // 
+      this.tabPage1.BackColor = System.Drawing.Color.WhiteSmoke;
+      this.tabPage1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
       this.tabPage1.Location = new System.Drawing.Point(4, 22);
       this.tabPage1.Name = "tabPage1";
       this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
       this.tabPage1.Size = new System.Drawing.Size(1401, 665);
       this.tabPage1.TabIndex = 0;
       this.tabPage1.Text = "tabPage1";
-      this.tabPage1.UseVisualStyleBackColor = true;
       // 
       // CREATE_ALL_PANELS_BUTTON
       // 
-      this.CREATE_ALL_PANELS_BUTTON.Location = new System.Drawing.Point(111, 4);
+      this.CREATE_ALL_PANELS_BUTTON.Location = new System.Drawing.Point(13, 55);
       this.CREATE_ALL_PANELS_BUTTON.Name = "CREATE_ALL_PANELS_BUTTON";
       this.CREATE_ALL_PANELS_BUTTON.Size = new System.Drawing.Size(148, 23);
       this.CREATE_ALL_PANELS_BUTTON.TabIndex = 179;
@@ -68,7 +69,7 @@ namespace GMEPElectricalCommands
       // 
       // NEW_PANEL_BUTTON
       // 
-      this.NEW_PANEL_BUTTON.Location = new System.Drawing.Point(5, 4);
+      this.NEW_PANEL_BUTTON.Location = new System.Drawing.Point(61, 26);
       this.NEW_PANEL_BUTTON.Name = "NEW_PANEL_BUTTON";
       this.NEW_PANEL_BUTTON.Size = new System.Drawing.Size(100, 23);
       this.NEW_PANEL_BUTTON.TabIndex = 178;
@@ -80,7 +81,7 @@ namespace GMEPElectricalCommands
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(1411, 737);
+      this.ClientSize = new System.Drawing.Size(1586, 696);
       this.Controls.Add(this.CREATE_ALL_PANELS_BUTTON);
       this.Controls.Add(this.NEW_PANEL_BUTTON);
       this.Controls.Add(this.PANEL_TABS);

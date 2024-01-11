@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using Autodesk.AutoCAD.Colors;
 using OfficeOpenXml;
 using AutoCADCommands;
+using Newtonsoft.Json;
 
 namespace GMEPElectricalCommands
 {
@@ -330,6 +331,15 @@ namespace GMEPElectricalCommands
           topRightCorner = new Point3d(topRightCorner.X - (9.6 + (0.2 * totalLevel)), topRightCorner.Y, 0);
         }
       }
+    }
+
+    private static void put_in_json_file(object thing)
+    {
+      // json write the panel data to the desktop
+      string json = JsonConvert.SerializeObject(thing, Formatting.Indented);
+      string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+      string path = Path.Combine(desktopPath, "loggedThing.json");
+      File.WriteAllText(path, json);
     }
 
     private Dictionary<string, object> UpdatePanelDataDescriptions(Dictionary<string, object> panelData)

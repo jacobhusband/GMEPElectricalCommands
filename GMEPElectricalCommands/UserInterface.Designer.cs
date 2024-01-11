@@ -685,6 +685,7 @@
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      this.BackColor = System.Drawing.Color.WhiteSmoke;
       this.Controls.Add(this.LARGEST_LCL_INPUT);
       this.Controls.Add(this.AUTO_CHECKBOX);
       this.Controls.Add(this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX);
