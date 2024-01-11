@@ -1581,7 +1581,6 @@ namespace GMEPElectricalCommands
           // Get start cell for pasting
           int rowIndex = PANEL_GRID.CurrentCell.RowIndex;
           int colIndex = PANEL_GRID.CurrentCell.ColumnIndex;
-          int startRowIndex = PANEL_GRID.CurrentCell.RowIndex;
 
           // Paste each line into a row
           foreach (string line in lines)
@@ -1614,8 +1613,6 @@ namespace GMEPElectricalCommands
 
             rowIndex++;
           }
-          // Reset row index after loop
-          rowIndex = startRowIndex;
         }
 
         e.Handled = true;
@@ -1626,16 +1623,16 @@ namespace GMEPElectricalCommands
         StringBuilder copiedText = new StringBuilder();
 
         // Loop through selected cells
-        foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells)
+        foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells.Cast<DataGridViewCell>().OrderBy(cell => cell.RowIndex))
         {
           copiedText.AppendLine(cell.Value?.ToString() ?? string.Empty);
         }
 
         // Loop through selected rows
-        foreach (DataGridViewRow row in PANEL_GRID.SelectedRows)
+        foreach (DataGridViewRow row in PANEL_GRID.SelectedRows.Cast<DataGridViewRow>().OrderBy(row => row.Index))
         {
           List<string> cellValues = new List<string>();
-          foreach (DataGridViewCell cell in row.Cells)
+          foreach (DataGridViewCell cell in row.Cells.Cast<DataGridViewCell>().OrderBy(cell => cell.ColumnIndex))
           {
             if (cell.Selected)
             {
