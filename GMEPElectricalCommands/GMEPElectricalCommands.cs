@@ -10,12 +10,11 @@ using System;
 using System.Collections.Generic;
 using Autodesk.AutoCAD.Colors;
 using OfficeOpenXml;
-using AutoCADCommands;
 using Newtonsoft.Json;
 
 namespace GMEPElectricalCommands
 {
-  public class GMEPElectricalCommands : AutoCADCommands.AutoCADCommands
+  public class GMEPElectricalCommands
   {
     private MainForm myForm;
 
@@ -209,6 +208,256 @@ namespace GMEPElectricalCommands
       Create_Panels(null);
     }
 
+    [CommandMethod("SELECTTEXT")]
+    public void SelectText()
+    {
+      var result = new Dictionary<string, object>();
+      var textList = new List<Dictionary<string, object>>();
+      var doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      var ed = doc.Editor;
+
+      // Prompt for the polyline
+      PromptEntityResult per = ed.GetEntity("\nSelect a polyline: ");
+      if (per.Status != PromptStatus.OK) return;
+
+      // Open the polyline for read
+      using (Transaction tr = doc.TransactionManager.StartTransaction())
+      {
+        var entity1 = tr.GetObject(per.ObjectId, OpenMode.ForRead);
+        if (entity1 == null) return;
+
+        Point3d pt1 = new Point3d(0, 0, 0);
+        Point3d pt2 = new Point3d(0, 0, 0);
+
+        // Get the first polyline's bounding box
+        Extents3d? extents1 = entity1.Bounds;
+        if (!extents1.HasValue) return;
+
+        // Check if the first entity is a polyline with two vertices or a line
+        if ((entity1 is Polyline polyline1 && polyline1.NumberOfVertices == 2) || entity1 is Line)
+        {
+          // Prompt for the second entity
+          per = ed.GetEntity("\nSelect a second polyline or line: ");
+          if (per.Status != PromptStatus.OK) return;
+
+          // Open the second entity for read
+          var entity2 = tr.GetObject(per.ObjectId, OpenMode.ForRead);
+          if (entity2 == null) return;
+
+          // Get the second entity's bounding box
+          Extents3d? extents2 = entity2.Bounds;
+          if (!extents2.HasValue) return;
+
+          // Define the corners of the rectangle
+          pt1 = new Point3d(Math.Min(extents1.Value.MinPoint.X, extents2.Value.MinPoint.X), Math.Max(extents1.Value.MaxPoint.Y, extents2.Value.MaxPoint.Y), 0);
+          pt2 = new Point3d(Math.Max(extents1.Value.MaxPoint.X, extents2.Value.MaxPoint.X), Math.Min(extents1.Value.MinPoint.Y, extents2.Value.MinPoint.Y), 0);
+        }
+        else if (entity1 is Polyline polyline2)
+        {
+          // Define the corners of the rectangle
+          pt1 = new Point3d(extents1.Value.MinPoint.X, extents1.Value.MaxPoint.Y, 0);
+          pt2 = new Point3d(extents1.Value.MaxPoint.X, extents1.Value.MinPoint.Y, 0);
+        }
+        else
+        {
+          ed.WriteMessage("\nSelected entity is not a polyline or line.");
+          return;
+        }
+
+        // Define the selection filter
+        TypedValue[] filter = new TypedValue[]
+        {
+           new TypedValue((int)DxfCode.Start, "TEXT,MTEXT"),
+        };
+
+        // Select entities within the rectangular area
+        PromptSelectionResult psr = ed.SelectCrossingWindow(pt1, pt2, new SelectionFilter(filter));
+
+        // Iterate over the selected entities
+        foreach (SelectedObject so in psr.Value)
+        {
+          var entity = tr.GetObject(so.ObjectId, OpenMode.ForRead);
+
+          string textValue = null;
+          Point3d position = new Point3d();
+
+          if (entity is DBText dbText)
+          {
+            textValue = dbText.TextString;
+            position = dbText.Position;
+          }
+          else if (entity is MText mText)
+          {
+            textValue = mText.Contents;
+            position = mText.Location;
+          }
+
+          if (textValue != null)
+          {
+            // Remove unwanted strings from the text value
+            textValue = textValue.Replace("\\FArial;", "")
+                                 .Replace("\\Farial|c0;", "")
+                                 .Replace("{", "")
+                                 .Replace("}", "")
+                                 .Trim();
+
+            // Calculate the relative position of the text
+            double relativeX = position.X - pt1.X;
+            double relativeY = position.Y - pt1.Y;
+
+            textList.Add(new Dictionary<string, object>
+            {
+                { "value", textValue },
+                { "x", relativeX },
+                { "y", relativeY }
+            });
+          }
+        }
+
+        result.Add("polyline", new Dictionary<string, Dictionary<string, object>>
+        {
+            { "top_left", new Dictionary<string, object> { { "x", 0 }, { "y", 0 } } },
+            { "top_right", new Dictionary<string, object> { { "x", pt2.X - pt1.X }, { "y", 0 } } },
+            { "bottom_right", new Dictionary<string, object> { { "x", pt2.X - pt1.X }, { "y", pt2.Y - pt1.Y } } },
+            { "bottom_left", new Dictionary<string, object> { { "x", 0 }, { "y", pt2.Y - pt1.Y } } }
+        });
+
+        result.Add("text", textList);
+
+        tr.Commit();
+      }
+      put_in_json_file(result);
+
+      ParseCADPanelObjects(result);
+    }
+
+    [CommandMethod("SELECTTEXTTOJSON")]
+    public void SelectTextToJson()
+    {
+      var doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      var ed = doc.Editor;
+
+      // Prompt for the origin point
+      PromptPointResult ppr = ed.GetPoint("\nEnter the origin point: ");
+      if (ppr.Status != PromptStatus.OK) return;
+      Point3d origin = ppr.Value;
+
+      // Prompt for the first corner point
+      ppr = ed.GetPoint("\nEnter the first corner point: ");
+      if (ppr.Status != PromptStatus.OK) return;
+      Point3d pt1 = ppr.Value;
+
+      // Prompt for the second corner point
+      ppr = ed.GetPoint("\nEnter the second corner point: ");
+      if (ppr.Status != PromptStatus.OK) return;
+      Point3d pt2 = ppr.Value;
+
+      // Define the selection filter
+      TypedValue[] filter = new TypedValue[]
+      {
+        new TypedValue((int)DxfCode.Start, "TEXT,MTEXT"),
+      };
+
+      // Select the text and MText entities within the rectangular region
+      PromptSelectionResult psr = ed.SelectCrossingWindow(pt1, pt2, new SelectionFilter(filter));
+      if (psr.Status != PromptStatus.OK) return;
+
+      // Prompt for the selection name
+      PromptResult pr = ed.GetString("\nEnter a name for the selection: ");
+      if (pr.Status != PromptStatus.OK) return;
+      string name = pr.StringResult;
+
+      // Get the text and MText entities
+      List<string> text = new List<string>();
+      using (Transaction tr = doc.TransactionManager.StartTransaction())
+      {
+        foreach (SelectedObject so in psr.Value)
+        {
+          var entity = tr.GetObject(so.ObjectId, OpenMode.ForRead);
+
+          if (entity is DBText dbText)
+          {
+            text.Add(dbText.TextString);
+          }
+          else if (entity is MText mText)
+          {
+            text.Add(mText.Contents);
+          }
+        }
+      }
+
+      // Create the JSON object
+      var jsonObject = new
+      {
+        name,
+        point1 = new { x = pt1.X - origin.X, y = pt1.Y - origin.Y },
+        point2 = new { x = pt2.X - origin.X, y = pt2.Y - origin.Y },
+        text
+      };
+
+      // Serialize the JSON object to a string
+      string json = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+
+      // Save the JSON string to a file
+      string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+      string path = Path.Combine(desktopPath, name + ".json");
+      File.WriteAllText(path, json);
+    }
+
+    private void ParseCADPanelObjects(Dictionary<string, object> result)
+    {
+      var panelName = ParsePanelName(result);
+      Console.WriteLine($"Parsed panelName: {panelName}");
+    }
+
+    private object ParsePanelName(Dictionary<string, object> result)
+    {
+      var pt1 = new Dictionary<string, object> { { "x", 0.0 }, { "y", 0.0 } };
+      var pt2 = new Dictionary<string, object> { { "x", 2.2222 }, { "y", -0.37439999999999962 } };
+
+      var textList = (List<Dictionary<string, object>>)result["text"];
+      var textValues = GetTextValuesInRegion(result, pt1, pt2);
+      var panelName = string.Join(" ", textValues);
+
+      int firstQuoteIndex = panelName.IndexOfAny(['\'', '`']);
+      int lastQuoteIndex = panelName.LastIndexOfAny(['\'', '`']);
+
+      if (firstQuoteIndex >= 0 && lastQuoteIndex > firstQuoteIndex)
+      {
+        return panelName.Substring(firstQuoteIndex + 1, lastQuoteIndex - firstQuoteIndex - 1);
+      }
+
+      return panelName;
+    }
+
+    private string[] GetTextValuesInRegion(Dictionary<string, object> result, Dictionary<string, object> pt1, Dictionary<string, object> pt2)
+    {
+      var textList = (List<Dictionary<string, object>>)result["text"];
+      var textValues = new List<string>();
+
+      foreach (var text in textList)
+      {
+        var x = (double)text["x"];
+        var y = (double)text["y"];
+
+        if (x >= (double)pt1["x"] && x <= (double)pt2["x"] && y >= (double)pt2["y"] && y <= (double)pt1["y"])
+        {
+          textValues.Add(text["value"].ToString());
+        }
+      }
+
+      return textValues.ToArray();
+    }
+
+    public static (Document doc, Database db, Editor ed) GetGlobals()
+    {
+      var doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      var db = doc.Database;
+      var ed = doc.Editor;
+
+      return (doc, db, ed);
+    }
+
     public void Create_Panel(Dictionary<string, object> panelData)
     {
       List<Dictionary<string, object>> panels = new List<Dictionary<string, object>>();
@@ -338,7 +587,28 @@ namespace GMEPElectricalCommands
       // json write the panel data to the desktop
       string json = JsonConvert.SerializeObject(thing, Formatting.Indented);
       string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-      string path = Path.Combine(desktopPath, "loggedThing.json");
+
+      var doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      var ed = doc.Editor;
+
+      PromptResult pr = ed.GetString("\nEnter a file name: ");
+
+      string baseFileName = pr.StringResult;
+
+      if (string.IsNullOrEmpty(baseFileName))
+      {
+        baseFileName = "panel_data";
+      }
+      string extension = ".json";
+      string path = Path.Combine(desktopPath, baseFileName + extension);
+
+      int count = 1;
+      while (File.Exists(path))
+      {
+        string tempFileName = string.Format("{0}({1})", baseFileName, count++);
+        path = Path.Combine(desktopPath, tempFileName + extension);
+      }
+
       File.WriteAllText(path, json);
     }
 
@@ -775,7 +1045,7 @@ namespace GMEPElectricalCommands
         }
 
         CreateCircle(btr, tr, mid3, 0.09, 2, false);
-        CreateCircleText(btr, tr, mid3, 0.09375, 2, "ROMANS", content);
+        CreateCircleText(btr, tr, mid3, 0.09, 2, "ROMANS", content);
 
         if (dist > 0.3)
         {
@@ -795,6 +1065,8 @@ namespace GMEPElectricalCommands
       text.SetDatabaseDefaults();
       text.Height = height;
       text.TextString = content;
+      text.HorizontalMode = TextHorizontalMode.TextCenter;
+      text.VerticalMode = TextVerticalMode.TextVerticalMid;
 
       TextStyleTable textStyleTable = (TextStyleTable)tr.GetObject(btr.Database.TextStyleTableId, OpenMode.ForRead);
 
@@ -809,10 +1081,7 @@ namespace GMEPElectricalCommands
 
       text.ColorIndex = colorIndex;
 
-      var extents = text.GeometricExtents;
-      var textWidth = extents.MaxPoint.X - extents.MinPoint.X;
-      var textHeight = extents.MaxPoint.Y - extents.MinPoint.Y;
-      text.Position = new Point3d(centerPoint.X - textWidth / 2, centerPoint.Y - textHeight / 2, centerPoint.Z);
+      text.AlignmentPoint = centerPoint;
 
       btr.AppendEntity(text);
       tr.AddNewlyCreatedDBObject(text, true);
@@ -868,7 +1137,7 @@ namespace GMEPElectricalCommands
       return panels;
     }
 
-    public new string CreateOrGetLayer(string layerName, Database db, Transaction tr)
+    public string CreateOrGetLayer(string layerName, Database db, Transaction tr)
     {
       var lt = (LayerTable)tr.GetObject(db.LayerTableId, OpenMode.ForRead);
 

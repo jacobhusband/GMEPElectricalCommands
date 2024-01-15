@@ -123,6 +123,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"C:\Program Files\Autodesk\AutoCAD 2024\acad.exe"  /product ACAD /language "en-US"</PostBuildEvent>
+    <PostBuildEvent>"C:\Program Files\Autodesk\AutoCAD 2024\acad.exe"  /product ACAD /language "en-US" "C:\Users\jakeh\Desktop\ELEC\template residential\Residential template - 24x36.dwg"</PostBuildEvent>
   </PropertyGroup>
 </Project>

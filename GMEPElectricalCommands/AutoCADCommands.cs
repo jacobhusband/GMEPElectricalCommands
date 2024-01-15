@@ -10,7 +10,7 @@ using Autodesk.AutoCAD.Colors;
 using System.IO;
 using System.Windows.Forms;
 
-namespace AutoCADCommands
+namespace GMEPElectricalCommands
 {
   public class AutoCADCommands
   {
