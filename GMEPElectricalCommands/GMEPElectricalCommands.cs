@@ -264,11 +264,13 @@ namespace GMEPElectricalCommands
           return;
         }
 
+        ed.Command("._zoom", "_window", pt1, pt2);
+
         // Define the selection filter
-        TypedValue[] filter = new TypedValue[]
-        {
+        TypedValue[] filter =
+        [
            new TypedValue((int)DxfCode.Start, "TEXT,MTEXT"),
-        };
+        ];
 
         // Select entities within the rectangular area
         PromptSelectionResult psr = ed.SelectCrossingWindow(pt1, pt2, new SelectionFilter(filter));
@@ -289,6 +291,7 @@ namespace GMEPElectricalCommands
           else if (entity is MText mText)
           {
             textValue = mText.Contents;
+            Console.WriteLine("MTEXT: " + textValue);
             position = mText.Location;
           }
 
@@ -331,8 +334,8 @@ namespace GMEPElectricalCommands
       ParseCADPanelObjects(result);
     }
 
-    [CommandMethod("SELECTTEXTTOJSON")]
-    public void SelectTextToJson()
+    [CommandMethod("SETPANELREGION")]
+    public void SetPanelRegion()
     {
       var doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       var ed = doc.Editor;
@@ -407,7 +410,17 @@ namespace GMEPElectricalCommands
     private void ParseCADPanelObjects(Dictionary<string, object> result)
     {
       var panelName = ParsePanelName(result);
-      Console.WriteLine($"Parsed panelName: {panelName}");
+      var location = ParseLocation(result);
+    }
+
+    private object ParseLocation(Dictionary<string, object> result)
+    {
+      var pt1 = new Dictionary<string, object> { { "x", 2.2222 }, { "y", 0.0 } };
+      var pt2 = new Dictionary<string, object> { { "x", 5.0666 }, { "y", -0.1872000000000007 } };
+      var textValues = GetTextValuesInRegion(result, pt1, pt2);
+      var location = string.Join(" ", textValues).ToUpper();
+
+      return location.Replace("LOCATION", "").Trim();
     }
 
     private object ParsePanelName(Dictionary<string, object> result)

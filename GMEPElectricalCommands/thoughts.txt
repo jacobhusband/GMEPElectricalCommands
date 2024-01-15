@@ -1,14 +1,15 @@
-I want to create an AutoCAD function that does the following:
+success
+1>  Bounding box: (62.4761672598092,-16.0281308555385,0) (71.4617672598091,-16.0281308555385,0)
+1>  Bounding box: (62.4761672598092,-20.9913329760127,0) (71.4617672598091,-20.9913329760127,0)
 
-1. Prompt the user to select a relative point to use as the origin.
-2. Prompt the user to select two more points as a rectangular region relative to the origin.
-3. Within that rectangular region, find all the text and MText objects.
-4. Prompt the user to give the selection a name.
-5. Save the selection as a JSON object in a file as such:
+success
+1>  Bounding box: (62.4761672598092,-16.0281308555385,0) (71.4617672598091,-16.0281308555385,0)
+1>  Bounding box: (62.4761672598092,-20.9913329760127,0) (71.4617672598091,-20.9913329760127,0)
 
-{
- "name": "selection_name",
- "point1": { "x": "x_pos_relative_to_origin", "y": "y_pos_relative_to_origin" },
- "point2": { "x": "x_pos_relative_to_origin", "y": "y_pos_relative_to_origin" },
- "text": ["text_object_content", "mtext_object_content"],
-}
+success
+1>  Bounding box: (62.4761672598092,-20.9913329760127,0) (71.4617672598091,-20.9913329760127,0)
+1>  Bounding box: (62.4761672598092,-16.0281308555385,0) (71.4617672598091,-16.0281308555385,0)
+
+fail
+1>  Bounding box: (62.4761672598092,-16.0281308555385,0) (71.4617672598091,-16.0281308555385,0)
+1>  Bounding box: (62.4761672598092,-20.9913329760127,0) (71.4617672598091,-20.9913329760127,0)
