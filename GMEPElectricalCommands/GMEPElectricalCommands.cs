@@ -2089,7 +2089,7 @@ namespace GMEPElectricalCommands
 
     private void Create1PoleBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, Dictionary<string, double> data, bool left, bool is2Pole, int i)
     {
-      var (descriptions, breakers, circuits, phaseA, phaseB, phaseC, descriptionHighlights, descriptionTags) = GetCorrectBreakerData(panelData, left, is2Pole);
+      var (descriptions, breakers, circuits, phaseA, phaseB, phaseC, descriptionHighlights, _) = GetCorrectBreakerData(panelData, left, is2Pole);
 
       List<string> phaseList = GetPhaseList(i, phaseA, phaseB, phaseC);
 
