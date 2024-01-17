@@ -80,12 +80,33 @@ namespace GMEPElectricalCommands
       }
     }
 
-    private static void put_in_json_file(object thing)
+    public static void put_in_json_file(object thing)
     {
       // json write the panel data to the desktop
       string json = JsonConvert.SerializeObject(thing, Formatting.Indented);
       string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-      string path = Path.Combine(desktopPath, "loggedThing.json");
+
+      var doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      var ed = doc.Editor;
+
+      PromptResult pr = ed.GetString("\nEnter a file name: ");
+
+      string baseFileName = pr.StringResult;
+
+      if (string.IsNullOrEmpty(baseFileName))
+      {
+        baseFileName = "panel_data";
+      }
+      string extension = ".json";
+      string path = Path.Combine(desktopPath, baseFileName + extension);
+
+      int count = 1;
+      while (File.Exists(path))
+      {
+        string tempFileName = string.Format("{0}({1})", baseFileName, count++);
+        path = Path.Combine(desktopPath, tempFileName + extension);
+      }
+
       File.WriteAllText(path, json);
     }
 
@@ -117,35 +138,40 @@ namespace GMEPElectricalCommands
         foreach (DataGridViewRow row in panelGrid.Rows)
         {
           int rowIndex = row.Index;
-          var tagNames = new Dictionary<string, int>
+          var tagNames = new Dictionary<string, int>();
+          if (panel.ContainsKey("phase_c_left"))
+          {
+            tagNames = new Dictionary<string, int>()
             {
-                {"phase_a_left_tag", 1},
-                {"phase_b_left_tag", 2},
-                {"phase_a_right_tag", 7},
-                {"phase_b_right_tag", 8},
-                {"description_left_tags", 0},
-                {"description_right_tags", 9}
+              {"phase_a_left_tag", 1},
+              {"phase_b_left_tag", 2},
+              {"phase_c_left_tag", 3},
+              {"phase_a_right_tag", 8},
+              {"phase_b_right_tag", 9},
+              {"phase_c_right_tag", 10},
+              {"description_left_tags", 0},
+              {"description_right_tags", 11}
             };
+          }
+          else
+          {
+            tagNames = new Dictionary<string, int>()
+            {
+              {"phase_a_left_tag", 1},
+              {"phase_b_left_tag", 2},
+              {"phase_a_right_tag", 7},
+              {"phase_b_right_tag", 8},
+              {"description_left_tags", 0},
+              {"description_right_tags", 9}
+            };
+          }
+
           foreach (var tagName in tagNames)
           {
             if (panel.ContainsKey(tagName.Key))
             {
-              string tag = panel[tagName.Key].ToString();
-              List<string> tagList = JsonConvert.DeserializeObject<List<string>>(tag);
-              string tagValue = tagList[rowIndex];
-              if (tagValue != "")
-              {
-                row.Cells[tagName.Value].Tag = tagValue;
-              }
+              set_cell_value(panel, tagName.Key, rowIndex, tagName.Value, row);
             }
-          }
-          if (panel.ContainsKey("phase_c_left"))
-          {
-            set_cell_value(panel, "phase_c_left_tag", rowIndex, 3, row);
-          }
-          if (panel.ContainsKey("phase_c_right"))
-          {
-            set_cell_value(panel, "phase_c_right_tag", rowIndex, 10, row);
           }
         }
         userControl1.update_cell_background_color();
@@ -167,13 +193,34 @@ namespace GMEPElectricalCommands
 
     internal void delete_panel(UserInterface userControl1)
     {
-      // remove the tab and remove the usercontrol from the list, prompt the user first so they have a chance to say no
       DialogResult dialogResult = MessageBox.Show("Are you sure you want to delete this panel?", "Delete Panel", MessageBoxButtons.YesNo);
       if (dialogResult == DialogResult.Yes)
       {
         this.userControls.Remove(userControl1);
         PANEL_TABS.TabPages.Remove(userControl1.Parent as TabPage);
+        using (DocumentLock docLock = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.LockDocument())
+        {
+          RemovePanelFromStorage(userControl1);
+        }
       }
+    }
+
+    private void RemovePanelFromStorage(UserInterface userControl1)
+    {
+      var panelData = retrieve_saved_panel_data();
+
+      foreach (Dictionary<string, object> panel in panelData)
+      {
+        var panelName = panel["panel"].ToString().Replace("\'", "").Replace("`", "");
+        var userControlName = userControl1.Name.Replace("\'", "").Replace("`", "");
+        if (panelName == userControlName)
+        {
+          panelData.Remove(panel);
+          break;
+        }
+      }
+
+      store_data_in_autocad_file(panelData);
     }
 
     internal bool panel_name_exists(string panelName)
@@ -243,6 +290,17 @@ namespace GMEPElectricalCommands
         {
           // The dictionary already exists, so we just need to open it for write
           userDict = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(nod.GetAt(jsonDataKey), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite);
+
+          // Clear the dictionary
+          userDict.UpgradeOpen();
+          userDict.Erase(true);
+          userDict.DowngradeOpen();
+
+          // Create a new dictionary
+          userDict = new Autodesk.AutoCAD.DatabaseServices.DBDictionary();
+          nod.UpgradeOpen();
+          nod.SetAt(jsonDataKey, userDict);
+          tr.AddNewlyCreatedDBObject(userDict, true);
         }
         else
         {
@@ -344,7 +402,6 @@ namespace GMEPElectricalCommands
         }
 
         store_data_in_autocad_file(panelStorage);
-        this.userControls = new List<UserInterface>();
       }
     }
 

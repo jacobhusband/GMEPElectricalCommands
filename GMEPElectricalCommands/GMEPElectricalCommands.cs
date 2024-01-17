@@ -291,7 +291,6 @@ namespace GMEPElectricalCommands
           else if (entity is MText mText)
           {
             textValue = mText.Contents;
-            Console.WriteLine("MTEXT: " + textValue);
             position = mText.Location;
           }
 
@@ -329,7 +328,6 @@ namespace GMEPElectricalCommands
 
         tr.Commit();
       }
-      put_in_json_file(result);
 
       ParseCADPanelObjects(result);
     }
@@ -595,7 +593,7 @@ namespace GMEPElectricalCommands
       }
     }
 
-    private static void put_in_json_file(object thing)
+    public static void put_in_json_file(object thing)
     {
       // json write the panel data to the desktop
       string json = JsonConvert.SerializeObject(thing, Formatting.Indented);

@@ -300,11 +300,11 @@ namespace GMEPElectricalCommands
         if (PANEL_GRID.Rows[i].Cells["description_right"].Value == null && PANEL_GRID.Rows[i].Cells["breaker_right"].Value != null)
         {
           // check that the breaker value is both an integer and greater than 3
-          var breakerValue = PANEL_GRID.Rows[i].Cells["breaker_left"].Value.ToString();
+          var breakerValue = PANEL_GRID.Rows[i].Cells["breaker_right"].Value.ToString();
           int breakerValueInt;
           if (int.TryParse(breakerValue, out breakerValueInt) && breakerValueInt > 3)
           {
-            descriptionLeftValue = "SPARE";
+            descriptionRightValue = "SPARE";
           }
         }
         else
@@ -1205,7 +1205,7 @@ namespace GMEPElectricalCommands
       {
         if (e.RowIndex == row.Index && e.ColumnIndex == col.Index)
         {
-          var newCellValue = panelGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
+          var newCellValue = panelGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value?.ToString();
           var phaseSumGridValue = panelControl_phaseSumGrid.Rows[phaseSumGrid_row].Cells[phaseSumGrid_col].Value?.ToString();
           if (newCellValue != phaseSumGridValue)
           {
@@ -1671,6 +1671,7 @@ namespace GMEPElectricalCommands
         foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells)
         {
           cell.Value = null;
+          cell.Tag = null;
         }
         e.Handled = true;
       }
