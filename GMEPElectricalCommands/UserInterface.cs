@@ -1728,6 +1728,18 @@ namespace GMEPElectricalCommands
     {
       e.Control.TextChanged -= new EventHandler(EDITING_CONTROL_Text_Changed);
       e.Control.TextChanged += new EventHandler(EDITING_CONTROL_Text_Changed);
+      e.Control.KeyDown -= new KeyEventHandler(Control_KeyDown);
+      e.Control.KeyDown += new KeyEventHandler(Control_KeyDown);
+    }
+
+    private void Control_KeyDown(object sender, KeyEventArgs e)
+    {
+      if (e.KeyCode == Keys.Left || e.KeyCode == Keys.Right)
+      {
+        PANEL_GRID.EndEdit();
+        SendKeys.Send(e.KeyCode == Keys.Left ? "{LEFT}" : "{RIGHT}");
+        e.Handled = true;
+      }
     }
 
     private async void EDITING_CONTROL_Text_Changed(object sender, EventArgs e)
