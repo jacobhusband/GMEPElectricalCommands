@@ -54,7 +54,7 @@ namespace GMEPElectricalCommands
         panelName = panelName.Replace("-", "");
         panelName = panelName.Replace("PANEL", "");
 
-        if (userControlName == panelName)
+        if (userControlName.ToLower() == panelName.ToLower())
         {
           return userControl;
         }
@@ -227,7 +227,7 @@ namespace GMEPElectricalCommands
     {
       foreach (TabPage tabPage in PANEL_TABS.TabPages)
       {
-        if (tabPage.Text.Split(' ')[1] == panelName)
+        if (tabPage.Text.Split(' ')[1].ToLower() == panelName.ToLower())
         {
           return true;
         }

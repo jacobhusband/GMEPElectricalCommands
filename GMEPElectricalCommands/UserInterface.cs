@@ -1227,8 +1227,8 @@ namespace GMEPElectricalCommands
     {
       // an example cell value is "=PA-A" with "PA" being the panel name and "A" being the phase, the panel name can be any length of string and the phase can only be "A, B, or C" and always comes after a dash
       string[] splitCellValue = cellValue.Split('-');
-      string panelName = splitCellValue[0].Replace("=", "");
-      string phase = splitCellValue[1];
+      string panelName = splitCellValue[0].Replace("=", "").ToUpper();
+      string phase = splitCellValue[1].ToUpper();
 
       return (panelName, phase);
     }
