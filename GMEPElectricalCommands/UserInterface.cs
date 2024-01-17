@@ -1225,7 +1225,12 @@ namespace GMEPElectricalCommands
 
     private (string, string) convert_cell_value_to_panel_name_and_phase(string cellValue)
     {
-      // an example cell value is "=PA-A" with "PA" being the panel name and "A" being the phase, the panel name can be any length of string and the phase can only be "A, B, or C" and always comes after a dash
+      Regex regex = new Regex(@"^[a-zA-Z0-9]*-[A-C]$");
+      if (!regex.IsMatch(cellValue))
+      {
+        return ("", "");
+      }
+
       string[] splitCellValue = cellValue.Split('-');
       string panelName = splitCellValue[0].Replace("=", "").ToUpper();
       string phase = splitCellValue[1].ToUpper();
@@ -1552,7 +1557,11 @@ namespace GMEPElectricalCommands
 
       if (cellValue.StartsWith("="))
       {
-        // check if the cell value contains no letters (only digits, equals sign, and mathematic symbols such as -, *, +, /), if so then provide a calculator similar to excel where the user can enter =8*8 and the cell will display 64
+        if (col.Name.Contains("phase"))
+        {
+          cellValue = cellValue.Replace(" ", "");
+        }
+
         if (cellValue.All(c => char.IsDigit(c) || c == '=' || c == '-' || c == '*' || c == '+' || c == '/'))
         {
           var result = new System.Data.DataTable().Compute(cellValue.Replace("=", ""), null);
