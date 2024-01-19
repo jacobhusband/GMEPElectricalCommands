@@ -1815,7 +1815,7 @@ namespace ElectricalCommands
               {
                 try
                 {
-                  PANEL_GRID[colIndex + i, rowIndex].Value = parts[i];
+                  PANEL_GRID[colIndex + i, rowIndex].Value = parts[i].Trim();
                 }
                 catch (FormatException)
                 {
@@ -1844,23 +1844,30 @@ namespace ElectricalCommands
       {
         StringBuilder copiedText = new StringBuilder();
 
-        // Loop through selected cells
-        foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells.Cast<DataGridViewCell>().OrderBy(cell => cell.RowIndex))
-        {
-          copiedText.AppendLine(cell.Value?.ToString() ?? string.Empty);
-        }
+        // Get the minimum and maximum rowIndex and columnIndex of the selected cells
+        int minRowIndex = PANEL_GRID.SelectedCells.Cast<DataGridViewCell>().Min(cell => cell.RowIndex);
+        int maxRowIndex = PANEL_GRID.SelectedCells.Cast<DataGridViewCell>().Max(cell => cell.RowIndex);
+        int minColumnIndex = PANEL_GRID.SelectedCells.Cast<DataGridViewCell>().Min(cell => cell.ColumnIndex);
+        int maxColumnIndex = PANEL_GRID.SelectedCells.Cast<DataGridViewCell>().Max(cell => cell.ColumnIndex);
 
-        // Loop through selected rows
-        foreach (DataGridViewRow row in PANEL_GRID.SelectedRows.Cast<DataGridViewRow>().OrderBy(row => row.Index))
+        // Loop through the rows
+        for (int rowIndex = minRowIndex; rowIndex <= maxRowIndex; rowIndex++)
         {
           List<string> cellValues = new List<string>();
-          foreach (DataGridViewCell cell in row.Cells.Cast<DataGridViewCell>().OrderBy(cell => cell.ColumnIndex))
+
+          // Loop through the columns
+          for (int columnIndex = minColumnIndex; columnIndex <= maxColumnIndex; columnIndex++)
           {
+            DataGridViewCell cell = PANEL_GRID[columnIndex, rowIndex];
+
+            // Only add the cell value to the list if the cell is selected
             if (cell.Selected)
             {
               cellValues.Add(cell.Value?.ToString() ?? string.Empty);
             }
           }
+
+          // Add the cell values of the row to the copied text
           if (cellValues.Count > 0)
           {
             copiedText.AppendLine(string.Join("\t", cellValues));
