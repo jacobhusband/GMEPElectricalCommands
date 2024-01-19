@@ -1,4 +1,4 @@
-﻿namespace GMEPElectricalCommands
+﻿namespace ElectricalCommands
 {
   partial class UserInterface
   {
@@ -655,7 +655,6 @@
       this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Name = "MAX_DESCRIPTION_CELL_CHAR_TEXTBOX";
       this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Size = new System.Drawing.Size(39, 20);
       this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.TabIndex = 190;
-      this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text = "16";
       this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
       // 
       // AUTO_CHECKBOX

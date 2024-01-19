@@ -12,9 +12,9 @@ using Autodesk.AutoCAD.Colors;
 using OfficeOpenXml;
 using Newtonsoft.Json;
 
-namespace GMEPElectricalCommands
+namespace ElectricalCommands
 {
-  public class GMEPElectricalCommands
+  public class PanelCommands
   {
     private MainForm myForm;
 
@@ -39,7 +39,7 @@ namespace GMEPElectricalCommands
     [CommandMethod("CREATEBLOCK")]
     public void CREATEBLOCK()
     {
-      var (doc, db, _) = GMEPElectricalCommands.GetGlobals();
+      var (doc, db, _) = PanelCommands.GetGlobals();
 
       using (Transaction tr = db.TransactionManager.StartTransaction())
       {
@@ -122,7 +122,7 @@ namespace GMEPElectricalCommands
     [CommandMethod("KEEPBREAKERS")]
     public void KEEPBREAKERS()
     {
-      var (doc, db, ed) = GMEPElectricalCommands.GetGlobals();
+      var (doc, db, ed) = PanelCommands.GetGlobals();
 
       using (var tr = db.TransactionManager.StartTransaction())
       {
@@ -478,7 +478,7 @@ namespace GMEPElectricalCommands
 
     public void Create_Panels(List<Dictionary<string, object>> panelDataList)
     {
-      var (doc, db, ed) = GMEPElectricalCommands.GetGlobals();
+      var (doc, db, ed) = PanelCommands.GetGlobals();
 
       if (panelDataList == null)
       {
@@ -1008,7 +1008,7 @@ namespace GMEPElectricalCommands
 
     public void KeepBreakersGivenPoints(Point3d point1, Point3d point2, Point3d point3, string content)
     {
-      var (doc, db, ed) = GMEPElectricalCommands.GetGlobals();
+      var (doc, db, ed) = PanelCommands.GetGlobals();
 
       using (var tr = db.TransactionManager.StartTransaction())
       {
@@ -1497,7 +1497,7 @@ namespace GMEPElectricalCommands
 
     private static ObjectId CreateText(string content, string style, TextHorizontalMode horizontalMode, TextVerticalMode verticalMode, double height, double widthFactor, Autodesk.AutoCAD.Colors.Color color, string layer)
     {
-      var (doc, db, _) = GMEPElectricalCommands.GetGlobals();
+      var (doc, db, _) = PanelCommands.GetGlobals();
 
       // Check if the layer exists
       using (var tr = db.TransactionManager.StartTransaction())
@@ -2506,7 +2506,7 @@ namespace GMEPElectricalCommands
 
     private static ObjectId GetTextStyleId(string styleName)
     {
-      var (doc, db, _) = GMEPElectricalCommands.GetGlobals();
+      var (doc, db, _) = PanelCommands.GetGlobals();
       var textStyleTable = (TextStyleTable)db.TextStyleTableId.GetObject(OpenMode.ForRead);
 
       if (textStyleTable.Has(styleName))

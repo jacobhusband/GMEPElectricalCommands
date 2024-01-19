@@ -16,11 +16,11 @@ using Autodesk.AutoCAD.GraphicsSystem;
 using OfficeOpenXml.Packaging.Ionic.Zlib;
 using Autodesk.AutoCAD.Geometry;
 
-namespace GMEPElectricalCommands
+namespace ElectricalCommands
 {
   public partial class UserInterface : UserControl
   {
-    private GMEPElectricalCommands myCommandsInstance;
+    private PanelCommands myCommandsInstance;
     private MainForm mainForm;
     private NEWPANELFORM newPanelForm;
     private noteForm notesForm;
@@ -29,7 +29,7 @@ namespace GMEPElectricalCommands
     private bool initialization;
     private object oldValue;
 
-    public UserInterface(GMEPElectricalCommands myCommands, MainForm mainForm, NEWPANELFORM newPanelForm, string tabName, bool is3PH = false)
+    public UserInterface(PanelCommands myCommands, MainForm mainForm, NEWPANELFORM newPanelForm, string tabName, bool is3PH = false)
     {
       InitializeComponent();
       myCommandsInstance = myCommands;
@@ -247,7 +247,7 @@ namespace GMEPElectricalCommands
       }
       else
       {
-        busRatingInput += " A";
+        busRatingInput += "A";
       }
 
       panel.Add("bus_rating", busRatingInput.ToUpper());

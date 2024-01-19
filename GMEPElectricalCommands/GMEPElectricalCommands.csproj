@@ -7,8 +7,8 @@
     <ProjectGuid>{653B4006-FB22-4AF4-A754-2446126BAC3E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GMEPElectricalCommands</RootNamespace>
-    <AssemblyName>GMEPElectricalCommands</AssemblyName>
+    <RootNamespace>ElectricalCommands</RootNamespace>
+    <AssemblyName>ElectricalCommands</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -74,8 +74,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GMEPElectricalCommands.cs" />
-    <Compile Include="AutoCADCommands.cs" />
+    <Compile Include="PanelCommands.cs" />
+    <Compile Include="GeneralCommands.cs" />
     <Compile Include="DialogWindow.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -10,9 +10,9 @@ using Autodesk.AutoCAD.Colors;
 using System.IO;
 using System.Windows.Forms;
 
-namespace GMEPElectricalCommands
+namespace ElectricalCommands
 {
-  public class AutoCADCommands
+  public class GeneralCommands
   {
     [CommandMethod("KEYEDPLAN")]
     public static void KEYEDPLAN()
@@ -297,7 +297,7 @@ namespace GMEPElectricalCommands
     [CommandMethod("SUMTEXT")]
     public void SUMTEXT()
     {
-      var (doc, db, ed) = AutoCADCommands.GetGlobals();
+      var (doc, db, ed) = GeneralCommands.GetGlobals();
 
       PromptSelectionResult selection = ed.SelectImplied();
 
@@ -341,7 +341,7 @@ namespace GMEPElectricalCommands
     [CommandMethod("AREACALCULATOR")]
     public void AREACALCULATOR()
     {
-      var (doc, _, ed) = AutoCADCommands.GetGlobals();
+      var (doc, _, ed) = GeneralCommands.GetGlobals();
 
       PromptSelectionOptions opts = new PromptSelectionOptions();
       opts.MessageForAdding = "Select polylines or rectangles: ";
@@ -412,7 +412,7 @@ namespace GMEPElectricalCommands
     [CommandMethod("GETTEXTATTRIBUTES")]
     public void GETTEXTATTRIBUTES()
     {
-      var (doc, db, ed) = AutoCADCommands.GetGlobals();
+      var (doc, db, ed) = GeneralCommands.GetGlobals();
 
       var textId = SelectTextObject();
       if (textId.IsNull)
@@ -452,7 +452,7 @@ namespace GMEPElectricalCommands
     [CommandMethod("GETLINEATTRIBUTES")]
     public void GETLINEATTRIBUTES()
     {
-      var (doc, db, ed) = AutoCADCommands.GetGlobals();
+      var (doc, db, ed) = GeneralCommands.GetGlobals();
 
       PromptEntityOptions linePromptOptions = new PromptEntityOptions("\nSelect a line: ");
       linePromptOptions.SetRejectMessage("\nSelected object is not a line.");
@@ -669,7 +669,7 @@ namespace GMEPElectricalCommands
 
     public void CreateBlock()
     {
-      var (doc, db, _) = AutoCADCommands.GetGlobals();
+      var (doc, db, _) = GeneralCommands.GetGlobals();
 
       using (Transaction tr = db.TransactionManager.StartTransaction())
       {
@@ -1044,7 +1044,7 @@ namespace GMEPElectricalCommands
 
     private static ObjectId CreateText(string content, string style, TextHorizontalMode horizontalMode, TextVerticalMode verticalMode, double height, double widthFactor, Autodesk.AutoCAD.Colors.Color color, string layer)
     {
-      var (doc, db, _) = AutoCADCommands.GetGlobals();
+      var (doc, db, _) = GeneralCommands.GetGlobals();
 
       // Check if the layer exists
       using (var tr = db.TransactionManager.StartTransaction())
@@ -1103,7 +1103,7 @@ namespace GMEPElectricalCommands
 
     private static ObjectId GetTextStyleId(string styleName)
     {
-      var (doc, db, _) = AutoCADCommands.GetGlobals();
+      var (doc, db, _) = GeneralCommands.GetGlobals();
       var textStyleTable = (TextStyleTable)db.TextStyleTableId.GetObject(OpenMode.ForRead);
 
       if (textStyleTable.Has(styleName))
@@ -1119,7 +1119,7 @@ namespace GMEPElectricalCommands
 
     private ObjectId SelectTextObject()
     {
-      var (doc, _, ed) = AutoCADCommands.GetGlobals();
+      var (doc, _, ed) = GeneralCommands.GetGlobals();
 
       var promptOptions = new PromptEntityOptions("\nSelect a text object: ");
       promptOptions.SetRejectMessage("Selected object is not a text object.");
@@ -1146,7 +1146,7 @@ namespace GMEPElectricalCommands
 
     private Point3d GetCoordinate()
     {
-      var (doc, _, ed) = AutoCADCommands.GetGlobals();
+      var (doc, _, ed) = GeneralCommands.GetGlobals();
 
       var promptOptions = new PromptPointOptions("\nSelect a coordinate: ");
       var promptResult = ed.GetPoint(promptOptions);

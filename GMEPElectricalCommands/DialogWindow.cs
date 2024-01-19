@@ -1,31 +1,21 @@
-﻿using Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.Geometry;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Drawing.Text;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using Newtonsoft.Json;
-using static OfficeOpenXml.ExcelErrorValue;
-using Autodesk.AutoCAD.GraphicsInterface;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.ApplicationServices;
 
-namespace GMEPElectricalCommands
+namespace ElectricalCommands
 {
   public partial class MainForm : Form
   {
-    private GMEPElectricalCommands myCommandsInstance;
+    private PanelCommands myCommandsInstance;
     private NEWPANELFORM newPanelForm;
     private List<UserInterface> userControls;
 
-    public MainForm(GMEPElectricalCommands myCommands)
+    public MainForm(PanelCommands myCommands)
     {
       InitializeComponent();
       this.myCommandsInstance = myCommands;
@@ -87,11 +77,13 @@ namespace GMEPElectricalCommands
       string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
       var doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-      var ed = doc.Editor;
+      //var ed = doc.Editor;
 
-      PromptResult pr = ed.GetString("\nEnter a file name: ");
+      //PromptResult pr = ed.GetString("\nEnter a file name: ");
 
-      string baseFileName = pr.StringResult;
+      //string baseFileName = pr.StringResult;
+
+      string baseFileName = "Test";
 
       if (string.IsNullOrEmpty(baseFileName))
       {
@@ -187,7 +179,14 @@ namespace GMEPElectricalCommands
       string tagValue = tagList[rowIndex];
       if (tagValue != "")
       {
-        row.Cells[cellIndex].Value = tagValue;
+        if (key.Contains("phase"))
+        {
+          row.Cells[cellIndex].Value = tagValue;
+        }
+        else if (key.Contains("description"))
+        {
+          row.Cells[cellIndex].Tag = tagValue;
+        }
       }
     }
 
@@ -281,8 +280,11 @@ namespace GMEPElectricalCommands
       Autodesk.AutoCAD.DatabaseServices.Database acCurDb = acDoc.Database;
       string jsonDataKey = "JsonSaveData";
 
+      put_in_json_file(saveData);
+
       using (Autodesk.AutoCAD.DatabaseServices.Transaction tr = acCurDb.TransactionManager.StartTransaction())
       {
+        acCurDb.DisableUndoRecording(true);
         Autodesk.AutoCAD.DatabaseServices.DBDictionary nod = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(acCurDb.NamedObjectsDictionaryId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
 
         Autodesk.AutoCAD.DatabaseServices.DBDictionary userDict;
@@ -336,6 +338,7 @@ namespace GMEPElectricalCommands
         }
 
         tr.Commit();
+        acCurDb.DisableUndoRecording(false);
       }
     }
 

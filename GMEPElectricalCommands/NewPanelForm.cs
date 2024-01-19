@@ -1,4 +1,4 @@
-﻿using GMEPElectricalCommands;
+﻿using ElectricalCommands;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace GMEPElectricalCommands
+namespace ElectricalCommands
 {
   public partial class NEWPANELFORM : Form
   {

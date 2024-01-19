@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 
-namespace GMEPElectricalCommands
+namespace ElectricalCommands
 {
   public partial class noteForm : Form
   {

@@ -1,4 +1,4 @@
-﻿namespace GMEPElectricalCommands
+﻿namespace ElectricalCommands
 {
   partial class noteForm
   {
