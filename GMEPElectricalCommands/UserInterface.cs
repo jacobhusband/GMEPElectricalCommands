@@ -63,6 +63,10 @@ namespace ElectricalCommands
       PANEL_GRID.CellFormatting += PANEL_GRID_CellFormatting;
       PANEL_GRID.CellClick += new DataGridViewCellEventHandler(this.PANEL_GRID_CellClick);
       PANEL_GRID.EditingControlShowing += new DataGridViewEditingControlShowingEventHandler(PANEL_GRID_EditingControlShowing);
+      PANEL_NAME_INPUT.Click += (sender, e) => { PANEL_NAME_INPUT.SelectAll(); };
+      PANEL_LOCATION_INPUT.Click += (sender, e) => { PANEL_LOCATION_INPUT.SelectAll(); };
+      MAIN_INPUT.Click += (sender, e) => { MAIN_INPUT.SelectAll(); };
+      BUS_RATING_INPUT.Click += (sender, e) => { BUS_RATING_INPUT.SelectAll(); };
 
       add_rows_to_datagrid();
       set_default_form_values(tabName);

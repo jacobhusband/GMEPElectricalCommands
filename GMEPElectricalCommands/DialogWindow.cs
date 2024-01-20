@@ -280,8 +280,6 @@ namespace ElectricalCommands
       Autodesk.AutoCAD.DatabaseServices.Database acCurDb = acDoc.Database;
       string jsonDataKey = "JsonSaveData";
 
-      put_in_json_file(saveData);
-
       using (Autodesk.AutoCAD.DatabaseServices.Transaction tr = acCurDb.TransactionManager.StartTransaction())
       {
         acCurDb.DisableUndoRecording(true);

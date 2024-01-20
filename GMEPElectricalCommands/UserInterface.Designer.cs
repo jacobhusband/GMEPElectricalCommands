@@ -522,6 +522,7 @@
       // PHASE_COMBOBOX
       // 
       this.PHASE_COMBOBOX.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this.PHASE_COMBOBOX.Enabled = false;
       this.PHASE_COMBOBOX.FormattingEnabled = true;
       this.PHASE_COMBOBOX.Items.AddRange(new object[] {
             "1",
@@ -546,6 +547,7 @@
       // WIRE_COMBOBOX
       // 
       this.WIRE_COMBOBOX.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this.WIRE_COMBOBOX.Enabled = false;
       this.WIRE_COMBOBOX.FormattingEnabled = true;
       this.WIRE_COMBOBOX.Items.AddRange(new object[] {
             "3",
