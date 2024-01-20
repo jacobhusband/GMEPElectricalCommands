@@ -20,7 +20,6 @@ namespace ElectricalCommands
       this.myCommandsInstance = myCommands;
       this.newPanelForm = new NEWPANELFORM(this);
       this.userControls = new List<UserInterface>();
-      this.FormClosing += MAINFORM_FormClosing;
       this.Shown += MAINFORM_SHOWN;
     }
 
@@ -390,12 +389,7 @@ namespace ElectricalCommands
       }
     }
 
-    private void MAINFORM_FormClosing(object sender, FormClosingEventArgs e)
-    {
-      //save();
-    }
-
-    public void save()
+    public void save_panel_to_autocad_document()
     {
       List<Dictionary<string, object>> panelStorage = new List<Dictionary<string, object>>();
 
