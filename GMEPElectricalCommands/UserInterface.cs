@@ -1462,6 +1462,86 @@ namespace ElectricalCommands
       return sum;
     }
 
+    private void update_panel_grid(int phaseSumGridColumnCount, int panelPhaseSumGridColumnCount, int rowIndex, DataGridViewColumn col, string panelName)
+    {
+      if (phaseSumGridColumnCount == panelPhaseSumGridColumnCount)
+      {
+        int rowCount = phaseSumGridColumnCount == 3 ? 3 : 2;
+        if (PANEL_GRID.Rows.Count > rowIndex + rowCount - 1)
+        {
+          var cellValueA = "=" + panelName + "-A";
+          var cellValueB = "=" + panelName + "-B";
+          var cellValueC = phaseSumGridColumnCount == 3 ? "=" + panelName + "-C" : null;
+
+          string side = col.Name.Contains("left") ? "left" : "right";
+          List<DataGridViewRow> rows = new List<DataGridViewRow>();
+          for (int i = 0; i < rowCount; i++)
+          {
+            rows.Add(PANEL_GRID.Rows[rowIndex + i]);
+          }
+
+          List<string> phases = new List<string> { "phase_a_", "phase_b_" };
+          if (phaseSumGridColumnCount == 3)
+          {
+            phases.Add("phase_c_");
+          }
+
+          List<string> cellValues = new List<string> { cellValueA, cellValueB };
+          if (cellValueC != null)
+          {
+            cellValues.Add(cellValueC);
+          }
+
+          for (int i = 0; i < phases.Count; i++)
+          {
+            foreach (DataGridViewRow gridRow in rows)
+            {
+              string cellName = phases[i] + side;
+              if (gridRow.Cells[cellName].Style.BackColor == Color.LightGray || gridRow.Cells[cellName].Style.BackColor == Color.LightGreen)
+              {
+                gridRow.Cells[cellName].Value = cellValues[i];
+              }
+            }
+          }
+        }
+      }
+      else if (phaseSumGridColumnCount == 2 && panelPhaseSumGridColumnCount == 3)
+      {
+        if (PANEL_GRID.Rows.Count > rowIndex + 1)
+        {
+          var phases = new List<string> { "A", "B" };
+          if (col.Name.Contains("left"))
+          {
+            for (int i = rowIndex; i < rowIndex + 2; i++) // Loop for the first two rows
+            {
+              foreach (string colName in new[] { "phase_a_left", "phase_b_left", "phase_c_left" }) // Loop for the specified columns
+              {
+                var cell = PANEL_GRID.Rows[i].Cells[colName];
+                if (cell.Style.BackColor == Color.LightGray || cell.Style.BackColor == Color.LightGreen) // Check the background color
+                {
+                  cell.Value = "=" + panelName + "-" + phases[i - rowIndex];
+                }
+              }
+            }
+          }
+          else
+          {
+            for (int i = rowIndex; i < rowIndex + 2; i++) // Loop for the first two rows
+            {
+              foreach (string colName in new[] { "phase_a_right", "phase_b_right", "phase_c_right" }) // Loop for the specified columns
+              {
+                var cell = PANEL_GRID.Rows[i].Cells[colName];
+                if (cell.Style.BackColor == Color.LightGray || cell.Style.BackColor == Color.LightGreen) // Check the background color
+                {
+                  cell.Value = "=" + panelName + "-" + phases[i - rowIndex];
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     private bool verify_LCL_from_phase_cell(int rowIndex, int colIndex)
     {
       if (!LARGEST_LCL_CHECKBOX.Checked)
@@ -1520,6 +1600,55 @@ namespace ElectricalCommands
       return false;
     }
 
+    private string calculate_cell_or_link_panel(DataGridViewCellEventArgs e, string cellValue, DataGridViewRow row, DataGridViewColumn col)
+    {
+      if (cellValue.StartsWith("="))
+      {
+        if (col.Name.Contains("phase"))
+        {
+          cellValue = cellValue.Replace(" ", "");
+        }
+
+        if (cellValue.All(c => char.IsDigit(c) || c == '=' || c == '-' || c == '*' || c == '+' || c == '/'))
+        {
+          var result = new System.Data.DataTable().Compute(cellValue.Replace("=", ""), null);
+          PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = result;
+        }
+        else
+        {
+          link_cell_to_phase(cellValue, row, col);
+        }
+      }
+
+      return cellValue;
+    }
+
+    private void auto_link_subpanels(string cellValue, DataGridViewRow row, DataGridViewColumn col)
+    {
+      if (col.Name.Contains("description"))
+      {
+        if (cellValue.ToLower().Contains("panel"))
+        {
+          var panelName = cellValue.ToLower().Split(' ').Last();
+          if (panelName.Contains("'") || panelName.Contains("`"))
+          {
+            panelName = panelName.Replace("'", "").Replace("`", "");
+          }
+
+          var isPanelReal = this.mainForm.panel_name_exists(panelName);
+
+          if (isPanelReal)
+          {
+            UserControl panelControl = mainForm.findUserControl(panelName);
+            DataGridView panelControl_phaseSumGrid = panelControl.Controls.Find("PHASE_SUM_GRID", true).FirstOrDefault() as DataGridView;
+            var phaseSumGridColumnCount = panelControl_phaseSumGrid.ColumnCount;
+            var panelPhaseSumGridColumnCount = PHASE_SUM_GRID.ColumnCount;
+            update_panel_grid(phaseSumGridColumnCount, panelPhaseSumGridColumnCount, row.Index, col, panelName);
+          }
+        }
+      }
+    }
+
     private void PANEL_NAME_INPUT_TextChanged(object sender, EventArgs e)
     {
       this.mainForm.PANEL_NAME_INPUT_TextChanged(sender, e, PANEL_NAME_INPUT.Text.ToUpper());
@@ -1559,227 +1688,12 @@ namespace ElectricalCommands
       var row = PANEL_GRID.Rows[e.RowIndex];
       var col = PANEL_GRID.Columns[e.ColumnIndex];
 
-      if (col.Name.Contains("description"))
-      {
-        if (cellValue.ToLower().Contains("panel"))
-        {
-          var panelName = cellValue.ToLower().Split(' ').Last();
-          if (panelName.Contains("'") || panelName.Contains("`"))
-          {
-            panelName = panelName.Replace("'", "").Replace("`", "");
-          }
-
-          var isPanelReal = this.mainForm.panel_name_exists(panelName);
-
-          if (isPanelReal)
-          {
-            UserControl panelControl = mainForm.findUserControl(panelName);
-            DataGridView panelControl_phaseSumGrid = panelControl.Controls.Find("PHASE_SUM_GRID", true).FirstOrDefault() as DataGridView;
-            var phaseSumGridColumnCount = panelControl_phaseSumGrid.ColumnCount;
-            var panelPhaseSumGridColumnCount = PHASE_SUM_GRID.ColumnCount;
-            if (phaseSumGridColumnCount == 3 && panelPhaseSumGridColumnCount == 3)
-            {
-              if (PANEL_GRID.Rows.Count > row.Index + 2)
-              {
-                var cellValueA = "=" + panelName + "-A";
-                var cellValueB = "=" + panelName + "-B";
-                var cellValueC = "=" + panelName + "-C";
-                var row1 = PANEL_GRID.Rows[e.RowIndex];
-                var row2 = PANEL_GRID.Rows[e.RowIndex + 1];
-                var row3 = PANEL_GRID.Rows[e.RowIndex + 2];
-                if (col.Name.Contains("left"))
-                {
-                  if (row1.Cells["phase_a_left"].Style.BackColor == Color.LightGray || row1.Cells["phase_a_left"].Style.BackColor == Color.LightGreen)
-                  {
-                    row1.Cells["phase_a_left"].Value = cellValueA;
-                  }
-                  else if (row2.Cells["phase_a_left"].Style.BackColor == Color.LightGray || row2.Cells["phase_a_left"].Style.BackColor == Color.LightGreen)
-                  {
-                    row2.Cells["phase_a_left"].Value = cellValueA;
-                  }
-                  else if (row3.Cells["phase_a_left"].Style.BackColor == Color.LightGray || row3.Cells["phase_a_left"].Style.BackColor == Color.LightGreen)
-                  {
-                    row3.Cells["phase_a_left"].Value = cellValueA;
-                  }
-
-                  if (row1.Cells["phase_b_left"].Style.BackColor == Color.LightGray || row1.Cells["phase_b_left"].Style.BackColor == Color.LightGreen)
-                  {
-                    row1.Cells["phase_b_left"].Value = cellValueB;
-                  }
-                  else if (row2.Cells["phase_b_left"].Style.BackColor == Color.LightGray || row2.Cells["phase_b_left"].Style.BackColor == Color.LightGreen)
-                  {
-                    row2.Cells["phase_b_left"].Value = cellValueB;
-                  }
-                  else if (row3.Cells["phase_b_left"].Style.BackColor == Color.LightGray || row3.Cells["phase_b_left"].Style.BackColor == Color.LightGreen)
-                  {
-                    row3.Cells["phase_b_left"].Value = cellValueB;
-                  }
-
-                  if (row1.Cells["phase_c_left"].Style.BackColor == Color.LightGray || row1.Cells["phase_c_left"].Style.BackColor == Color.LightGreen)
-                  {
-                    row1.Cells["phase_c_left"].Value = cellValueC;
-                  }
-                  else if (row2.Cells["phase_c_left"].Style.BackColor == Color.LightGray || row2.Cells["phase_c_left"].Style.BackColor == Color.LightGreen)
-                  {
-                    row2.Cells["phase_c_left"].Value = cellValueC;
-                  }
-                  else if (row3.Cells["phase_c_left"].Style.BackColor == Color.LightGray || row3.Cells["phase_c_left"].Style.BackColor == Color.LightGreen)
-                  {
-                    row3.Cells["phase_c_left"].Value = cellValueC;
-                  }
-                }
-                else
-                {
-                  if (row1.Cells["phase_a_right"].Style.BackColor == Color.LightGray || row1.Cells["phase_a_right"].Style.BackColor == Color.LightGreen)
-                  {
-                    row1.Cells["phase_a_right"].Value = cellValueA;
-                  }
-                  else if (row2.Cells["phase_a_right"].Style.BackColor == Color.LightGray || row2.Cells["phase_a_right"].Style.BackColor == Color.LightGreen)
-                  {
-                    row2.Cells["phase_a_right"].Value = cellValueA;
-                  }
-                  else if (row3.Cells["phase_a_right"].Style.BackColor == Color.LightGray || row3.Cells["phase_a_right"].Style.BackColor == Color.LightGreen)
-                  {
-                    row3.Cells["phase_a_right"].Value = cellValueA;
-                  }
-
-                  if (row1.Cells["phase_b_right"].Style.BackColor == Color.LightGray || row1.Cells["phase_b_right"].Style.BackColor == Color.LightGreen)
-                  {
-                    row1.Cells["phase_b_right"].Value = cellValueB;
-                  }
-                  else if (row2.Cells["phase_b_right"].Style.BackColor == Color.LightGray || row2.Cells["phase_b_right"].Style.BackColor == Color.LightGreen)
-                  {
-                    row2.Cells["phase_b_right"].Value = cellValueB;
-                  }
-                  else if (row3.Cells["phase_b_right"].Style.BackColor == Color.LightGray || row3.Cells["phase_b_right"].Style.BackColor == Color.LightGreen)
-                  {
-                    row3.Cells["phase_b_right"].Value = cellValueB;
-                  }
-
-                  if (row1.Cells["phase_c_right"].Style.BackColor == Color.LightGray || row1.Cells["phase_c_right"].Style.BackColor == Color.LightGreen)
-                  {
-                    row1.Cells["phase_c_right"].Value = cellValueC;
-                  }
-                  else if (row2.Cells["phase_c_right"].Style.BackColor == Color.LightGray || row2.Cells["phase_c_right"].Style.BackColor == Color.LightGreen)
-                  {
-                    row2.Cells["phase_c_right"].Value = cellValueC;
-                  }
-                  else if (row3.Cells["phase_c_right"].Style.BackColor == Color.LightGray || row3.Cells["phase_c_right"].Style.BackColor == Color.LightGreen)
-                  {
-                    row3.Cells["phase_c_right"].Value = cellValueC;
-                  }
-                }
-              }
-            }
-            else if (phaseSumGridColumnCount == 2 && panelPhaseSumGridColumnCount == 2)
-            {
-              if (PANEL_GRID.Rows.Count > row.Index + 1)
-              {
-                var cellValueA = "=" + panelName + "-A";
-                var cellValueB = "=" + panelName + "-B";
-                var row1 = PANEL_GRID.Rows[e.RowIndex];
-                var row2 = PANEL_GRID.Rows[e.RowIndex + 1];
-                if (col.Name.Contains("left"))
-                {
-                  if (row1.Cells["phase_a_left"].Style.BackColor == Color.LightGray || row1.Cells["phase_a_left"].Style.BackColor == Color.LightGreen)
-                  {
-                    row1.Cells["phase_a_left"].Value = cellValueA;
-                  }
-                  else if (row2.Cells["phase_a_left"].Style.BackColor == Color.LightGray || row2.Cells["phase_a_left"].Style.BackColor == Color.LightGreen)
-                  {
-                    row2.Cells["phase_a_left"].Value = cellValueA;
-                  }
-
-                  if (row1.Cells["phase_b_left"].Style.BackColor == Color.LightGray || row1.Cells["phase_b_left"].Style.BackColor == Color.LightGreen)
-                  {
-                    row1.Cells["phase_b_left"].Value = cellValueB;
-                  }
-                  else if (row2.Cells["phase_b_left"].Style.BackColor == Color.LightGray || row2.Cells["phase_b_left"].Style.BackColor == Color.LightGreen)
-                  {
-                    row2.Cells["phase_b_left"].Value = cellValueB;
-                  }
-                }
-                else
-                {
-                  if (row1.Cells["phase_a_right"].Style.BackColor == Color.LightGray || row1.Cells["phase_a_right"].Style.BackColor == Color.LightGreen)
-                  {
-                    row1.Cells["phase_a_right"].Value = cellValueA;
-                  }
-                  else if (row2.Cells["phase_a_right"].Style.BackColor == Color.LightGray || row2.Cells["phase_a_right"].Style.BackColor == Color.LightGreen)
-                  {
-                    row2.Cells["phase_a_right"].Value = cellValueA;
-                  }
-
-                  if (row1.Cells["phase_b_right"].Style.BackColor == Color.LightGray || row1.Cells["phase_b_right"].Style.BackColor == Color.LightGreen)
-                  {
-                    row1.Cells["phase_b_right"].Value = cellValueB;
-                  }
-                  else if (row2.Cells["phase_b_right"].Style.BackColor == Color.LightGray || row2.Cells["phase_b_right"].Style.BackColor == Color.LightGreen)
-                  {
-                    row2.Cells["phase_b_right"].Value = cellValueB;
-                  }
-                }
-              }
-            }
-            else if (phaseSumGridColumnCount == 2 && panelPhaseSumGridColumnCount == 3)
-            {
-              if (PANEL_GRID.Rows.Count > row.Index + 1)
-              {
-                var phases = new List<string> { "A", "B" };
-                if (col.Name.Contains("left"))
-                {
-                  for (int i = row.Index; i < row.Index + 2; i++) // Loop for the first two rows
-                  {
-                    foreach (string colName in new[] { "phase_a_left", "phase_b_left", "phase_c_left" }) // Loop for the specified columns
-                    {
-                      var cell = PANEL_GRID.Rows[i].Cells[colName];
-                      if (cell.Style.BackColor == Color.LightGray || cell.Style.BackColor == Color.LightGreen) // Check the background color
-                      {
-                        cell.Value = "=" + panelName + "-" + phases[i - row.Index];
-                      }
-                    }
-                  }
-                }
-                else
-                {
-                  for (int i = row.Index; i < row.Index + 2; i++) // Loop for the first two rows
-                  {
-                    foreach (string colName in new[] { "phase_a_right", "phase_b_right", "phase_c_right" }) // Loop for the specified columns
-                    {
-                      var cell = PANEL_GRID.Rows[i].Cells[colName];
-                      if (cell.Style.BackColor == Color.LightGray || cell.Style.BackColor == Color.LightGreen) // Check the background color
-                      {
-                        cell.Value = "=" + panelName + "-" + phases[i - row.Index];
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-
-      if (cellValue.StartsWith("="))
-      {
-        if (col.Name.Contains("phase"))
-        {
-          cellValue = cellValue.Replace(" ", "");
-        }
-
-        if (cellValue.All(c => char.IsDigit(c) || c == '=' || c == '-' || c == '*' || c == '+' || c == '/'))
-        {
-          var result = new System.Data.DataTable().Compute(cellValue.Replace("=", ""), null);
-          PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = result;
-        }
-        else
-        {
-          link_cell_to_phase(cellValue, row, col);
-        }
-      }
+      auto_link_subpanels(cellValue, row, col);
+      cellValue = calculate_cell_or_link_panel(e, cellValue, row, col);
 
       recalculate_breakers();
       calculate_lcl_otherload_panelload_feederamps();
+      this.mainForm.save();
     }
 
     private void PANEL_GRID_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)

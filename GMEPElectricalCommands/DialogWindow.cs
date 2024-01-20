@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
 using Newtonsoft.Json;
-using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.ApplicationServices;
 
 namespace ElectricalCommands
@@ -393,16 +392,26 @@ namespace ElectricalCommands
 
     private void MAINFORM_FormClosing(object sender, FormClosingEventArgs e)
     {
+      //save();
+    }
+
+    public void save()
+    {
       List<Dictionary<string, object>> panelStorage = new List<Dictionary<string, object>>();
 
-      using (DocumentLock docLock = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.LockDocument())
-      {
-        foreach (UserInterface userControl in this.userControls)
-        {
-          panelStorage.Add(userControl.retrieve_data_from_modal());
-        }
+      var acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
 
-        store_data_in_autocad_file(panelStorage);
+      if (acDoc != null)
+      {
+        using (DocumentLock docLock = acDoc.LockDocument())
+        {
+          foreach (UserInterface userControl in this.userControls)
+          {
+            panelStorage.Add(userControl.retrieve_data_from_modal());
+          }
+
+          store_data_in_autocad_file(panelStorage);
+        }
       }
     }
 

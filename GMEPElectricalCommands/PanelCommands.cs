@@ -26,9 +26,18 @@ namespace ElectricalCommands
 
       try
       {
-        this.myForm = new MainForm(this);
-        this.myForm.initialize_modal();
-        this.myForm.Show();
+        if (this.myForm != null && !this.myForm.IsDisposed)
+        {
+          // Bring myForm to the front
+          this.myForm.BringToFront();
+        }
+        else
+        {
+          // Create a new MainForm if it's not already open
+          this.myForm = new MainForm(this);
+          this.myForm.initialize_modal();
+          this.myForm.Show();
+        }
       }
       catch (System.Exception ex)
       {
