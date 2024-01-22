@@ -441,5 +441,12 @@ namespace ElectricalCommands
         newPanelForm.ShowDialog(); // or use appropriate method to show it as modal
       }
     }
+
+    private void HELP_BUTTON_Click(object sender, EventArgs e)
+    {
+      Help helpForm = new Help();
+
+      helpForm.ShowDialog();
+    }
   }
 }
