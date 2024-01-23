@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.IO;
 using Newtonsoft.Json;
 using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.DatabaseServices;
 
 namespace ElectricalCommands
 {
@@ -21,6 +22,20 @@ namespace ElectricalCommands
       this.newPanelForm = new NEWPANELFORM(this);
       this.userControls = new List<UserInterface>();
       this.Shown += MAINFORM_SHOWN;
+      this.FormClosing += MAINFORM_CLOSING;
+      this.KeyPreview = true;
+      this.KeyDown += new KeyEventHandler(MAINFORM_KEYDOWN);
+      Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      acDoc.BeginDocumentClose -= new DocumentBeginCloseEventHandler(docBeginDocClose);
+      acDoc.BeginDocumentClose += new DocumentBeginCloseEventHandler(docBeginDocClose);
+    }
+
+    private void docBeginDocClose(object sender, DocumentBeginCloseEventArgs e)
+    {
+      save_panel_to_autocad_document();
+      Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      string fileName = acDoc.Name;
+      acDoc.Database.SaveAs(fileName, true, DwgVersion.Current, acDoc.Database.SecurityParameters);
     }
 
     public List<UserInterface> retrieve_userControls()
@@ -376,6 +391,13 @@ namespace ElectricalCommands
       return allPanelData;
     }
 
+    private void MAINFORM_CLOSING(object sender, FormClosingEventArgs e)
+    {
+      Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      acDoc.BeginDocumentClose -= new DocumentBeginCloseEventHandler(docBeginDocClose);
+      save_panel_to_autocad_document();
+    }
+
     public void PANEL_NAME_INPUT_TextChanged(object sender, EventArgs e, string input)
     {
       // Get the selected tab index
@@ -391,6 +413,7 @@ namespace ElectricalCommands
 
     public void save_panel_to_autocad_document()
     {
+      Console.WriteLine("Saving panel to autocad document");
       List<Dictionary<string, object>> panelStorage = new List<Dictionary<string, object>>();
 
       var acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
@@ -447,6 +470,19 @@ namespace ElectricalCommands
       Help helpForm = new Help();
 
       helpForm.ShowDialog();
+    }
+
+    private void SAVE_BUTTON_Click(object sender, EventArgs e)
+    {
+      save_panel_to_autocad_document();
+    }
+
+    private void MAINFORM_KEYDOWN(object sender, KeyEventArgs e)
+    {
+      if (e.Control && e.KeyCode == Keys.S)
+      {
+        save_panel_to_autocad_document();
+      }
     }
   }
 }

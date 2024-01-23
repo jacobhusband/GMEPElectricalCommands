@@ -1693,7 +1693,6 @@ namespace ElectricalCommands
 
       recalculate_breakers();
       calculate_lcl_otherload_panelload_feederamps();
-      this.mainForm.save_panel_to_autocad_document();
     }
 
     private void PANEL_GRID_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
