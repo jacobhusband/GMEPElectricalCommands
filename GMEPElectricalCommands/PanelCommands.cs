@@ -515,12 +515,16 @@ namespace ElectricalCommands
       int counter = 0;
       CREATEBLOCK();
 
+      put_in_json_file(panelDataList);
+
       foreach (var panelDataOG in panelDataList)
       {
         bool is2Pole = !panelDataOG.ContainsKey("phase_c_left");
         var endPoint = new Point3d(0, 0, 0);
 
         var panelData = UpdatePanelDataDescriptions(panelDataOG);
+
+        put_in_json_file(panelData);
 
         using (var tr = db.TransactionManager.StartTransaction())
         {
@@ -611,9 +615,7 @@ namespace ElectricalCommands
       var doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       var ed = doc.Editor;
 
-      PromptResult pr = ed.GetString("\nEnter a file name: ");
-
-      string baseFileName = pr.StringResult;
+      string baseFileName = "Test";
 
       if (string.IsNullOrEmpty(baseFileName))
       {
@@ -650,23 +652,25 @@ namespace ElectricalCommands
         {
           if (leftTags[i].Contains("ADD SUFFIX (E). *NOT ADDED AS NOTE*"))
           {
-            // Add the suffix to the associated description
-            leftDescriptions[i * 2] = "(E)" + leftDescriptions[i * 2];
+            // Add the suffix to the associated description if it's not "existing load" or "EXISTING LOAD"
+            if (leftDescriptions[i * 2].ToLower() != "existing load")
+            {
+              leftDescriptions[i * 2] = "(E)" + leftDescriptions[i * 2];
+            }
           }
           else if (leftTags[i].Contains("ADD SUFFIX (R). *NOT ADDED AS NOTE*"))
           {
             // Add the suffix to the associated description
             leftDescriptions[i * 2] = "(R)" + leftDescriptions[i * 2];
           }
-        }
 
-        // Iterate over the right tags
-        for (int i = 0; i < rightTags.Count; i++)
-        {
           if (rightTags[i].Contains("ADD SUFFIX (E). *NOT ADDED AS NOTE*"))
           {
-            // Add the suffix to the associated description
-            rightDescriptions[i * 2] = "(E)" + rightDescriptions[i * 2];
+            // Add the suffix to the associated description if it's not "existing load" or "EXISTING LOAD"
+            if (rightDescriptions[i * 2].ToLower() != "existing load")
+            {
+              rightDescriptions[i * 2] = "(E)" + rightDescriptions[i * 2];
+            }
           }
           else if (rightTags[i].Contains("ADD SUFFIX (R). *NOT ADDED AS NOTE*"))
           {

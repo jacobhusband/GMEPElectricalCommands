@@ -286,7 +286,7 @@ namespace ElectricalCommands
       for (int i = 0; i < PANEL_GRID.Rows.Count; i++)
       {
         string descriptionLeftValue = "";
-        if (PANEL_GRID.Rows[i].Cells["description_left"].Value == null && PANEL_GRID.Rows[i].Cells["breaker_left"].Value != null)
+        if (string.IsNullOrEmpty(PANEL_GRID.Rows[i].Cells["description_left"].Value as string) && !string.IsNullOrEmpty(PANEL_GRID.Rows[i].Cells["breaker_left"].Value as string))
         {
           // check that the breaker value is both an integer and greater than 3
           var breakerValue = PANEL_GRID.Rows[i].Cells["breaker_left"].Value.ToString();
@@ -298,10 +298,12 @@ namespace ElectricalCommands
         }
         else
         {
-          descriptionLeftValue = PANEL_GRID.Rows[i].Cells["description_left"].Value?.ToString().ToUpper().Replace("\r", "") ?? "SPACE";
+          descriptionLeftValue = string.IsNullOrWhiteSpace(PANEL_GRID.Rows[i].Cells["description_left"].Value as string)
+              ? "SPACE"
+              : PANEL_GRID.Rows[i].Cells["description_left"].Value.ToString().ToUpper().Replace("\r", "");
         }
         string descriptionRightValue = "";
-        if (PANEL_GRID.Rows[i].Cells["description_right"].Value == null && PANEL_GRID.Rows[i].Cells["breaker_right"].Value != null)
+        if (string.IsNullOrEmpty(PANEL_GRID.Rows[i].Cells["description_right"].Value as string) && !string.IsNullOrEmpty(PANEL_GRID.Rows[i].Cells["breaker_right"].Value as string))
         {
           // check that the breaker value is both an integer and greater than 3
           var breakerValue = PANEL_GRID.Rows[i].Cells["breaker_right"].Value.ToString();
@@ -313,8 +315,11 @@ namespace ElectricalCommands
         }
         else
         {
-          descriptionRightValue = PANEL_GRID.Rows[i].Cells["description_right"].Value?.ToString().ToUpper().Replace("\r", "") ?? "SPACE";
+          descriptionRightValue = string.IsNullOrWhiteSpace(PANEL_GRID.Rows[i].Cells["description_right"].Value as string)
+              ? "SPACE"
+              : PANEL_GRID.Rows[i].Cells["description_right"].Value.ToString().ToUpper().Replace("\r", "");
         }
+
         string breakerLeftValue = PANEL_GRID.Rows[i].Cells["breaker_left"].Value?.ToString().ToUpper().Replace("\r", "") ?? "";
         string breakerRightValue = PANEL_GRID.Rows[i].Cells["breaker_right"].Value?.ToString().ToUpper().Replace("\r", "") ?? "";
         string circuitRightValue = PANEL_GRID.Rows[i].Cells["circuit_right"].Value?.ToString().ToUpper().Replace("\r", "") ?? "";
