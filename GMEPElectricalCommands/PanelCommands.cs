@@ -652,30 +652,48 @@ namespace ElectricalCommands
         {
           if (leftTags[i].Contains("ADD SUFFIX (E). *NOT ADDED AS NOTE*"))
           {
-            // Add the suffix to the associated description if it's not "existing load" or "EXISTING LOAD"
-            if (leftDescriptions[i * 2].ToLower() != "existing load")
+            // Add the suffix to the associated description if it's not "existing load", "EXISTING LOAD", "space", or "SPACE"
+            string lowerDescription = leftDescriptions[i * 2].ToLower();
+            if (lowerDescription != "existing load" && lowerDescription != "space")
             {
               leftDescriptions[i * 2] = "(E)" + leftDescriptions[i * 2];
+              if (!string.IsNullOrEmpty(leftDescriptions[i * 2 + 1]))
+              {
+                leftDescriptions[i * 2 + 1] = "(E)" + leftDescriptions[i * 2 + 1];
+              }
             }
           }
           else if (leftTags[i].Contains("ADD SUFFIX (R). *NOT ADDED AS NOTE*"))
           {
             // Add the suffix to the associated description
             leftDescriptions[i * 2] = "(R)" + leftDescriptions[i * 2];
+            if (!string.IsNullOrEmpty(leftDescriptions[i * 2 + 1]))
+            {
+              leftDescriptions[i * 2 + 1] = "(R)" + leftDescriptions[i * 2 + 1];
+            }
           }
 
           if (rightTags[i].Contains("ADD SUFFIX (E). *NOT ADDED AS NOTE*"))
           {
-            // Add the suffix to the associated description if it's not "existing load" or "EXISTING LOAD"
-            if (rightDescriptions[i * 2].ToLower() != "existing load")
+            // Add the suffix to the associated description if it's not "existing load", "EXISTING LOAD", "space", or "SPACE"
+            string lowerDescription = rightDescriptions[i * 2].ToLower();
+            if (lowerDescription != "existing load" && lowerDescription != "space")
             {
               rightDescriptions[i * 2] = "(E)" + rightDescriptions[i * 2];
+              if (!string.IsNullOrEmpty(rightDescriptions[i * 2 + 1]))
+              {
+                rightDescriptions[i * 2 + 1] = "(E)" + rightDescriptions[i * 2 + 1];
+              }
             }
           }
           else if (rightTags[i].Contains("ADD SUFFIX (R). *NOT ADDED AS NOTE*"))
           {
             // Add the suffix to the associated description
             rightDescriptions[i * 2] = "(R)" + rightDescriptions[i * 2];
+            if (!string.IsNullOrEmpty(rightDescriptions[i * 2 + 1]))
+            {
+              rightDescriptions[i * 2 + 1] = "(R)" + rightDescriptions[i * 2 + 1];
+            }
           }
         }
 
