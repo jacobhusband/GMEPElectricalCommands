@@ -515,16 +515,12 @@ namespace ElectricalCommands
       int counter = 0;
       CREATEBLOCK();
 
-      put_in_json_file(panelDataList);
-
       foreach (var panelDataOG in panelDataList)
       {
         bool is2Pole = !panelDataOG.ContainsKey("phase_c_left");
         var endPoint = new Point3d(0, 0, 0);
 
         var panelData = UpdatePanelDataDescriptions(panelDataOG);
-
-        put_in_json_file(panelData);
 
         using (var tr = db.TransactionManager.StartTransaction())
         {
@@ -1755,8 +1751,8 @@ namespace ElectricalCommands
 
         notes = RemoveNotAddedAsNotes(notes);
 
-        Dictionary<string, List<bool>> leftSide = ConvertTagsAndNotesToDictionary(descriptionLeftTags, notes);
-        Dictionary<string, List<bool>> rightSide = ConvertTagsAndNotesToDictionary(descriptionRightTags, notes);
+        Dictionary<string, List<bool>> leftSide = ConvertTagsAndNotesToDictionary(descriptionLeftTags, notes, (List<string>)panelData["description_left"]);
+        Dictionary<string, List<bool>> rightSide = ConvertTagsAndNotesToDictionary(descriptionRightTags, notes, (List<string>)panelData["description_right"]);
 
         var left_largest_level = InsertBreakerNotes(startPoint, leftSide, true);
         var right_largest_level = InsertBreakerNotes(startPoint, rightSide, false);
@@ -1766,7 +1762,7 @@ namespace ElectricalCommands
       return largest_level;
     }
 
-    private Dictionary<string, List<bool>> ConvertTagsAndNotesToDictionary(List<string> tags, List<string> notes)
+    private Dictionary<string, List<bool>> ConvertTagsAndNotesToDictionary(List<string> tags, List<string> notes, List<string> descriptions)
     {
       Dictionary<string, List<bool>> notesWithBools = new Dictionary<string, List<bool>>();
 
@@ -1775,7 +1771,15 @@ namespace ElectricalCommands
         List<bool> bools = new List<bool>();
         foreach (string tag in tags)
         {
-          bools.Add(tag.Split('|').Contains(note));
+          var i = tags.IndexOf(tag);
+          if (descriptions[i * 2] == "SPACE" && note == "DENOTES EXISTING CIRCUIT BREAKER TO REMAIN; ALL OTHERS ARE NEW.")
+          {
+            bools.Add(false);
+          }
+          else
+          {
+            bools.Add(tag.Split('|').Contains(note));
+          }
         }
         notesWithBools.Add((notes.IndexOf(note) + 1).ToString(), bools);
       }
