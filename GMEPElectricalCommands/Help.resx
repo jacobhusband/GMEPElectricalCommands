@@ -131,8 +131,8 @@ Creating New Panels
 - To create all the panels, instead click the "Create All Panels" button on the far left of the panel schedule window.
 
 Saving Panel Data
-- The panel data is saved each time the user changes the value of a cell in the main panel window or closes the panel schedule window.
-- Save the AutoCAD file to keep the panel data when reopening the AutoCAD file.
+- The panel data is saved each time the user closes the panel, pressed CTRL + S, or hits the save button
+- If the document closes or AutoCAD exits while the panel schedule form is still open, the panels will attempt to save
 
 Spaces
 - Empty description cells with no breaker value results in a space

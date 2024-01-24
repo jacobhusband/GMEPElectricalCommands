@@ -396,31 +396,43 @@ namespace ElectricalCommands
         }
       }
 
-      // Create the JSON object
-      var jsonObject = new
+      // Create the strings
+      string point1 = $"var pt1 = new Dictionary<string, object> {{ {{ \"x\", {pt1.X - origin.X} }}, {{ \"y\", {pt1.Y - origin.Y} }} }};";
+      string point2 = $"var pt2 = new Dictionary<string, object> {{ {{ \"x\", {pt2.X - origin.X} }}, {{ \"y\", {pt2.Y - origin.Y} }} }};";
+
+      // Combine the strings
+      string combined = $"{point1}\n{point2}\n";
+      foreach (var item in text)
       {
-        name,
-        point1 = new { x = pt1.X - origin.X, y = pt1.Y - origin.Y },
-        point2 = new { x = pt2.X - origin.X, y = pt2.Y - origin.Y },
-        text
-      };
+        combined += $"{item}\n";
+      }
 
-      // Serialize the JSON object to a string
-      string json = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
-
-      // Save the JSON string to a file
+      // Save the string to a file
       string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-      string path = Path.Combine(desktopPath, name + ".json");
-      File.WriteAllText(path, json);
+      string path = Path.Combine(desktopPath, name + ".txt");
+      File.WriteAllText(path, combined);
     }
 
     private void ParseCADPanelObjects(Dictionary<string, object> result)
     {
       var panelName = ParsePanelName(result);
       var location = ParseLocation(result);
+      var main = ParseMain(result);
+      var bus_rating = ParseBusRating(result);
+
+      Console.WriteLine("The bus rating is: " + bus_rating);
     }
 
-    private object ParseLocation(Dictionary<string, object> result)
+    private string ParseBusRating(Dictionary<string, object> result)
+    {
+      var pt1 = new Dictionary<string, object> { { "x", 5.06661018521663 }, { "y", 0 } };
+      var pt2 = new Dictionary<string, object> { { "x", 7.10791001438372 }, { "y", -0.374399999999696 } };
+      var textValues = GetTextValuesInRegion(result, pt1, pt2);
+      var main = string.Join(" ", textValues).ToUpper();
+      return new string(main.Where(char.IsDigit).ToArray());
+    }
+
+    private string ParseLocation(Dictionary<string, object> result)
     {
       var pt1 = new Dictionary<string, object> { { "x", 2.2222 }, { "y", 0.0 } };
       var pt2 = new Dictionary<string, object> { { "x", 5.0666 }, { "y", -0.1872000000000007 } };
@@ -430,7 +442,7 @@ namespace ElectricalCommands
       return location.Replace("LOCATION", "").Trim();
     }
 
-    private object ParsePanelName(Dictionary<string, object> result)
+    private string ParsePanelName(Dictionary<string, object> result)
     {
       var pt1 = new Dictionary<string, object> { { "x", 0.0 }, { "y", 0.0 } };
       var pt2 = new Dictionary<string, object> { { "x", 2.2222 }, { "y", -0.37439999999999962 } };
@@ -450,6 +462,24 @@ namespace ElectricalCommands
       return panelName;
     }
 
+    private string ParseMain(Dictionary<string, object> result)
+    {
+      var pt1 = new Dictionary<string, object> { { "x", 2.2221755722507623 }, { "y", -0.18719999999984793 } };
+      var pt2 = new Dictionary<string, object> { { "x", 5.0666101852166321 }, { "y", -0.37439999999969586 } };
+      var textValues = GetTextValuesInRegion(result, pt1, pt2);
+      var main = string.Join(" ", textValues).ToUpper();
+      var digitsOnly = new string(main.Where(char.IsDigit).ToArray());
+
+      if (main.Contains("M") && main.Contains("L") && main.Contains("O"))
+      {
+        return "M.L.O.";
+      }
+      else
+      {
+        return digitsOnly;
+      }
+    }
+
     private string[] GetTextValuesInRegion(Dictionary<string, object> result, Dictionary<string, object> pt1, Dictionary<string, object> pt2)
     {
       var textList = (List<Dictionary<string, object>>)result["text"];
@@ -459,6 +489,23 @@ namespace ElectricalCommands
       {
         var x = (double)text["x"];
         var y = (double)text["y"];
+
+        if (pt1["x"].GetType() == typeof(int))
+        {
+          pt1["x"] = Convert.ToDouble(pt1["x"]);
+        }
+        if (pt1["y"].GetType() == typeof(int))
+        {
+          pt1["y"] = Convert.ToDouble(pt1["y"]);
+        }
+        if (pt2["x"].GetType() == typeof(int))
+        {
+          pt2["x"] = Convert.ToDouble(pt2["x"]);
+        }
+        if (pt2["y"].GetType() == typeof(int))
+        {
+          pt2["y"] = Convert.ToDouble(pt2["y"]);
+        }
 
         if (x >= (double)pt1["x"] && x <= (double)pt2["x"] && y >= (double)pt2["y"] && y <= (double)pt1["y"])
         {

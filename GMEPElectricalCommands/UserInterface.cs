@@ -25,6 +25,7 @@ namespace ElectricalCommands
     private NEWPANELFORM newPanelForm;
     private noteForm notesForm;
     private List<string> notesStorage = new List<string>();
+    private List<DataGridViewCell> selectedCells;
 
     private bool initialization;
     private object oldValue;
@@ -65,6 +66,8 @@ namespace ElectricalCommands
       PANEL_GRID.EditingControlShowing += new DataGridViewEditingControlShowingEventHandler(PANEL_GRID_EditingControlShowing);
       PANEL_NAME_INPUT.Click += (sender, e) => { PANEL_NAME_INPUT.SelectAll(); };
       PANEL_LOCATION_INPUT.Click += (sender, e) => { PANEL_LOCATION_INPUT.SelectAll(); };
+      PANEL_GRID.CellPainting += new DataGridViewCellPaintingEventHandler(PANEL_GRID_CellPainting);
+      PANEL_GRID.CellEndEdit += new DataGridViewCellEventHandler(this.PANEL_GRID_CellEndEdit);
       MAIN_INPUT.Click += (sender, e) => { MAIN_INPUT.SelectAll(); };
       BUS_RATING_INPUT.Click += (sender, e) => { BUS_RATING_INPUT.SelectAll(); };
 
@@ -73,6 +76,22 @@ namespace ElectricalCommands
       deselect_cells();
 
       this.initialization = true;
+    }
+
+    private void PANEL_GRID_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+    {
+      // Get the new value of the cell that was just edited
+      var newValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+
+      // Iterate over the stored selected cells
+      foreach (DataGridViewCell cell in selectedCells)
+      {
+        // Set the new value to the selected cell
+        cell.Value = newValue;
+      }
+
+      // Clear the list of selected cells
+      selectedCells.Clear();
     }
 
     public List<string> getNotesStorage()
@@ -1673,16 +1692,18 @@ namespace ElectricalCommands
 
     private void PANEL_GRID_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
     {
-      // Check if the current cell is the one being formatted and the DataGridView doesn't have focus
-      if (this.PANEL_GRID.CurrentCell != null
-          && e.RowIndex == this.PANEL_GRID.CurrentCell.RowIndex
-          && e.ColumnIndex == this.PANEL_GRID.CurrentCell.ColumnIndex
-          && !this.PANEL_GRID.Focused)
-      {
-        // Change the back color and fore color to make the current cell less noticeable
-        e.CellStyle.SelectionBackColor = e.CellStyle.BackColor;
-        e.CellStyle.SelectionForeColor = e.CellStyle.ForeColor;
-      }
+      //// Check if the current cell is the one being formatted and the DataGridView doesn't have focus
+      //if (this.PANEL_GRID.CurrentCell != null
+      //    && e.RowIndex == this.PANEL_GRID.CurrentCell.RowIndex
+      //    && e.ColumnIndex == this.PANEL_GRID.CurrentCell.ColumnIndex
+      //    && !this.PANEL_GRID.Focused)
+      //{
+      //  // Change the back color and fore color to make the current cell less noticeable
+      //  e.CellStyle.SelectionBackColor = e.CellStyle.BackColor;
+      //  e.CellStyle.SelectionForeColor = e.CellStyle.ForeColor;
+      //}
+      e.CellStyle.SelectionBackColor = e.CellStyle.BackColor;
+      e.CellStyle.SelectionForeColor = e.CellStyle.ForeColor;
     }
 
     private void PANEL_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
@@ -1702,6 +1723,7 @@ namespace ElectricalCommands
 
     private void PANEL_GRID_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
     {
+      selectedCells = new List<DataGridViewCell>(PANEL_GRID.SelectedCells.Cast<DataGridViewCell>());
       oldValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
     }
 
@@ -1871,6 +1893,28 @@ namespace ElectricalCommands
       e.Control.KeyDown += new KeyEventHandler(Control_KeyDown);
     }
 
+    private void PANEL_GRID_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+    {
+      if (e.RowIndex >= 0 && e.ColumnIndex >= 0) // Check if it's not the header cell
+      {
+        var cell = PANEL_GRID[e.ColumnIndex, e.RowIndex];
+        if (cell.Selected)
+        {
+          e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.Border);
+
+          using (Pen p = new Pen(Color.Black, 2)) // Change to desired border color and size
+          {
+            Rectangle rect = e.CellBounds;
+            rect.Width -= 2;
+            rect.Height -= 2;
+            e.Graphics.DrawRectangle(p, rect);
+          }
+
+          e.Handled = true;
+        }
+      }
+    }
+
     private void Control_KeyDown(object sender, KeyEventArgs e)
     {
       if (e.KeyCode == Keys.Left || e.KeyCode == Keys.Right)
@@ -1883,20 +1927,23 @@ namespace ElectricalCommands
 
     private async void EDITING_CONTROL_Text_Changed(object sender, EventArgs e)
     {
-      if (MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text != "" && PANEL_GRID.CurrentCell.OwningColumn.Name.Contains("description"))
+      TextBox tb = sender as TextBox;
+      if (tb != null)
       {
-        TextBox tb = sender as TextBox;
-        if (tb.Text.Length > Convert.ToInt32(MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text))
+        if (MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text != "" && PANEL_GRID.CurrentCell.OwningColumn.Name.Contains("description"))
         {
-          tb.Text = tb.Text.Substring(0, Convert.ToInt32(MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text));
-          tb.SelectionStart = tb.Text.Length;
-          INFO_LABEL.Text = $"You are trying to enter too many characters into a cell that belongs to a \"description\" column. The maximum number of characters for this cell is {MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text}.";
-          await Task.Delay(5000);
-        }
+          if (tb.Text.Length > Convert.ToInt32(MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text))
+          {
+            tb.Text = tb.Text.Substring(0, Convert.ToInt32(MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text));
+            tb.SelectionStart = tb.Text.Length;
+            INFO_LABEL.Text = $"You are trying to enter too many characters into a cell that belongs to a \"description\" column. The maximum number of characters for this cell is {MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text}.";
+            await Task.Delay(5000);
+          }
 
-        if (INFO_LABEL.Text == $"You are trying to enter too many characters into a cell that belongs to a \"description\" column. The maximum number of characters for this cell is {MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text}.")
-        {
-          INFO_LABEL.Text = string.Empty;
+          if (INFO_LABEL.Text == $"You are trying to enter too many characters into a cell that belongs to a \"description\" column. The maximum number of characters for this cell is {MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text}.")
+          {
+            INFO_LABEL.Text = string.Empty;
+          }
         }
       }
     }
@@ -2049,9 +2096,6 @@ namespace ElectricalCommands
           cell.Style.BackColor = Color.Yellow;
         }
       }
-
-      // clear the PANEL_GRID selection
-      PANEL_GRID.ClearSelection();
 
       recalculate_breakers();
     }
