@@ -78,22 +78,6 @@ namespace ElectricalCommands
       this.initialization = true;
     }
 
-    private void PANEL_GRID_CellEndEdit(object sender, DataGridViewCellEventArgs e)
-    {
-      // Get the new value of the cell that was just edited
-      var newValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
-
-      // Iterate over the stored selected cells
-      foreach (DataGridViewCell cell in selectedCells)
-      {
-        // Set the new value to the selected cell
-        cell.Value = newValue;
-      }
-
-      // Clear the list of selected cells
-      selectedCells.Clear();
-    }
-
     public List<string> getNotesStorage()
     {
       return this.notesStorage;
@@ -1678,6 +1662,22 @@ namespace ElectricalCommands
       this.mainForm.PANEL_NAME_INPUT_TextChanged(sender, e, PANEL_NAME_INPUT.Text.ToUpper());
     }
 
+    private void PANEL_GRID_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+    {
+      // Get the new value of the cell that was just edited
+      var newValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+
+      // Iterate over the stored selected cells
+      foreach (DataGridViewCell cell in selectedCells)
+      {
+        // Set the new value to the selected cell
+        cell.Value = newValue;
+      }
+
+      // Clear the list of selected cells
+      selectedCells.Clear();
+    }
+
     private void PANEL_GRID_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
     {
       if (PHASE_SUM_GRID.ColumnCount > 2)
@@ -1836,6 +1836,25 @@ namespace ElectricalCommands
         }
         e.Handled = true;
       }
+
+      // Check if Ctrl+D was pressed
+      else if (e.Control && e.KeyCode == Keys.D)
+      {
+        int rowIndex = PANEL_GRID.CurrentCell.RowIndex;
+        int colIndex = PANEL_GRID.CurrentCell.ColumnIndex;
+
+        // Check if there is a row above
+        if (rowIndex > 0)
+        {
+          // Get the value from the cell above
+          object value = PANEL_GRID[colIndex, rowIndex - 1].Value;
+
+          // Paste the value into the current cell
+          PANEL_GRID[colIndex, rowIndex].Value = value;
+        }
+
+        e.Handled = true;
+      }
     }
 
     private async void PANEL_GRID_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -1889,8 +1908,6 @@ namespace ElectricalCommands
     {
       e.Control.TextChanged -= new EventHandler(EDITING_CONTROL_Text_Changed);
       e.Control.TextChanged += new EventHandler(EDITING_CONTROL_Text_Changed);
-      e.Control.KeyDown -= new KeyEventHandler(Control_KeyDown);
-      e.Control.KeyDown += new KeyEventHandler(Control_KeyDown);
     }
 
     private void PANEL_GRID_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
@@ -1912,16 +1929,6 @@ namespace ElectricalCommands
 
           e.Handled = true;
         }
-      }
-    }
-
-    private void Control_KeyDown(object sender, KeyEventArgs e)
-    {
-      if (e.KeyCode == Keys.Left || e.KeyCode == Keys.Right)
-      {
-        PANEL_GRID.EndEdit();
-        SendKeys.Send(e.KeyCode == Keys.Left ? "{LEFT}" : "{RIGHT}");
-        e.Handled = true;
       }
     }
 
