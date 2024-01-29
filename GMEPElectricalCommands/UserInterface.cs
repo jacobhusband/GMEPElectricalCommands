@@ -1757,12 +1757,14 @@ namespace ElectricalCommands
 
     private void PANEL_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
     {
+      remove_existing_from_description(PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex]);
+      remove_existing_breaker_note(PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex]);
+
       if (PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value == null || PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString() == "") return;
 
       var cellValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
       var row = PANEL_GRID.Rows[e.RowIndex];
       var col = PANEL_GRID.Columns[e.ColumnIndex];
-      remove_existing_breaker_note(PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex]);
 
       auto_link_subpanels(cellValue, row, col);
       cellValue = calculate_cell_or_link_panel(e, cellValue, row, col);
@@ -1773,7 +1775,33 @@ namespace ElectricalCommands
 
     private void remove_existing_breaker_note(DataGridViewCell dataGridViewCell)
     {
-      if (!dataGridViewCell.OwningColumn.Name.Contains("description"))
+      if (!dataGridViewCell.OwningColumn.Name.Contains("breaker") || !REMOVE_EXISTING_CHECKBOX.Checked)
+      {
+        return;
+      }
+
+      var side = dataGridViewCell.OwningColumn.Name.Contains("left") ? "left" : "right";
+
+      if (PANEL_GRID.Rows[dataGridViewCell.RowIndex].Cells["description_" + side].Tag == null)
+      {
+        return;
+      }
+
+      var descriptionCellTag = PANEL_GRID.Rows[dataGridViewCell.RowIndex].Cells["description_" + side].Tag;
+      descriptionCellTag = descriptionCellTag.ToString().Replace("DENOTES EXISTING CIRCUIT BREAKER TO REMAIN; ALL OTHERS ARE NEW.", "");
+      descriptionCellTag = descriptionCellTag.ToString().TrimEnd('|');
+
+      PANEL_GRID.Rows[dataGridViewCell.RowIndex].Cells["description_" + side].Tag = descriptionCellTag;
+
+      if (APPLY_COMBOBOX.SelectedItem != null && APPLY_COMBOBOX.SelectedItem.ToString() == "DENOTES EXISTING CIRCUIT BREAKER TO REMAIN; ALL OTHERS ARE NEW.")
+      {
+        PANEL_GRID.Rows[dataGridViewCell.RowIndex].Cells["description_" + side].Style.BackColor = Color.White;
+      }
+    }
+
+    private void remove_existing_from_description(DataGridViewCell dataGridViewCell)
+    {
+      if (!dataGridViewCell.OwningColumn.Name.Contains("description") || !REMOVE_EXISTING_CHECKBOX.Checked)
       {
         return;
       }
@@ -1784,13 +1812,15 @@ namespace ElectricalCommands
       }
 
       var cellTag = dataGridViewCell.Tag.ToString();
-
-      if (oldValue != null && (oldValue.ToString().ToLower() == "spare" || oldValue.ToString().ToLower() == "space"))
-      {
-        cellTag = cellTag.Replace("|ADD SUFFIX (E). *NOT ADDED AS NOTE*", "");
-      }
+      cellTag = cellTag.Replace("ADD SUFFIX (E). *NOT ADDED AS NOTE*", "");
+      cellTag = cellTag.ToString().TrimEnd('|');
 
       dataGridViewCell.Tag = cellTag;
+
+      if (APPLY_COMBOBOX.SelectedItem != null && APPLY_COMBOBOX.SelectedItem.ToString() == "ADD SUFFIX (E). *NOT ADDED AS NOTE*")
+      {
+        dataGridViewCell.Style.BackColor = Color.White;
+      }
     }
 
     private void PANEL_GRID_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
