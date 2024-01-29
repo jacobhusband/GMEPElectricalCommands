@@ -217,128 +217,101 @@ namespace ElectricalCommands
       Create_Panels(null);
     }
 
-    [CommandMethod("SELECTTEXT")]
-    public void SelectText()
+    [CommandMethod("CADPANELIMPORT")]
+    public void CADPANELIMPORT()
     {
-      var result = new Dictionary<string, object>();
-      var textList = new List<Dictionary<string, object>>();
-      var doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-      var ed = doc.Editor;
+      Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      Editor ed = doc.Editor;
 
-      // Prompt for the polyline
-      PromptEntityResult per = ed.GetEntity("\nSelect a polyline: ");
-      if (per.Status != PromptStatus.OK) return;
+      // Prompt the user to select objects
+      PromptSelectionResult selection = ed.GetSelection();
 
-      // Open the polyline for read
+      if (selection.Status != PromptStatus.OK)
+      {
+        return;
+      }
+
       using (Transaction tr = doc.TransactionManager.StartTransaction())
       {
-        var entity1 = tr.GetObject(per.ObjectId, OpenMode.ForRead);
-        if (entity1 == null) return;
+        Dictionary<string, Point3d> selectionPositions = new Dictionary<string, Point3d>();
+        List<Dictionary<string, Point3d>> panelSelectionAreas = new List<Dictionary<string, Point3d>>();
 
-        Point3d pt1 = new Point3d(0, 0, 0);
-        Point3d pt2 = new Point3d(0, 0, 0);
-
-        // Get the first polyline's bounding box
-        Extents3d? extents1 = entity1.Bounds;
-        if (!extents1.HasValue) return;
-
-        // Check if the first entity is a polyline with two vertices or a line
-        if ((entity1 is Polyline polyline1 && polyline1.NumberOfVertices == 2) || entity1 is Line)
+        foreach (SelectedObject selectedObject in selection.Value)
         {
-          // Prompt for the second entity
-          per = ed.GetEntity("\nSelect a second polyline or line: ");
-          if (per.Status != PromptStatus.OK) return;
-
-          // Open the second entity for read
-          var entity2 = tr.GetObject(per.ObjectId, OpenMode.ForRead);
-          if (entity2 == null) return;
-
-          // Get the second entity's bounding box
-          Extents3d? extents2 = entity2.Bounds;
-          if (!extents2.HasValue) return;
-
-          // Define the corners of the rectangle
-          pt1 = new Point3d(Math.Min(extents1.Value.MinPoint.X, extents2.Value.MinPoint.X), Math.Max(extents1.Value.MaxPoint.Y, extents2.Value.MaxPoint.Y), 0);
-          pt2 = new Point3d(Math.Max(extents1.Value.MaxPoint.X, extents2.Value.MaxPoint.X), Math.Min(extents1.Value.MinPoint.Y, extents2.Value.MinPoint.Y), 0);
-        }
-        else if (entity1 is Polyline polyline2)
-        {
-          // Define the corners of the rectangle
-          pt1 = new Point3d(extents1.Value.MinPoint.X, extents1.Value.MaxPoint.Y, 0);
-          pt2 = new Point3d(extents1.Value.MaxPoint.X, extents1.Value.MinPoint.Y, 0);
-        }
-        else
-        {
-          ed.WriteMessage("\nSelected entity is not a polyline or line.");
-          return;
-        }
-
-        ed.Command("._zoom", "_window", pt1, pt2);
-
-        // Define the selection filter
-        TypedValue[] filter =
-        [
-           new TypedValue((int)DxfCode.Start, "TEXT,MTEXT"),
-        ];
-
-        // Select entities within the rectangular area
-        PromptSelectionResult psr = ed.SelectCrossingWindow(pt1, pt2, new SelectionFilter(filter));
-
-        // Iterate over the selected entities
-        foreach (SelectedObject so in psr.Value)
-        {
-          var entity = tr.GetObject(so.ObjectId, OpenMode.ForRead);
-
-          string textValue = null;
-          Point3d position = new Point3d();
+          Entity entity = (Entity)tr.GetObject(selectedObject.ObjectId, OpenMode.ForRead);
 
           if (entity is DBText dbText)
           {
-            textValue = dbText.TextString;
-            position = dbText.Position;
+            if (dbText.TextString.Contains("PANEL") && !dbText.TextString.Contains("LOAD") && dbText.Height >= 0.12)
+            {
+              Point3d pt_1 = new Point3d(dbText.Position.X, dbText.Position.Y + 0.3744, 0);
+              Point3d pt_2 = new Point3d(dbText.Position.X + 1, dbText.Position.Y, 0);
+
+              PromptSelectionResult selection_2 = ed.SelectCrossingWindow(pt_1, pt_2);
+
+              if (selection_2.Status == PromptStatus.OK)
+              {
+                foreach (SelectedObject thing in selection_2.Value)
+                {
+                  using (Transaction tr2 = doc.TransactionManager.StartTransaction())
+                  {
+                    Entity sub_entity = (Entity)tr2.GetObject(thing.ObjectId, OpenMode.ForRead);
+                    if (sub_entity is Polyline polyline)
+                    {
+                      Point3d topLeft = new Point3d(polyline.Bounds.Value.MinPoint.X, polyline.Bounds.Value.MaxPoint.Y, 0);
+                      Point3d bottomRight = new Point3d(polyline.Bounds.Value.MaxPoint.X, polyline.Bounds.Value.MinPoint.Y, 0);
+
+                      selectionPositions.Add("top_left", topLeft);
+                      selectionPositions.Add("bottom_right", bottomRight);
+                    }
+                  }
+                }
+              }
+            }
           }
           else if (entity is MText mText)
           {
-            textValue = mText.Contents;
-            position = mText.Location;
-          }
-
-          if (textValue != null)
-          {
-            // Remove unwanted strings from the text value
-            textValue = textValue.Replace("\\FArial;", "")
-                                 .Replace("\\Farial|c0;", "")
-                                 .Replace("{", "")
-                                 .Replace("}", "")
-                                 .Trim();
-
-            // Calculate the relative position of the text
-            double relativeX = position.X - pt1.X;
-            double relativeY = position.Y - pt1.Y;
-
-            textList.Add(new Dictionary<string, object>
+            if (mText.Contents.Contains("PANEL") && !mText.Contents.Contains("LOAD") && mText.TextHeight >= 0.12)
             {
-                { "value", textValue },
-                { "x", relativeX },
-                { "y", relativeY }
-            });
+              Point3d pt_1 = new Point3d(mText.Location.X, mText.Location.Y + 0.3744, 0);
+              Point3d pt_2 = new Point3d(mText.Location.X + 1, mText.Location.Y, 0);
+
+              PromptSelectionResult selection_2 = ed.SelectCrossingWindow(pt_1, pt_2);
+
+              if (selection_2.Status == PromptStatus.OK)
+              {
+                foreach (SelectedObject thing in selection_2.Value)
+                {
+                  using (Transaction tr2 = doc.TransactionManager.StartTransaction())
+                  {
+                    Entity sub_entity = (Entity)tr2.GetObject(thing.ObjectId, OpenMode.ForRead);
+                    if (sub_entity is Line line)
+                    {
+                      Point3d topLeft = new Point3d(line.Bounds.Value.MinPoint.X, line.Bounds.Value.MaxPoint.Y, 0);
+
+                      if (!selectionPositions.ContainsKey("top_left"))
+                      {
+                        selectionPositions.Add("top_left", topLeft);
+
+                        MText subtotal = LocateSubTotal(line);
+
+                        selectionPositions = GetBottomRightCoordinate(doc, ed, selectionPositions, subtotal);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          if (selectionPositions.ContainsKey("top_left") && selectionPositions.ContainsKey("bottom_right"))
+          {
+            panelSelectionAreas.Add(selectionPositions);
+            selectionPositions = new Dictionary<string, Point3d>();
           }
         }
 
-        result.Add("polyline", new Dictionary<string, Dictionary<string, object>>
-        {
-            { "top_left", new Dictionary<string, object> { { "x", 0 }, { "y", 0 } } },
-            { "top_right", new Dictionary<string, object> { { "x", pt2.X - pt1.X }, { "y", 0 } } },
-            { "bottom_right", new Dictionary<string, object> { { "x", pt2.X - pt1.X }, { "y", pt2.Y - pt1.Y } } },
-            { "bottom_left", new Dictionary<string, object> { { "x", 0 }, { "y", pt2.Y - pt1.Y } } }
-        });
-
-        result.Add("text", textList);
-
-        tr.Commit();
+        PanelBreakdown(panelSelectionAreas);
       }
-
-      ParseCADPanelObjects(result);
     }
 
     [CommandMethod("SETPANELREGION")]
@@ -413,20 +386,339 @@ namespace ElectricalCommands
       File.WriteAllText(path, combined);
     }
 
-    private void ParseCADPanelObjects(Dictionary<string, object> result)
+    private static Dictionary<string, Point3d> GetBottomRightCoordinate(Document doc, Editor ed, Dictionary<string, Point3d> selectionPositions, MText mText)
     {
-      var panelName = ParsePanelName(result);
-      var location = ParseLocation(result);
-      var main = ParseMain(result);
-      var bus_rating = ParseBusRating(result);
+      Point3d pt_1 = new Point3d(mText.Location.X, mText.Location.Y - 0.3744, 0);
+      Point3d pt_2 = new Point3d(mText.Location.X + 1, mText.Location.Y, 0);
 
-      Console.WriteLine("The bus rating is: " + bus_rating);
+      PromptSelectionResult selection_2 = ed.SelectCrossingWindow(pt_1, pt_2);
+
+      if (selection_2.Status == PromptStatus.OK)
+      {
+        foreach (SelectedObject thing in selection_2.Value)
+        {
+          using (Transaction tr2 = doc.TransactionManager.StartTransaction())
+          {
+            Entity sub_entity = (Entity)tr2.GetObject(thing.ObjectId, OpenMode.ForRead);
+            if (sub_entity is Line line)
+            {
+              if (line.Length > 8)
+              {
+                Point3d bottomRight = new Point3d(line.Bounds.Value.MaxPoint.X, line.Bounds.Value.MinPoint.Y, 0);
+
+                if (!selectionPositions.ContainsKey("bottom_right"))
+                {
+                  selectionPositions.Add("bottom_right", bottomRight);
+                  return selectionPositions;
+                }
+              }
+            }
+          }
+        }
+      }
+      return selectionPositions;
+    }
+
+    private MText LocateSubTotal(Line line)
+    {
+      var (doc, db, ed) = GetGlobals();
+
+      using (var tr = db.TransactionManager.StartTransaction())
+      {
+        var bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
+        var btr = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.PaperSpace], OpenMode.ForRead);
+
+        double minDistance = double.MaxValue;
+        MText closestText = null;
+
+        foreach (var id in btr)
+        {
+          var entity = (Entity)tr.GetObject(id, OpenMode.ForRead);
+          if (entity is MText text)
+          {
+            if (text.Location.Y < line.StartPoint.Y && text.Location.X >= line.StartPoint.X && text.Location.X <= line.EndPoint.X && text.Contents == "\\FArial; SUB-TOTAL")
+            {
+              var distance = line.StartPoint.Y - text.Location.Y;
+              if (distance < minDistance)
+              {
+                minDistance = distance;
+                closestText = text;
+              }
+            }
+          }
+        }
+        tr.Commit();
+        return closestText;
+      }
+    }
+
+    public void PanelBreakdown(List<Dictionary<string, Point3d>> panelSelectionAreas)
+    {
+      var resultList = new List<Dictionary<string, object>>();
+      var doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      var ed = doc.Editor;
+
+      using (Transaction tr = doc.TransactionManager.StartTransaction())
+      {
+        ZoomCamera(panelSelectionAreas);
+
+        foreach (var area in panelSelectionAreas)
+        {
+          if (area.ContainsKey("top_left") && area.ContainsKey("bottom_right"))
+          {
+            Point3d pt1 = area["top_left"];
+            Point3d pt2 = area["bottom_right"];
+
+            TypedValue[] filter =
+            [
+              new TypedValue((int)DxfCode.Start, "TEXT,MTEXT"),
+            ];
+
+            PromptSelectionResult psr = ed.SelectCrossingWindow(pt1, pt2, new SelectionFilter(filter));
+
+            var textList = new List<Dictionary<string, object>>();
+
+            foreach (SelectedObject so in psr.Value)
+            {
+              var entity = tr.GetObject(so.ObjectId, OpenMode.ForRead);
+
+              string textValue = null;
+              Point3d position = new Point3d();
+
+              if (entity is DBText dbText)
+              {
+                textValue = dbText.TextString;
+                position = dbText.Position;
+              }
+              else if (entity is MText mText)
+              {
+                textValue = mText.Contents;
+                position = mText.Location;
+              }
+
+              if (textValue != null)
+              {
+                textValue = textValue.Replace("\\FArial;", "")
+                                     .Replace("\\Farial|c0;", "")
+                                     .Replace("{", "")
+                                     .Replace("}", "")
+                                     .Trim();
+
+                double relativeX = position.X - pt1.X;
+                double relativeY = position.Y - pt1.Y;
+
+                textList.Add(new Dictionary<string, object>
+                            {
+                                { "value", textValue },
+                                { "x", relativeX },
+                                { "y", relativeY }
+                            });
+              }
+            }
+
+            var result = new Dictionary<string, object>
+                    {
+                        { "polyline", new Dictionary<string, Dictionary<string, object>>
+                            {
+                                { "top_left", new Dictionary<string, object> { { "x", 0 }, { "y", 0 } } },
+                                { "top_right", new Dictionary<string, object> { { "x", pt2.X - pt1.X }, { "y", 0 } } },
+                                { "bottom_right", new Dictionary<string, object> { { "x", pt2.X - pt1.X }, { "y", pt2.Y - pt1.Y } } },
+                                { "bottom_left", new Dictionary<string, object> { { "x", 0 }, { "y", pt2.Y - pt1.Y } } }
+                            }
+                        },
+                        { "text", textList }
+                    };
+
+            resultList.Add(result);
+          }
+        }
+
+        tr.Commit();
+      }
+
+      ParseCADPanelObjects(resultList);
+    }
+
+    private void ZoomCamera(List<Dictionary<string, Point3d>> panelSelectionAreas)
+    {
+      var doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      var ed = doc.Editor;
+
+      double minX = double.MaxValue;
+      double minY = double.MaxValue;
+      double maxX = double.MinValue;
+      double maxY = double.MinValue;
+
+      foreach (var area in panelSelectionAreas)
+      {
+        if (area.ContainsKey("top_left"))
+        {
+          Point3d topLeft = area["top_left"];
+          minX = Math.Min(minX, topLeft.X);
+          maxY = Math.Max(maxY, topLeft.Y);
+        }
+
+        if (area.ContainsKey("bottom_right"))
+        {
+          Point3d bottomRight = area["bottom_right"];
+          maxX = Math.Max(maxX, bottomRight.X);
+          minY = Math.Min(minY, bottomRight.Y);
+        }
+      }
+
+      Point3d pt1 = new Point3d(minX, maxY, 0);
+      Point3d pt2 = new Point3d(maxX, minY, 0);
+
+      string cmd = string.Format("._zoom _window {0},{1},{2} {3},{4},{5} ", pt1.X, pt1.Y, pt1.Z, pt2.X, pt2.Y, pt2.Z);
+
+      doc.SendStringToExecute(cmd, true, false, true);
+    }
+
+    private void ParseCADPanelObjects(List<Dictionary<string, object>> resultList)
+    {
+      var parsedDataList = new List<Dictionary<string, object>>();
+
+      foreach (var result in resultList)
+      {
+        var panelName = ParsePanelName(result);
+
+        if (panelName == "")
+        {
+          continue;
+        }
+
+        var location = ParseLocation(result);
+        var main = ParseMain(result);
+        var bus_rating = ParseBusRating(result);
+        var voltage_low = ParseVoltageLow(result);
+        var voltage_high = ParseVoltageHigh(result);
+        var phase = ParsePhase(result);
+        var wire = ParseWire(result);
+        var mounting = ParseMounting(result);
+
+        Dictionary<string, object> parsedData = new Dictionary<string, object>
+            {
+                { "panelName", panelName },
+                { "location", location },
+                { "main", main },
+                { "bus_rating", bus_rating },
+                { "voltage_low", voltage_low },
+                { "voltage_high", voltage_high },
+                { "phase", phase },
+                { "wire", wire },
+                { "mounting", mounting }
+            };
+
+        parsedDataList.Add(parsedData);
+      }
+    }
+
+    private object ParseMounting(Dictionary<string, object> result)
+    {
+      var pt1 = new Dictionary<string, object> { { "x", 6.67500000000001 }, { "y", -0.200000000000003 } };
+      var pt2 = new Dictionary<string, object> { { "x", 8.98559999999998 }, { "y", -0.400000000000006 } };
+
+      var textValues = GetTextValuesInRegion(result, pt1, pt2);
+      var mounting = string.Join("", textValues).Replace(" ", "");
+
+      mounting = mounting.Replace("MOUNTING", "").Replace(":", "").Replace(" ", "");
+
+      if (mounting == "REC" || mounting == "RECESS")
+      {
+        mounting = "RECESSED";
+      }
+
+      return mounting;
+    }
+
+    private object ParseWire(Dictionary<string, object> result)
+    {
+      var pt1 = new Dictionary<string, object> { { "x", 6.67500000000001 }, { "y", 0 } };
+      var pt2 = new Dictionary<string, object> { { "x", 8.98559999999998 }, { "y", -0.187199999999848 } };
+
+      var textValues = GetTextValuesInRegion(result, pt1, pt2);
+      var wire = string.Join("", textValues).Replace(" ", "");
+      var index = wire.IndexOf('W');
+
+      if (index > 0)
+      {
+        return wire[index - 1];
+      }
+      else
+      {
+        return "3";
+      }
+    }
+
+    private object ParsePhase(Dictionary<string, object> result)
+    {
+      var pt1 = new Dictionary<string, object> { { "x", 6.67500000000001 }, { "y", 0 } };
+      var pt2 = new Dictionary<string, object> { { "x", 8.98559999999998 }, { "y", -0.187199999999848 } };
+
+      var textValues = GetTextValuesInRegion(result, pt1, pt2);
+      var phase = string.Join("", textValues).Replace(" ", "");
+      var index = phase.IndexOf('V');
+
+      if (index < phase.Length - 1)
+      {
+        return phase[index + 1];
+      }
+      else
+      {
+        return "1";
+      }
+    }
+
+    private object ParseVoltageHigh(Dictionary<string, object> result)
+    {
+      var pt1 = new Dictionary<string, object> { { "x", 6.67500000000001 }, { "y", 0 } };
+      var pt2 = new Dictionary<string, object> { { "x", 8.98559999999998 }, { "y", -0.187199999999848 } };
+
+      var textValues = GetTextValuesInRegion(result, pt1, pt2);
+
+      foreach (var textValue in textValues)
+      {
+        if (textValue.Contains("208"))
+        {
+          return "208";
+        }
+        else if (textValue.Contains("240"))
+        {
+          return "240";
+        }
+        else if (textValue.Contains("480"))
+        {
+          return "480";
+        }
+      }
+      return "208";
+    }
+
+    private object ParseVoltageLow(Dictionary<string, object> result)
+    {
+      var pt1 = new Dictionary<string, object> { { "x", 6.67500000000001 }, { "y", 0 } };
+      var pt2 = new Dictionary<string, object> { { "x", 8.98559999999998 }, { "y", -0.187199999999848 } };
+
+      var textValues = GetTextValuesInRegion(result, pt1, pt2);
+
+      foreach (var textValue in textValues)
+      {
+        if (textValue.Contains("120"))
+        {
+          return "120";
+        }
+        else if (textValue.Contains("277"))
+        {
+          return "277";
+        }
+      }
+      return "120";
     }
 
     private string ParseBusRating(Dictionary<string, object> result)
     {
       var pt1 = new Dictionary<string, object> { { "x", 5.06661018521663 }, { "y", 0 } };
-      var pt2 = new Dictionary<string, object> { { "x", 7.10791001438372 }, { "y", -0.374399999999696 } };
+      var pt2 = new Dictionary<string, object> { { "x", 6.67 }, { "y", -0.374399999999696 } };
       var textValues = GetTextValuesInRegion(result, pt1, pt2);
       var main = string.Join(" ", textValues).ToUpper();
       return new string(main.Where(char.IsDigit).ToArray());
@@ -447,9 +739,24 @@ namespace ElectricalCommands
       var pt1 = new Dictionary<string, object> { { "x", 0.0 }, { "y", 0.0 } };
       var pt2 = new Dictionary<string, object> { { "x", 2.2222 }, { "y", -0.37439999999999962 } };
 
+      if (!result.ContainsKey("text"))
+      {
+        return "";
+      }
+
       var textList = (List<Dictionary<string, object>>)result["text"];
       var textValues = GetTextValuesInRegion(result, pt1, pt2);
       var panelName = string.Join(" ", textValues);
+
+      if (!panelName.Contains("PANEL"))
+      {
+        return "";
+      }
+
+      if (!panelName.Contains('\'') && !panelName.Contains('`'))
+      {
+        return "";
+      }
 
       int firstQuoteIndex = panelName.IndexOfAny(['\'', '`']);
       int lastQuoteIndex = panelName.LastIndexOfAny(['\'', '`']);
@@ -482,7 +789,10 @@ namespace ElectricalCommands
 
     private string[] GetTextValuesInRegion(Dictionary<string, object> result, Dictionary<string, object> pt1, Dictionary<string, object> pt2)
     {
-      var textList = (List<Dictionary<string, object>>)result["text"];
+      var textList = ((List<Dictionary<string, object>>)result["text"])
+          .OrderBy(text => (double)text["x"]) // Then sort by X-coordinate in ascending order (left to right)
+          .ToList();
+
       var textValues = new List<string>();
 
       foreach (var text in textList)

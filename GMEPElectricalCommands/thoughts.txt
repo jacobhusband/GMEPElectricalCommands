@@ -1,0 +1,12 @@
+I have a function called LocateSubpanel() that receives a line:
+
+```
+private void LocateSubTotal(Line line)
+    {
+
+    }
+```
+
+I need this function to do the following:
+1. Get all the text objects below the line and within its x coordinate bounds.
+2. Out of those text objects, find the one that is closest to the line with the content "SUB-TOTAL"
