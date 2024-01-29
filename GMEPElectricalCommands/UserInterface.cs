@@ -219,12 +219,12 @@ namespace ElectricalCommands
       panel.Add("mounting", GetComboBoxValue(MOUNTING_COMBOBOX));
       panel.Add("existing", GetComboBoxValue(STATUS_COMBOBOX));
 
-      panel.Add("subtotal_a", PHASE_SUM_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
-      panel.Add("subtotal_b", PHASE_SUM_GRID.Rows[0].Cells[1].Value.ToString().ToUpper());
+      panel.Add("subtotal_a", Math.Round(Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[0].Value.ToString().ToUpper())).ToString());
+      panel.Add("subtotal_b", Math.Round(Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[1].Value.ToString().ToUpper())).ToString());
 
       if (PHASE_SUM_GRID.Columns.Count > 2)
       {
-        panel.Add("subtotal_c", PHASE_SUM_GRID.Rows[0].Cells[2].Value.ToString().ToUpper());
+        panel.Add("subtotal_c", Math.Round(Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[2].Value.ToString().ToUpper())).ToString());
       }
       else
       {
@@ -329,14 +329,22 @@ namespace ElectricalCommands
         string breakerRightValue = PANEL_GRID.Rows[i].Cells["breaker_right"].Value?.ToString().ToUpper().Replace("\r", "") ?? "";
         string circuitRightValue = PANEL_GRID.Rows[i].Cells["circuit_right"].Value?.ToString().ToUpper().Replace("\r", "") ?? "";
         string circuitLeftValue = PANEL_GRID.Rows[i].Cells["circuit_left"].Value?.ToString().ToUpper().Replace("\r", "") ?? "";
-        string phaseALeftValue = PANEL_GRID.Rows[i].Cells["phase_a_left"].Value?.ToString().Replace("\r", "") ?? "0";
         string phaseALeftTag = PANEL_GRID.Rows[i].Cells["phase_a_left"].Tag?.ToString() ?? "";
-        string phaseBLeftValue = PANEL_GRID.Rows[i].Cells["phase_b_left"].Value?.ToString().Replace("\r", "") ?? "0";
         string phaseBLeftTag = PANEL_GRID.Rows[i].Cells["phase_b_left"].Tag?.ToString() ?? "";
-        string phaseARightValue = PANEL_GRID.Rows[i].Cells["phase_a_right"].Value?.ToString().Replace("\r", "") ?? "0";
         string phaseARightTag = PANEL_GRID.Rows[i].Cells["phase_a_right"].Tag?.ToString() ?? "";
-        string phaseBRightValue = PANEL_GRID.Rows[i].Cells["phase_b_right"].Value?.ToString().Replace("\r", "") ?? "0";
         string phaseBRightTag = PANEL_GRID.Rows[i].Cells["phase_b_right"].Tag?.ToString() ?? "";
+        string phaseALeftValue = PANEL_GRID.Rows[i].Cells["phase_a_left"].Value?.ToString().Replace("\r", "") ?? "0";
+        phaseALeftValue = phaseALeftValue.Contains(",") ? phaseALeftValue : Math.Round(Convert.ToDouble(phaseALeftValue)).ToString();
+
+        string phaseBLeftValue = PANEL_GRID.Rows[i].Cells["phase_b_left"].Value?.ToString().Replace("\r", "") ?? "0";
+        phaseBLeftValue = phaseBLeftValue.Contains(",") ? phaseBLeftValue : Math.Round(Convert.ToDouble(phaseBLeftValue)).ToString();
+
+        string phaseARightValue = PANEL_GRID.Rows[i].Cells["phase_a_right"].Value?.ToString().Replace("\r", "") ?? "0";
+        phaseARightValue = phaseARightValue.Contains(",") ? phaseARightValue : Math.Round(Convert.ToDouble(phaseARightValue)).ToString();
+
+        string phaseBRightValue = PANEL_GRID.Rows[i].Cells["phase_b_right"].Value?.ToString().Replace("\r", "") ?? "0";
+        phaseBRightValue = phaseBRightValue.Contains(",") ? phaseBRightValue : Math.Round(Convert.ToDouble(phaseBRightValue)).ToString();
+
         string phaseCLeftValue = "0";
         string phaseCRightValue = "0";
         string phaseCLeftTag = "";
@@ -347,10 +355,12 @@ namespace ElectricalCommands
 
         if (PHASE_SUM_GRID.Columns.Count > 2)
         {
-          phaseCLeftValue = PANEL_GRID.Rows[i].Cells["phase_c_left"].Value?.ToString().Replace("\r", "") ?? "0";
           phaseCLeftTag = PANEL_GRID.Rows[i].Cells["phase_c_left"].Tag?.ToString() ?? "";
-          phaseCRightValue = PANEL_GRID.Rows[i].Cells["phase_c_right"].Value?.ToString().Replace("\r", "") ?? "0";
           phaseCRightTag = PANEL_GRID.Rows[i].Cells["phase_c_right"].Tag?.ToString() ?? "";
+          phaseCLeftValue = PANEL_GRID.Rows[i].Cells["phase_c_left"].Value?.ToString().Replace("\r", "") ?? "0";
+          phaseCLeftValue = phaseCLeftValue.Contains(",") ? phaseCLeftValue : Math.Round(Convert.ToDouble(phaseCLeftValue)).ToString();
+          phaseCRightValue = PANEL_GRID.Rows[i].Cells["phase_c_right"].Value?.ToString().Replace("\r", "") ?? "0";
+          phaseCRightValue = phaseCRightValue.Contains(",") ? phaseCRightValue : Math.Round(Convert.ToDouble(phaseCRightValue)).ToString();
         }
 
         phase_a_left_tag.Add(phaseALeftTag);
@@ -1628,11 +1638,10 @@ namespace ElectricalCommands
         {
           cellValue = cellValue.Replace(" ", "");
         }
-
-        if (cellValue.All(c => char.IsDigit(c) || c == '=' || c == '-' || c == '*' || c == '+' || c == '/'))
+        if (cellValue.All(c => char.IsDigit(c) || c == '.' || c == '=' || c == '-' || c == '*' || c == '+' || c == '/' || c == '(' || c == ')'))
         {
           var result = new System.Data.DataTable().Compute(cellValue.Replace("=", ""), null);
-          PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = result;
+          PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = Convert.ToDouble(result);
         }
         else
         {
