@@ -90,6 +90,7 @@
       this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX = new System.Windows.Forms.TextBox();
       this.AUTO_CHECKBOX = new System.Windows.Forms.CheckBox();
       this.LARGEST_LCL_INPUT = new System.Windows.Forms.TextBox();
+      this.ALL_EXISTING_BUTTON = new System.Windows.Forms.Button();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -681,11 +682,22 @@
       this.LARGEST_LCL_INPUT.Size = new System.Drawing.Size(142, 20);
       this.LARGEST_LCL_INPUT.TabIndex = 192;
       // 
+      // ALL_EXISTING_BUTTON
+      // 
+      this.ALL_EXISTING_BUTTON.Location = new System.Drawing.Point(505, 538);
+      this.ALL_EXISTING_BUTTON.Name = "ALL_EXISTING_BUTTON";
+      this.ALL_EXISTING_BUTTON.Size = new System.Drawing.Size(103, 23);
+      this.ALL_EXISTING_BUTTON.TabIndex = 193;
+      this.ALL_EXISTING_BUTTON.Text = "ALL EXISTING";
+      this.ALL_EXISTING_BUTTON.UseVisualStyleBackColor = true;
+      this.ALL_EXISTING_BUTTON.Click += new System.EventHandler(this.ALL_EXISTING_BUTTON_Click);
+      // 
       // UserInterface
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
+      this.Controls.Add(this.ALL_EXISTING_BUTTON);
       this.Controls.Add(this.LARGEST_LCL_INPUT);
       this.Controls.Add(this.AUTO_CHECKBOX);
       this.Controls.Add(this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX);
@@ -808,5 +820,6 @@
     private System.Windows.Forms.TextBox MAX_DESCRIPTION_CELL_CHAR_TEXTBOX;
     private System.Windows.Forms.CheckBox AUTO_CHECKBOX;
     private System.Windows.Forms.TextBox LARGEST_LCL_INPUT;
+    private System.Windows.Forms.Button ALL_EXISTING_BUTTON;
   }
 }

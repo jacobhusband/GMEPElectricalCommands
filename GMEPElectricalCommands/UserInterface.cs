@@ -1472,6 +1472,34 @@ namespace ElectricalCommands
       return 0.0;
     }
 
+    public static void put_in_json_file(object thing)
+    {
+      // json write the panel data to the desktop
+      string json = JsonConvert.SerializeObject(thing, Formatting.Indented);
+      string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
+      var doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      var ed = doc.Editor;
+
+      string baseFileName = "Test";
+
+      if (string.IsNullOrEmpty(baseFileName))
+      {
+        baseFileName = "panel_data";
+      }
+      string extension = ".json";
+      string path = Path.Combine(desktopPath, baseFileName + extension);
+
+      int count = 1;
+      while (File.Exists(path))
+      {
+        string tempFileName = string.Format("{0}({1})", baseFileName, count++);
+        path = Path.Combine(desktopPath, tempFileName + extension);
+      }
+
+      File.WriteAllText(path, json);
+    }
+
     private double sum_phase_values(int rowIndex, string side)
     {
       double sum = 0;
@@ -1734,12 +1762,35 @@ namespace ElectricalCommands
       var cellValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
       var row = PANEL_GRID.Rows[e.RowIndex];
       var col = PANEL_GRID.Columns[e.ColumnIndex];
+      remove_existing_breaker_note(PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex]);
 
       auto_link_subpanels(cellValue, row, col);
       cellValue = calculate_cell_or_link_panel(e, cellValue, row, col);
 
       recalculate_breakers();
       calculate_lcl_otherload_panelload_feederamps();
+    }
+
+    private void remove_existing_breaker_note(DataGridViewCell dataGridViewCell)
+    {
+      if (!dataGridViewCell.OwningColumn.Name.Contains("description"))
+      {
+        return;
+      }
+
+      if (dataGridViewCell.Tag == null)
+      {
+        return;
+      }
+
+      var cellTag = dataGridViewCell.Tag.ToString();
+
+      if (oldValue != null && (oldValue.ToString().ToLower() == "spare" || oldValue.ToString().ToLower() == "space"))
+      {
+        cellTag = cellTag.Replace("|ADD SUFFIX (E). *NOT ADDED AS NOTE*", "");
+      }
+
+      dataGridViewCell.Tag = cellTag;
     }
 
     private void PANEL_GRID_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
@@ -2205,6 +2256,48 @@ namespace ElectricalCommands
       {
         LARGEST_LCL_INPUT.Enabled = true;
       }
+    }
+
+    private void ALL_EXISTING_BUTTON_Click(object sender, EventArgs e)
+    {
+      STATUS_COMBOBOX.SelectedIndex = 1;
+
+      string note1 = "DENOTES EXISTING CIRCUIT BREAKER TO REMAIN; ALL OTHERS ARE NEW.";
+      string note2 = "ADD SUFFIX (E). *NOT ADDED AS NOTE*";
+
+      foreach (DataGridViewRow row in PANEL_GRID.Rows)
+      {
+        if (row.Cells["description_left"] != null)
+        {
+          string cellTag = row.Cells["description_left"].Tag?.ToString();
+          if (string.IsNullOrEmpty(cellTag) || !cellTag.Contains(note1))
+          {
+            row.Cells["description_left"].Tag = string.IsNullOrEmpty(cellTag) ? note1 : cellTag + "|" + note1;
+            cellTag = row.Cells["description_left"].Tag.ToString();
+          }
+          if (string.IsNullOrEmpty(cellTag) || !cellTag.Contains(note2))
+          {
+            row.Cells["description_left"].Tag = string.IsNullOrEmpty(cellTag) ? note2 : cellTag + "|" + note2;
+          }
+        }
+
+        if (row.Cells["description_right"] != null)
+        {
+          string cellTag = row.Cells["description_right"].Tag?.ToString();
+          if (string.IsNullOrEmpty(cellTag) || !cellTag.Contains(note1))
+          {
+            row.Cells["description_right"].Tag = string.IsNullOrEmpty(cellTag) ? note1 : cellTag + "|" + note1;
+            cellTag = row.Cells["description_right"].Tag.ToString();
+          }
+          if (string.IsNullOrEmpty(cellTag) || !cellTag.Contains(note2))
+          {
+            row.Cells["description_right"].Tag = string.IsNullOrEmpty(cellTag) ? note2 : cellTag + "|" + note2;
+          }
+        }
+      }
+
+      APPLY_COMBOBOX.SelectedIndex = 1;
+      APPLY_COMBOBOX.SelectedIndex = 0;
     }
   }
 }
