@@ -16,6 +16,7 @@ namespace ElectricalCommands
   {
     private UserInterface userInterface;
     private List<string> notesStorage;
+    private List<string> defaultNotes;
 
     public noteForm(UserInterface userInterface)
     {

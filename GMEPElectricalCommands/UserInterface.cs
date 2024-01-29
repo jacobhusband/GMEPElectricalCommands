@@ -26,6 +26,7 @@ namespace ElectricalCommands
     private noteForm notesForm;
     private List<string> notesStorage = new List<string>();
     private List<DataGridViewCell> selectedCells;
+    private List<string> defaultNotes;
 
     private bool initialization;
     private object oldValue;
@@ -38,7 +39,8 @@ namespace ElectricalCommands
       this.newPanelForm = newPanelForm;
       this.initialization = false;
       this.Name = tabName;
-      this.notesStorage =
+      this.notesStorage = new List<string>();
+      this.defaultNotes =
       [
         "ADD SUFFIX (E). *NOT ADDED AS NOTE*",
         "ADD SUFFIX (R). *NOT ADDED AS NOTE*",
@@ -1320,6 +1322,16 @@ namespace ElectricalCommands
           apply_combobox_items.Add(note);
         }
       }
+
+      // Add default notes
+      foreach (var defaultNote in this.defaultNotes)
+      {
+        if (!apply_combobox_items.Contains(defaultNote))
+        {
+          apply_combobox_items.Add(defaultNote);
+        }
+      }
+
       APPLY_COMBOBOX.DataSource = apply_combobox_items;
     }
 

@@ -43,7 +43,6 @@
       this.NOTES_TEXTBOX.Name = "NOTES_TEXTBOX";
       this.NOTES_TEXTBOX.Size = new System.Drawing.Size(776, 365);
       this.NOTES_TEXTBOX.TabIndex = 0;
-      this.NOTES_TEXTBOX.Text = "\r\n";
       // 
       // NOTE_PER_LINE_TEXT
       // 
