@@ -534,7 +534,6 @@
       // 
       // MOUNTING_COMBOBOX
       // 
-      this.MOUNTING_COMBOBOX.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.MOUNTING_COMBOBOX.FormattingEnabled = true;
       this.MOUNTING_COMBOBOX.Items.AddRange(new object[] {
             "SURFACE",

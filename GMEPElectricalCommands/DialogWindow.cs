@@ -25,6 +25,7 @@ namespace ElectricalCommands
       this.FormClosing += MAINFORM_CLOSING;
       this.KeyPreview = true;
       this.KeyDown += new KeyEventHandler(MAINFORM_KEYDOWN);
+      this.Deactivate += MAINFORM_DEACTIVATE;
       Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       acDoc.BeginDocumentClose -= new DocumentBeginCloseEventHandler(docBeginDocClose);
       acDoc.BeginDocumentClose += new DocumentBeginCloseEventHandler(docBeginDocClose);
@@ -391,6 +392,27 @@ namespace ElectricalCommands
       return allPanelData;
     }
 
+    public void save_panel_to_autocad_document()
+    {
+      Console.WriteLine("Saving panel to autocad document");
+      List<Dictionary<string, object>> panelStorage = new List<Dictionary<string, object>>();
+
+      var acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+
+      if (acDoc != null)
+      {
+        using (DocumentLock docLock = acDoc.LockDocument())
+        {
+          foreach (UserInterface userControl in this.userControls)
+          {
+            panelStorage.Add(userControl.retrieve_data_from_modal());
+          }
+
+          store_data_in_autocad_file(panelStorage);
+        }
+      }
+    }
+
     private void MAINFORM_CLOSING(object sender, FormClosingEventArgs e)
     {
       Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
@@ -411,24 +433,12 @@ namespace ElectricalCommands
       }
     }
 
-    public void save_panel_to_autocad_document()
+    private void MAINFORM_DEACTIVATE(object sender, EventArgs e)
     {
-      Console.WriteLine("Saving panel to autocad document");
-      List<Dictionary<string, object>> panelStorage = new List<Dictionary<string, object>>();
-
-      var acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-
-      if (acDoc != null)
+      foreach (UserInterface userControl in userControls)
       {
-        using (DocumentLock docLock = acDoc.LockDocument())
-        {
-          foreach (UserInterface userControl in this.userControls)
-          {
-            panelStorage.Add(userControl.retrieve_data_from_modal());
-          }
-
-          store_data_in_autocad_file(panelStorage);
-        }
+        DataGridView panelGrid = userControl.retrieve_panelGrid();
+        panelGrid.ClearSelection();
       }
     }
 
