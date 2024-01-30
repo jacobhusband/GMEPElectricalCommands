@@ -333,17 +333,17 @@ namespace ElectricalCommands
         string phaseBLeftTag = PANEL_GRID.Rows[i].Cells["phase_b_left"].Tag?.ToString() ?? "";
         string phaseARightTag = PANEL_GRID.Rows[i].Cells["phase_a_right"].Tag?.ToString() ?? "";
         string phaseBRightTag = PANEL_GRID.Rows[i].Cells["phase_b_right"].Tag?.ToString() ?? "";
-        string phaseALeftValue = PANEL_GRID.Rows[i].Cells["phase_a_left"].Value?.ToString().Replace("\r", "") ?? "0";
-        phaseALeftValue = phaseALeftValue.Contains(",") ? phaseALeftValue : Math.Round(Convert.ToDouble(phaseALeftValue)).ToString();
+        string phaseALeftValue = (PANEL_GRID.Rows[i].Cells["phase_a_left"].Value?.ToString().Replace("\r", "").Replace(" ", "") ?? "0");
+        phaseALeftValue = phaseALeftValue.Contains(",") || !Regex.IsMatch(phaseALeftValue, @"^\d+$") ? phaseALeftValue : Math.Round(Convert.ToDouble(phaseALeftValue)).ToString();
 
-        string phaseBLeftValue = PANEL_GRID.Rows[i].Cells["phase_b_left"].Value?.ToString().Replace("\r", "") ?? "0";
-        phaseBLeftValue = phaseBLeftValue.Contains(",") ? phaseBLeftValue : Math.Round(Convert.ToDouble(phaseBLeftValue)).ToString();
+        string phaseBLeftValue = (PANEL_GRID.Rows[i].Cells["phase_b_left"].Value?.ToString().Replace("\r", "").Replace(" ", "") ?? "0");
+        phaseBLeftValue = phaseBLeftValue.Contains(",") || !Regex.IsMatch(phaseBLeftValue, @"^\d+$") ? phaseBLeftValue : Math.Round(Convert.ToDouble(phaseBLeftValue)).ToString();
 
-        string phaseARightValue = PANEL_GRID.Rows[i].Cells["phase_a_right"].Value?.ToString().Replace("\r", "") ?? "0";
-        phaseARightValue = phaseARightValue.Contains(",") ? phaseARightValue : Math.Round(Convert.ToDouble(phaseARightValue)).ToString();
+        string phaseARightValue = (PANEL_GRID.Rows[i].Cells["phase_a_right"].Value?.ToString().Replace("\r", "").Replace(" ", "") ?? "0");
+        phaseARightValue = phaseARightValue.Contains(",") || !Regex.IsMatch(phaseARightValue, @"^\d+$") ? phaseARightValue : Math.Round(Convert.ToDouble(phaseARightValue)).ToString();
 
-        string phaseBRightValue = PANEL_GRID.Rows[i].Cells["phase_b_right"].Value?.ToString().Replace("\r", "") ?? "0";
-        phaseBRightValue = phaseBRightValue.Contains(",") ? phaseBRightValue : Math.Round(Convert.ToDouble(phaseBRightValue)).ToString();
+        string phaseBRightValue = (PANEL_GRID.Rows[i].Cells["phase_b_right"].Value?.ToString().Replace("\r", "").Replace(" ", "") ?? "0");
+        phaseBRightValue = phaseBRightValue.Contains(",") || !Regex.IsMatch(phaseBRightValue, @"^\d+$") ? phaseBRightValue : Math.Round(Convert.ToDouble(phaseBRightValue)).ToString();
 
         string phaseCLeftValue = "0";
         string phaseCRightValue = "0";
@@ -357,10 +357,10 @@ namespace ElectricalCommands
         {
           phaseCLeftTag = PANEL_GRID.Rows[i].Cells["phase_c_left"].Tag?.ToString() ?? "";
           phaseCRightTag = PANEL_GRID.Rows[i].Cells["phase_c_right"].Tag?.ToString() ?? "";
-          phaseCLeftValue = PANEL_GRID.Rows[i].Cells["phase_c_left"].Value?.ToString().Replace("\r", "") ?? "0";
-          phaseCLeftValue = phaseCLeftValue.Contains(",") ? phaseCLeftValue : Math.Round(Convert.ToDouble(phaseCLeftValue)).ToString();
-          phaseCRightValue = PANEL_GRID.Rows[i].Cells["phase_c_right"].Value?.ToString().Replace("\r", "") ?? "0";
-          phaseCRightValue = phaseCRightValue.Contains(",") ? phaseCRightValue : Math.Round(Convert.ToDouble(phaseCRightValue)).ToString();
+          phaseCLeftValue = (PANEL_GRID.Rows[i].Cells["phase_c_left"].Value?.ToString().Replace("\r", "").Replace(" ", "") ?? "0");
+          phaseCLeftValue = phaseCLeftValue.Contains(",") || !Regex.IsMatch(phaseCLeftValue, @"^\d+$") ? phaseCLeftValue : Math.Round(Convert.ToDouble(phaseCLeftValue)).ToString();
+          phaseCRightValue = (PANEL_GRID.Rows[i].Cells["phase_c_right"].Value?.ToString().Replace("\r", "").Replace(" ", "") ?? "0");
+          phaseCRightValue = phaseCRightValue.Contains(",") || !Regex.IsMatch(phaseCRightValue, @"^\d+$") ? phaseCRightValue : Math.Round(Convert.ToDouble(phaseCRightValue)).ToString();
         }
 
         phase_a_left_tag.Add(phaseALeftTag);
@@ -1706,6 +1706,56 @@ namespace ElectricalCommands
       }
     }
 
+    private void remove_existing_breaker_note(DataGridViewCell dataGridViewCell)
+    {
+      if (!dataGridViewCell.OwningColumn.Name.Contains("breaker") || !REMOVE_EXISTING_CHECKBOX.Checked)
+      {
+        return;
+      }
+
+      var side = dataGridViewCell.OwningColumn.Name.Contains("left") ? "left" : "right";
+
+      if (PANEL_GRID.Rows[dataGridViewCell.RowIndex].Cells["description_" + side].Tag == null)
+      {
+        return;
+      }
+
+      var descriptionCellTag = PANEL_GRID.Rows[dataGridViewCell.RowIndex].Cells["description_" + side].Tag;
+      descriptionCellTag = descriptionCellTag.ToString().Replace("DENOTES EXISTING CIRCUIT BREAKER TO REMAIN; ALL OTHERS ARE NEW.", "");
+      descriptionCellTag = descriptionCellTag.ToString().TrimEnd('|');
+
+      PANEL_GRID.Rows[dataGridViewCell.RowIndex].Cells["description_" + side].Tag = descriptionCellTag;
+
+      if (APPLY_COMBOBOX.SelectedItem != null && APPLY_COMBOBOX.SelectedItem.ToString() == "DENOTES EXISTING CIRCUIT BREAKER TO REMAIN; ALL OTHERS ARE NEW.")
+      {
+        PANEL_GRID.Rows[dataGridViewCell.RowIndex].Cells["description_" + side].Style.BackColor = Color.White;
+      }
+    }
+
+    private void remove_existing_from_description(DataGridViewCell dataGridViewCell)
+    {
+      if (!dataGridViewCell.OwningColumn.Name.Contains("description") || !REMOVE_EXISTING_CHECKBOX.Checked)
+      {
+        return;
+      }
+
+      if (dataGridViewCell.Tag == null)
+      {
+        return;
+      }
+
+      var cellTag = dataGridViewCell.Tag.ToString();
+      cellTag = cellTag.Replace("ADD SUFFIX (E). *NOT ADDED AS NOTE*", "");
+      cellTag = cellTag.ToString().TrimEnd('|');
+
+      dataGridViewCell.Tag = cellTag;
+
+      if (APPLY_COMBOBOX.SelectedItem != null && APPLY_COMBOBOX.SelectedItem.ToString() == "ADD SUFFIX (E). *NOT ADDED AS NOTE*")
+      {
+        dataGridViewCell.Style.BackColor = Color.White;
+      }
+    }
+
     private void PANEL_NAME_INPUT_TextChanged(object sender, EventArgs e)
     {
       this.mainForm.PANEL_NAME_INPUT_TextChanged(sender, e, PANEL_NAME_INPUT.Text.ToUpper());
@@ -1771,56 +1821,6 @@ namespace ElectricalCommands
 
       recalculate_breakers();
       calculate_lcl_otherload_panelload_feederamps();
-    }
-
-    private void remove_existing_breaker_note(DataGridViewCell dataGridViewCell)
-    {
-      if (!dataGridViewCell.OwningColumn.Name.Contains("breaker") || !REMOVE_EXISTING_CHECKBOX.Checked)
-      {
-        return;
-      }
-
-      var side = dataGridViewCell.OwningColumn.Name.Contains("left") ? "left" : "right";
-
-      if (PANEL_GRID.Rows[dataGridViewCell.RowIndex].Cells["description_" + side].Tag == null)
-      {
-        return;
-      }
-
-      var descriptionCellTag = PANEL_GRID.Rows[dataGridViewCell.RowIndex].Cells["description_" + side].Tag;
-      descriptionCellTag = descriptionCellTag.ToString().Replace("DENOTES EXISTING CIRCUIT BREAKER TO REMAIN; ALL OTHERS ARE NEW.", "");
-      descriptionCellTag = descriptionCellTag.ToString().TrimEnd('|');
-
-      PANEL_GRID.Rows[dataGridViewCell.RowIndex].Cells["description_" + side].Tag = descriptionCellTag;
-
-      if (APPLY_COMBOBOX.SelectedItem != null && APPLY_COMBOBOX.SelectedItem.ToString() == "DENOTES EXISTING CIRCUIT BREAKER TO REMAIN; ALL OTHERS ARE NEW.")
-      {
-        PANEL_GRID.Rows[dataGridViewCell.RowIndex].Cells["description_" + side].Style.BackColor = Color.White;
-      }
-    }
-
-    private void remove_existing_from_description(DataGridViewCell dataGridViewCell)
-    {
-      if (!dataGridViewCell.OwningColumn.Name.Contains("description") || !REMOVE_EXISTING_CHECKBOX.Checked)
-      {
-        return;
-      }
-
-      if (dataGridViewCell.Tag == null)
-      {
-        return;
-      }
-
-      var cellTag = dataGridViewCell.Tag.ToString();
-      cellTag = cellTag.Replace("ADD SUFFIX (E). *NOT ADDED AS NOTE*", "");
-      cellTag = cellTag.ToString().TrimEnd('|');
-
-      dataGridViewCell.Tag = cellTag;
-
-      if (APPLY_COMBOBOX.SelectedItem != null && APPLY_COMBOBOX.SelectedItem.ToString() == "ADD SUFFIX (E). *NOT ADDED AS NOTE*")
-      {
-        dataGridViewCell.Style.BackColor = Color.White;
-      }
     }
 
     private void PANEL_GRID_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
