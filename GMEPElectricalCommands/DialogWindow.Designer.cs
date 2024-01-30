@@ -36,6 +36,7 @@ namespace ElectricalCommands
       this.NEW_PANEL_BUTTON = new System.Windows.Forms.Button();
       this.HELP_BUTTON = new System.Windows.Forms.Button();
       this.SAVE_BUTTON = new System.Windows.Forms.Button();
+      this.LOAD_BUTTON = new System.Windows.Forms.Button();
       this.PANEL_TABS.SuspendLayout();
       this.SuspendLayout();
       // 
@@ -99,11 +100,22 @@ namespace ElectricalCommands
       this.SAVE_BUTTON.UseVisualStyleBackColor = true;
       this.SAVE_BUTTON.Click += new System.EventHandler(this.SAVE_BUTTON_Click);
       // 
+      // LOAD_BUTTON
+      // 
+      this.LOAD_BUTTON.Location = new System.Drawing.Point(110, 142);
+      this.LOAD_BUTTON.Name = "LOAD_BUTTON";
+      this.LOAD_BUTTON.Size = new System.Drawing.Size(51, 23);
+      this.LOAD_BUTTON.TabIndex = 182;
+      this.LOAD_BUTTON.Text = "LOAD";
+      this.LOAD_BUTTON.UseVisualStyleBackColor = true;
+      this.LOAD_BUTTON.Click += new System.EventHandler(this.LOAD_BUTTON_Click);
+      // 
       // MainForm
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(1586, 696);
+      this.Controls.Add(this.LOAD_BUTTON);
       this.Controls.Add(this.SAVE_BUTTON);
       this.Controls.Add(this.HELP_BUTTON);
       this.Controls.Add(this.CREATE_ALL_PANELS_BUTTON);
@@ -123,6 +135,7 @@ namespace ElectricalCommands
     private System.Windows.Forms.Button CREATE_ALL_PANELS_BUTTON;
     private System.Windows.Forms.Button HELP_BUTTON;
     private System.Windows.Forms.Button SAVE_BUTTON;
+    private System.Windows.Forms.Button LOAD_BUTTON;
   }
 }
 

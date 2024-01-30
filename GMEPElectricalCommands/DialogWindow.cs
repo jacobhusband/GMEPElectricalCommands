@@ -289,31 +289,6 @@ namespace ElectricalCommands
       return userControl1;
     }
 
-    public void store_data_in_autocad_file(List<Dictionary<string, object>> saveData)
-    {
-      Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
-      string acDocPath = Path.GetDirectoryName(acDoc.Name);
-      string panelSavesDirectory = Path.Combine(acDocPath, "panel saves");
-
-      // Create the directory if it doesn't exist
-      if (!Directory.Exists(panelSavesDirectory))
-      {
-        Directory.CreateDirectory(panelSavesDirectory);
-      }
-
-      // Create a JSON file name based on the AutoCAD file name and the current timestamp
-      string acDocFileName = Path.GetFileNameWithoutExtension(acDoc.Name);
-      string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-      string jsonFileName = acDocFileName + "_" + timestamp + ".json";
-      string jsonFilePath = Path.Combine(panelSavesDirectory, jsonFileName);
-
-      // Serialize all the panel data to JSON
-      string jsonData = JsonConvert.SerializeObject(saveData, Formatting.Indented);
-
-      // Write the JSON data to the file
-      File.WriteAllText(jsonFilePath, jsonData);
-    }
-
     //public void store_data_in_autocad_file(List<Dictionary<string, object>> saveData)
     //{
     //  Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
@@ -550,6 +525,54 @@ namespace ElectricalCommands
       {
         save_panel_to_autocad_document();
       }
+    }
+
+    private void LOAD_BUTTON_Click(object sender, EventArgs e)
+    {
+      Close();
+      // Prompt the user to select a JSON file
+      OpenFileDialog openFileDialog = new OpenFileDialog
+      {
+        Filter = "JSON files (*.json)|*.json",
+        Title = "Select a JSON file"
+      };
+
+      if (openFileDialog.ShowDialog() == DialogResult.OK)
+      {
+        // Read the JSON data from the file
+        string jsonData = File.ReadAllText(openFileDialog.FileName);
+
+        // Deserialize the JSON data to a list of dictionaries
+        List<Dictionary<string, object>> panelData = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(jsonData);
+
+        // Save the panel data
+        store_data_in_autocad_file(panelData);
+      }
+    }
+
+    public void store_data_in_autocad_file(List<Dictionary<string, object>> saveData)
+    {
+      Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
+      string acDocPath = Path.GetDirectoryName(acDoc.Name);
+      string panelSavesDirectory = Path.Combine(acDocPath, "panel saves");
+
+      // Create the directory if it doesn't exist
+      if (!Directory.Exists(panelSavesDirectory))
+      {
+        Directory.CreateDirectory(panelSavesDirectory);
+      }
+
+      // Create a JSON file name based on the AutoCAD file name and the current timestamp
+      string acDocFileName = Path.GetFileNameWithoutExtension(acDoc.Name);
+      string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+      string jsonFileName = acDocFileName + "_" + timestamp + ".json";
+      string jsonFilePath = Path.Combine(panelSavesDirectory, jsonFileName);
+
+      // Serialize all the panel data to JSON
+      string jsonData = JsonConvert.SerializeObject(saveData, Formatting.Indented);
+
+      // Write the JSON data to the file
+      File.WriteAllText(jsonFilePath, jsonData);
     }
   }
 }
