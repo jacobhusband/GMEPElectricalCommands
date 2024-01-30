@@ -6,6 +6,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
+using System.Linq;
 
 namespace ElectricalCommands
 {
@@ -213,12 +214,12 @@ namespace ElectricalCommands
         PANEL_TABS.TabPages.Remove(userControl1.Parent as TabPage);
         using (DocumentLock docLock = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.LockDocument())
         {
-          RemovePanelFromStorage(userControl1);
+          remove_panel_from_storage(userControl1);
         }
       }
     }
 
-    private void RemovePanelFromStorage(UserInterface userControl1)
+    private void remove_panel_from_storage(UserInterface userControl1)
     {
       var panelData = retrieve_saved_panel_data();
 
@@ -291,110 +292,166 @@ namespace ElectricalCommands
     public void store_data_in_autocad_file(List<Dictionary<string, object>> saveData)
     {
       Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
-      Autodesk.AutoCAD.DatabaseServices.Database acCurDb = acDoc.Database;
-      string jsonDataKey = "JsonSaveData";
+      string acDocPath = Path.GetDirectoryName(acDoc.Name);
+      string panelSavesDirectory = Path.Combine(acDocPath, "panel saves");
 
-      using (Autodesk.AutoCAD.DatabaseServices.Transaction tr = acCurDb.TransactionManager.StartTransaction())
+      // Create the directory if it doesn't exist
+      if (!Directory.Exists(panelSavesDirectory))
       {
-        acCurDb.DisableUndoRecording(true);
-        Autodesk.AutoCAD.DatabaseServices.DBDictionary nod = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(acCurDb.NamedObjectsDictionaryId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
-
-        Autodesk.AutoCAD.DatabaseServices.DBDictionary userDict;
-        if (nod.Contains(jsonDataKey))
-        {
-          // The dictionary already exists, so we just need to open it for write
-          userDict = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(nod.GetAt(jsonDataKey), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite);
-
-          // Clear the dictionary
-          userDict.UpgradeOpen();
-          userDict.Erase(true);
-          userDict.DowngradeOpen();
-
-          // Create a new dictionary
-          userDict = new Autodesk.AutoCAD.DatabaseServices.DBDictionary();
-          nod.UpgradeOpen();
-          nod.SetAt(jsonDataKey, userDict);
-          tr.AddNewlyCreatedDBObject(userDict, true);
-        }
-        else
-        {
-          // The dictionary doesn't exist, so we create a new one and add it to the NOD
-          userDict = new Autodesk.AutoCAD.DatabaseServices.DBDictionary();
-          nod.UpgradeOpen();
-          nod.SetAt(jsonDataKey, userDict);
-          tr.AddNewlyCreatedDBObject(userDict, true);
-        }
-
-        // Now let's update or create the Xrecord for each panel
-        for (int i = 0; i < saveData.Count; i++)
-        {
-          string panelKey = "PanelData" + i.ToString("D3");
-          Autodesk.AutoCAD.DatabaseServices.Xrecord xRecord;
-          if (userDict.Contains(panelKey))
-          {
-            // The Xrecord exists, open it for write to update
-            xRecord = (Autodesk.AutoCAD.DatabaseServices.Xrecord)tr.GetObject(userDict.GetAt(panelKey), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite);
-          }
-          else
-          {
-            // The Xrecord does not exist, create a new one
-            xRecord = new Autodesk.AutoCAD.DatabaseServices.Xrecord();
-            userDict.SetAt(panelKey, xRecord);
-            tr.AddNewlyCreatedDBObject(xRecord, true);
-          }
-
-          // Update the Xrecord data
-          Autodesk.AutoCAD.DatabaseServices.ResultBuffer rb = new Autodesk.AutoCAD.DatabaseServices.ResultBuffer(new Autodesk.AutoCAD.DatabaseServices.TypedValue((int)Autodesk.AutoCAD.DatabaseServices.DxfCode.Text, JsonConvert.SerializeObject(saveData[i], Formatting.Indented)));
-          xRecord.Data = new Autodesk.AutoCAD.DatabaseServices.ResultBuffer();
-          xRecord.Data = rb;
-        }
-
-        tr.Commit();
-        acCurDb.DisableUndoRecording(false);
+        Directory.CreateDirectory(panelSavesDirectory);
       }
+
+      // Create a JSON file name based on the AutoCAD file name and the current timestamp
+      string acDocFileName = Path.GetFileNameWithoutExtension(acDoc.Name);
+      string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+      string jsonFileName = acDocFileName + "_" + timestamp + ".json";
+      string jsonFilePath = Path.Combine(panelSavesDirectory, jsonFileName);
+
+      // Serialize all the panel data to JSON
+      string jsonData = JsonConvert.SerializeObject(saveData, Formatting.Indented);
+
+      // Write the JSON data to the file
+      File.WriteAllText(jsonFilePath, jsonData);
     }
+
+    //public void store_data_in_autocad_file(List<Dictionary<string, object>> saveData)
+    //{
+    //  Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
+    //  Autodesk.AutoCAD.DatabaseServices.Database acCurDb = acDoc.Database;
+    //  string jsonDataKey = "JsonSaveData";
+
+    //  using (Autodesk.AutoCAD.DatabaseServices.Transaction tr = acCurDb.TransactionManager.StartTransaction())
+    //  {
+    //    acCurDb.DisableUndoRecording(true);
+    //    Autodesk.AutoCAD.DatabaseServices.DBDictionary nod = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(acCurDb.NamedObjectsDictionaryId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
+
+    //    Autodesk.AutoCAD.DatabaseServices.DBDictionary userDict;
+    //    if (nod.Contains(jsonDataKey))
+    //    {
+    //      The dictionary already exists, so we just need to open it for write
+    //     userDict = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(nod.GetAt(jsonDataKey), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite);
+
+    //      Clear the dictionary
+
+    //     userDict.UpgradeOpen();
+    //      userDict.Erase(true);
+    //      userDict.DowngradeOpen();
+
+    //      Create a new dictionary
+    //      userDict = new Autodesk.AutoCAD.DatabaseServices.DBDictionary();
+    //      nod.UpgradeOpen();
+    //      nod.SetAt(jsonDataKey, userDict);
+    //      tr.AddNewlyCreatedDBObject(userDict, true);
+    //    }
+    //    else
+    //    {
+    //      The dictionary doesn't exist, so we create a new one and add it to the NOD
+    //      userDict = new Autodesk.AutoCAD.DatabaseServices.DBDictionary();
+    //      nod.UpgradeOpen();
+    //      nod.SetAt(jsonDataKey, userDict);
+    //      tr.AddNewlyCreatedDBObject(userDict, true);
+    //    }
+
+    //    Now let's update or create the Xrecord for each panel
+    //    for (int i = 0; i < saveData.Count; i++)
+    //    {
+    //      string panelKey = "PanelData" + i.ToString("D3");
+    //      Autodesk.AutoCAD.DatabaseServices.Xrecord xRecord;
+    //      if (userDict.Contains(panelKey))
+    //      {
+    //        The Xrecord exists, open it for write to update
+
+    //       xRecord = (Autodesk.AutoCAD.DatabaseServices.Xrecord)tr.GetObject(userDict.GetAt(panelKey), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite);
+    //      }
+    //      else
+    //      {
+    //        The Xrecord does not exist, create a new one
+    //        xRecord = new Autodesk.AutoCAD.DatabaseServices.Xrecord();
+    //        userDict.SetAt(panelKey, xRecord);
+    //        tr.AddNewlyCreatedDBObject(xRecord, true);
+    //      }
+
+    //      Update the Xrecord data
+    //      Autodesk.AutoCAD.DatabaseServices.ResultBuffer rb = new Autodesk.AutoCAD.DatabaseServices.ResultBuffer(new Autodesk.AutoCAD.DatabaseServices.TypedValue((int)Autodesk.AutoCAD.DatabaseServices.DxfCode.Text, JsonConvert.SerializeObject(saveData[i], Formatting.Indented)));
+    //      xRecord.Data = new Autodesk.AutoCAD.DatabaseServices.ResultBuffer();
+    //      xRecord.Data = rb;
+    //    }
+
+    //    tr.Commit();
+    //    acCurDb.DisableUndoRecording(false);
+    //  }
+    //}
 
     public List<Dictionary<string, object>> retrieve_saved_panel_data()
     {
       List<Dictionary<string, object>> allPanelData = new List<Dictionary<string, object>>();
 
       Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-      Autodesk.AutoCAD.DatabaseServices.Database acCurDb = acDoc.Database;
-      string jsonDataKey = "JsonSaveData";
+      string acDocPath = Path.GetDirectoryName(acDoc.Name);
+      string panelSavesDirectory = Path.Combine(acDocPath, "panel saves");
 
-      using (Autodesk.AutoCAD.DatabaseServices.Transaction tr = acCurDb.TransactionManager.StartTransaction())
+      // Check if the directory exists
+      if (Directory.Exists(panelSavesDirectory))
       {
-        Autodesk.AutoCAD.DatabaseServices.DBDictionary nod = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(acCurDb.NamedObjectsDictionaryId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
+        // Get all JSON files in the directory
+        string[] jsonFiles = Directory.GetFiles(panelSavesDirectory, "*.json");
 
-        if (nod.Contains(jsonDataKey))
+        // If there are any JSON files, find the most recent one
+        if (jsonFiles.Length > 0)
         {
-          Autodesk.AutoCAD.DatabaseServices.DBDictionary userDict = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(nod.GetAt(jsonDataKey), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
+          string mostRecentJsonFile = jsonFiles.OrderByDescending(f => File.GetLastWriteTime(f)).First();
 
-          // Iterate over all XRecords in the user dictionary
-          foreach (var entry in userDict)
-          {
-            Autodesk.AutoCAD.DatabaseServices.Xrecord xRecord = (Autodesk.AutoCAD.DatabaseServices.Xrecord)tr.GetObject(entry.Value, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
-            Autodesk.AutoCAD.DatabaseServices.ResultBuffer rb = xRecord.Data;
-            if (rb != null)
-            {
-              foreach (Autodesk.AutoCAD.DatabaseServices.TypedValue tv in rb)
-              {
-                if (tv.TypeCode == (int)Autodesk.AutoCAD.DatabaseServices.DxfCode.Text)
-                {
-                  Dictionary<string, object> panelData = JsonConvert.DeserializeObject<Dictionary<string, object>>(tv.Value.ToString());
-                  allPanelData.Add(panelData);
-                }
-              }
-            }
-          }
+          // Read the JSON data from the file
+          string jsonData = File.ReadAllText(mostRecentJsonFile);
+
+          // Deserialize the JSON data to a list of dictionaries
+          allPanelData = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(jsonData);
         }
       }
+
       return allPanelData;
     }
 
+    //public List<Dictionary<string, object>> retrieve_saved_panel_data()
+    //{
+    //  List<Dictionary<string, object>> allPanelData = new List<Dictionary<string, object>>();
+
+    //  Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+    //  Autodesk.AutoCAD.DatabaseServices.Database acCurDb = acDoc.Database;
+    //  string jsonDataKey = "JsonSaveData";
+
+    //  using (Autodesk.AutoCAD.DatabaseServices.Transaction tr = acCurDb.TransactionManager.StartTransaction())
+    //  {
+    //    Autodesk.AutoCAD.DatabaseServices.DBDictionary nod = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(acCurDb.NamedObjectsDictionaryId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
+
+    //    if (nod.Contains(jsonDataKey))
+    //    {
+    //      Autodesk.AutoCAD.DatabaseServices.DBDictionary userDict = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(nod.GetAt(jsonDataKey), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
+
+    //      // Iterate over all XRecords in the user dictionary
+    //      foreach (var entry in userDict)
+    //      {
+    //        Autodesk.AutoCAD.DatabaseServices.Xrecord xRecord = (Autodesk.AutoCAD.DatabaseServices.Xrecord)tr.GetObject(entry.Value, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
+    //        Autodesk.AutoCAD.DatabaseServices.ResultBuffer rb = xRecord.Data;
+    //        if (rb != null)
+    //        {
+    //          foreach (Autodesk.AutoCAD.DatabaseServices.TypedValue tv in rb)
+    //          {
+    //            if (tv.TypeCode == (int)Autodesk.AutoCAD.DatabaseServices.DxfCode.Text)
+    //            {
+    //              Dictionary<string, object> panelData = JsonConvert.DeserializeObject<Dictionary<string, object>>(tv.Value.ToString());
+    //              allPanelData.Add(panelData);
+    //            }
+    //          }
+    //        }
+    //      }
+    //    }
+    //  }
+    //  return allPanelData;
+    //}
+
     public void save_panel_to_autocad_document()
     {
-      Console.WriteLine("Saving panel to autocad document");
       List<Dictionary<string, object>> panelStorage = new List<Dictionary<string, object>>();
 
       var acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
