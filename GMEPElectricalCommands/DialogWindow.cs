@@ -15,6 +15,7 @@ namespace ElectricalCommands
     private PanelCommands myCommandsInstance;
     private NEWPANELFORM newPanelForm;
     private List<UserInterface> userControls;
+    private Document acDoc;
 
     public MainForm(PanelCommands myCommands)
     {
@@ -27,7 +28,7 @@ namespace ElectricalCommands
       this.KeyPreview = true;
       this.KeyDown += new KeyEventHandler(MAINFORM_KEYDOWN);
       this.Deactivate += MAINFORM_DEACTIVATE;
-      Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      this.acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       acDoc.BeginDocumentClose -= new DocumentBeginCloseEventHandler(docBeginDocClose);
       acDoc.BeginDocumentClose += new DocumentBeginCloseEventHandler(docBeginDocClose);
     }
@@ -35,9 +36,8 @@ namespace ElectricalCommands
     private void docBeginDocClose(object sender, DocumentBeginCloseEventArgs e)
     {
       save_panel_to_autocad_document();
-      Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-      string fileName = acDoc.Name;
-      acDoc.Database.SaveAs(fileName, true, DwgVersion.Current, acDoc.Database.SecurityParameters);
+      string fileName = this.acDoc.Name;
+      acDoc.Database.SaveAs(fileName, true, DwgVersion.Current, this.acDoc.Database.SecurityParameters);
     }
 
     public List<UserInterface> retrieve_userControls()
@@ -289,80 +289,11 @@ namespace ElectricalCommands
       return userControl1;
     }
 
-    //public void store_data_in_autocad_file(List<Dictionary<string, object>> saveData)
-    //{
-    //  Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
-    //  Autodesk.AutoCAD.DatabaseServices.Database acCurDb = acDoc.Database;
-    //  string jsonDataKey = "JsonSaveData";
-
-    //  using (Autodesk.AutoCAD.DatabaseServices.Transaction tr = acCurDb.TransactionManager.StartTransaction())
-    //  {
-    //    acCurDb.DisableUndoRecording(true);
-    //    Autodesk.AutoCAD.DatabaseServices.DBDictionary nod = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(acCurDb.NamedObjectsDictionaryId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
-
-    //    Autodesk.AutoCAD.DatabaseServices.DBDictionary userDict;
-    //    if (nod.Contains(jsonDataKey))
-    //    {
-    //      The dictionary already exists, so we just need to open it for write
-    //     userDict = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(nod.GetAt(jsonDataKey), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite);
-
-    //      Clear the dictionary
-
-    //     userDict.UpgradeOpen();
-    //      userDict.Erase(true);
-    //      userDict.DowngradeOpen();
-
-    //      Create a new dictionary
-    //      userDict = new Autodesk.AutoCAD.DatabaseServices.DBDictionary();
-    //      nod.UpgradeOpen();
-    //      nod.SetAt(jsonDataKey, userDict);
-    //      tr.AddNewlyCreatedDBObject(userDict, true);
-    //    }
-    //    else
-    //    {
-    //      The dictionary doesn't exist, so we create a new one and add it to the NOD
-    //      userDict = new Autodesk.AutoCAD.DatabaseServices.DBDictionary();
-    //      nod.UpgradeOpen();
-    //      nod.SetAt(jsonDataKey, userDict);
-    //      tr.AddNewlyCreatedDBObject(userDict, true);
-    //    }
-
-    //    Now let's update or create the Xrecord for each panel
-    //    for (int i = 0; i < saveData.Count; i++)
-    //    {
-    //      string panelKey = "PanelData" + i.ToString("D3");
-    //      Autodesk.AutoCAD.DatabaseServices.Xrecord xRecord;
-    //      if (userDict.Contains(panelKey))
-    //      {
-    //        The Xrecord exists, open it for write to update
-
-    //       xRecord = (Autodesk.AutoCAD.DatabaseServices.Xrecord)tr.GetObject(userDict.GetAt(panelKey), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite);
-    //      }
-    //      else
-    //      {
-    //        The Xrecord does not exist, create a new one
-    //        xRecord = new Autodesk.AutoCAD.DatabaseServices.Xrecord();
-    //        userDict.SetAt(panelKey, xRecord);
-    //        tr.AddNewlyCreatedDBObject(xRecord, true);
-    //      }
-
-    //      Update the Xrecord data
-    //      Autodesk.AutoCAD.DatabaseServices.ResultBuffer rb = new Autodesk.AutoCAD.DatabaseServices.ResultBuffer(new Autodesk.AutoCAD.DatabaseServices.TypedValue((int)Autodesk.AutoCAD.DatabaseServices.DxfCode.Text, JsonConvert.SerializeObject(saveData[i], Formatting.Indented)));
-    //      xRecord.Data = new Autodesk.AutoCAD.DatabaseServices.ResultBuffer();
-    //      xRecord.Data = rb;
-    //    }
-
-    //    tr.Commit();
-    //    acCurDb.DisableUndoRecording(false);
-    //  }
-    //}
-
     public List<Dictionary<string, object>> retrieve_saved_panel_data()
     {
       List<Dictionary<string, object>> allPanelData = new List<Dictionary<string, object>>();
 
-      Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-      string acDocPath = Path.GetDirectoryName(acDoc.Name);
+      string acDocPath = Path.GetDirectoryName(this.acDoc.Name);
       string panelSavesDirectory = Path.Combine(acDocPath, "panel saves");
 
       // Check if the directory exists
@@ -387,53 +318,13 @@ namespace ElectricalCommands
       return allPanelData;
     }
 
-    //public List<Dictionary<string, object>> retrieve_saved_panel_data()
-    //{
-    //  List<Dictionary<string, object>> allPanelData = new List<Dictionary<string, object>>();
-
-    //  Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-    //  Autodesk.AutoCAD.DatabaseServices.Database acCurDb = acDoc.Database;
-    //  string jsonDataKey = "JsonSaveData";
-
-    //  using (Autodesk.AutoCAD.DatabaseServices.Transaction tr = acCurDb.TransactionManager.StartTransaction())
-    //  {
-    //    Autodesk.AutoCAD.DatabaseServices.DBDictionary nod = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(acCurDb.NamedObjectsDictionaryId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
-
-    //    if (nod.Contains(jsonDataKey))
-    //    {
-    //      Autodesk.AutoCAD.DatabaseServices.DBDictionary userDict = (Autodesk.AutoCAD.DatabaseServices.DBDictionary)tr.GetObject(nod.GetAt(jsonDataKey), Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
-
-    //      // Iterate over all XRecords in the user dictionary
-    //      foreach (var entry in userDict)
-    //      {
-    //        Autodesk.AutoCAD.DatabaseServices.Xrecord xRecord = (Autodesk.AutoCAD.DatabaseServices.Xrecord)tr.GetObject(entry.Value, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
-    //        Autodesk.AutoCAD.DatabaseServices.ResultBuffer rb = xRecord.Data;
-    //        if (rb != null)
-    //        {
-    //          foreach (Autodesk.AutoCAD.DatabaseServices.TypedValue tv in rb)
-    //          {
-    //            if (tv.TypeCode == (int)Autodesk.AutoCAD.DatabaseServices.DxfCode.Text)
-    //            {
-    //              Dictionary<string, object> panelData = JsonConvert.DeserializeObject<Dictionary<string, object>>(tv.Value.ToString());
-    //              allPanelData.Add(panelData);
-    //            }
-    //          }
-    //        }
-    //      }
-    //    }
-    //  }
-    //  return allPanelData;
-    //}
-
     public void save_panel_to_autocad_document()
     {
       List<Dictionary<string, object>> panelStorage = new List<Dictionary<string, object>>();
 
-      var acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-
-      if (acDoc != null)
+      if (this.acDoc != null)
       {
-        using (DocumentLock docLock = acDoc.LockDocument())
+        using (DocumentLock docLock = this.acDoc.LockDocument())
         {
           foreach (UserInterface userControl in this.userControls)
           {
@@ -443,6 +334,30 @@ namespace ElectricalCommands
           store_data_in_autocad_file(panelStorage);
         }
       }
+    }
+
+    public void store_data_in_autocad_file(List<Dictionary<string, object>> saveData)
+    {
+      string acDocPath = Path.GetDirectoryName(this.acDoc.Name);
+      string panelSavesDirectory = Path.Combine(acDocPath, "panel saves");
+
+      // Create the directory if it doesn't exist
+      if (!Directory.Exists(panelSavesDirectory))
+      {
+        Directory.CreateDirectory(panelSavesDirectory);
+      }
+
+      // Create a JSON file name based on the AutoCAD file name and the current timestamp
+      string acDocFileName = Path.GetFileNameWithoutExtension(acDoc.Name);
+      string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+      string jsonFileName = acDocFileName + "_" + timestamp + ".json";
+      string jsonFilePath = Path.Combine(panelSavesDirectory, jsonFileName);
+
+      // Serialize all the panel data to JSON
+      string jsonData = JsonConvert.SerializeObject(saveData, Formatting.Indented);
+
+      // Write the JSON data to the file
+      File.WriteAllText(jsonFilePath, jsonData);
     }
 
     private void MAINFORM_CLOSING(object sender, FormClosingEventArgs e)
@@ -548,31 +463,6 @@ namespace ElectricalCommands
         // Save the panel data
         store_data_in_autocad_file(panelData);
       }
-    }
-
-    public void store_data_in_autocad_file(List<Dictionary<string, object>> saveData)
-    {
-      Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
-      string acDocPath = Path.GetDirectoryName(acDoc.Name);
-      string panelSavesDirectory = Path.Combine(acDocPath, "panel saves");
-
-      // Create the directory if it doesn't exist
-      if (!Directory.Exists(panelSavesDirectory))
-      {
-        Directory.CreateDirectory(panelSavesDirectory);
-      }
-
-      // Create a JSON file name based on the AutoCAD file name and the current timestamp
-      string acDocFileName = Path.GetFileNameWithoutExtension(acDoc.Name);
-      string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-      string jsonFileName = acDocFileName + "_" + timestamp + ".json";
-      string jsonFilePath = Path.Combine(panelSavesDirectory, jsonFileName);
-
-      // Serialize all the panel data to JSON
-      string jsonData = JsonConvert.SerializeObject(saveData, Formatting.Indented);
-
-      // Write the JSON data to the file
-      File.WriteAllText(jsonFilePath, jsonData);
     }
   }
 }
