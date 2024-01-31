@@ -29,15 +29,15 @@ namespace ElectricalCommands
       this.KeyDown += new KeyEventHandler(MAINFORM_KEYDOWN);
       this.Deactivate += MAINFORM_DEACTIVATE;
       this.acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-      acDoc.BeginDocumentClose -= new DocumentBeginCloseEventHandler(docBeginDocClose);
-      acDoc.BeginDocumentClose += new DocumentBeginCloseEventHandler(docBeginDocClose);
+      this.acDoc.BeginDocumentClose -= new DocumentBeginCloseEventHandler(docBeginDocClose);
+      this.acDoc.BeginDocumentClose += new DocumentBeginCloseEventHandler(docBeginDocClose);
     }
 
     private void docBeginDocClose(object sender, DocumentBeginCloseEventArgs e)
     {
       save_panel_to_autocad_document();
       string fileName = this.acDoc.Name;
-      acDoc.Database.SaveAs(fileName, true, DwgVersion.Current, this.acDoc.Database.SecurityParameters);
+      this.acDoc.Database.SaveAs(fileName, true, DwgVersion.Current, this.acDoc.Database.SecurityParameters);
     }
 
     public List<UserInterface> retrieve_userControls()
@@ -362,8 +362,7 @@ namespace ElectricalCommands
 
     private void MAINFORM_CLOSING(object sender, FormClosingEventArgs e)
     {
-      Document acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-      acDoc.BeginDocumentClose -= new DocumentBeginCloseEventHandler(docBeginDocClose);
+      this.acDoc.BeginDocumentClose -= new DocumentBeginCloseEventHandler(docBeginDocClose);
       save_panel_to_autocad_document();
     }
 
