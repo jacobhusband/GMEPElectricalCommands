@@ -50,7 +50,8 @@ namespace ElectricalCommands
             [
                 "ADD SUFFIX (E). *NOT ADDED AS NOTE*",
                 "ADD SUFFIX (R). *NOT ADDED AS NOTE*",
-                "APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*",
+                "APPLY LCL LOAD REDUCTION (USE 80% OF THE LOAD). *NOT ADDED AS NOTE*",
+                "APPLY LCL LOAD ADDITION (USE 125% OF THE LOAD). *NOT ADDED AS NOTE*",
             ];
 
             INFO_LABEL.Text = "";
@@ -880,7 +881,11 @@ namespace ElectricalCommands
                     {
                         if (row.Cells[columnIndex[i + j]].Value != null)
                         {
-                            var hasLCLApplied = verify_LCL_from_phase_cell(
+                            bool has08LCLApplied = verify_LCL_from_phase_cell(
+                                row.Index,
+                                columnIndex[i + j]
+                            );
+                            bool has125LCLApplied = verify_125LCL_from_phase_cell(
                                 row.Index,
                                 columnIndex[i + j]
                             );
@@ -890,16 +895,16 @@ namespace ElectricalCommands
                             );
                             sum += ParseAndSumCell(
                                 row.Cells[columnIndex[i + j]].Value.ToString(),
-                                hasLCLApplied,
+                                has08LCLApplied,
+                                has125LCLApplied,
                                 hasKitchemDemandApplied ? demandFactor : 1.0
                             );
                         }
                     }
-                    var equipment_load = get_equipment_load(row.Index, columnIndex[i]);
+                    var equipment_load = get_equipment_load(row.Index);
                     if (equipment_load > largestLoad)
                     {
                         largestLoad = equipment_load;
-                        Console.WriteLine("Largest load: {0}", largestLoad.ToString());
                     }
                 }
                 PHASE_SUM_GRID.Rows[0].Cells[i / 2].Value = sum;
@@ -908,6 +913,16 @@ namespace ElectricalCommands
             {
                 LARGEST_LCL_INPUT.Text = largestLoad.ToString();
             }
+        }
+
+        private bool verify_125LCL_from_phase_cell(int rowIndex, int colIndex)
+        {
+            if (!LARGEST_LCL_CHECKBOX.Checked)
+            {
+                return false;
+            }
+            var note = "APPLY LCL LOAD ADDITION (USE 125% OF THE LOAD). *NOT ADDED AS NOTE*";
+            return does_breaker_have_note(rowIndex, colIndex, note);
         }
 
         private double determine_demand_factor(int numberOfBreakersWithKitchenDemand)
@@ -1007,7 +1022,12 @@ namespace ElectricalCommands
             return does_breaker_have_note(rowIndex, colIndex, note);
         }
 
-        private double ParseAndSumCell(string cellValue, bool hasLCLApplied, double demandFactor)
+        private double ParseAndSumCell(
+            string cellValue,
+            bool has08LCLApplied,
+            bool has125LCLApplied,
+            double demandFactor
+        )
         {
             double sum = 0;
             if (!string.IsNullOrEmpty(cellValue))
@@ -1017,7 +1037,11 @@ namespace ElectricalCommands
                 {
                     if (double.TryParse(part, out double value))
                     {
-                        if (hasLCLApplied)
+                        if (has125LCLApplied)
+                        {
+                            sum += value * 1.25;
+                        }
+                        else if (has08LCLApplied)
                         {
                             if (demandFactor < 0.8)
                             {
@@ -1039,7 +1063,7 @@ namespace ElectricalCommands
                     }
                 }
             }
-            return sum;
+            return Math.Ceiling(sum);
         }
 
         private void panel_cell_changed_2P()
@@ -1059,7 +1083,11 @@ namespace ElectricalCommands
                     {
                         if (row.Cells[columnIndex[i + j]].Value != null)
                         {
-                            var hasLCLApplied = verify_LCL_from_phase_cell(
+                            var has08LCLApplied = verify_LCL_from_phase_cell(
+                                row.Index,
+                                columnIndex[i + j]
+                            );
+                            var has125LCLApplied = verify_125LCL_from_phase_cell(
                                 row.Index,
                                 columnIndex[i + j]
                             );
@@ -1069,12 +1097,13 @@ namespace ElectricalCommands
                             );
                             sum += ParseAndSumCell(
                                 row.Cells[columnIndex[i + j]].Value.ToString(),
-                                hasLCLApplied,
+                                has08LCLApplied,
+                                has125LCLApplied,
                                 hasKitchemDemandApplied ? demandFactor : 1.0
                             );
                         }
                     }
-                    var equipment_load = get_equipment_load(row.Index, columnIndex[i]);
+                    var equipment_load = get_equipment_load(row.Index);
                     if (equipment_load > largestLoad)
                     {
                         largestLoad = equipment_load;
@@ -1173,13 +1202,13 @@ namespace ElectricalCommands
 
                     // 3. Multiply by 125% and put that in col 1 row 0 of "LCL_GRID".
                     double value125 = largestLclInputValue * 1.25;
-                    LCL_GRID[1, 0].Value = value125;
+                    LCL_GRID[1, 0].Value = Math.Ceiling(value125);
 
                     // 4. Subtract value in col 1 row 0 from value in col 0 row 0 of "LCL_GRID".
                     double difference = value125 - largestLclInputValue;
 
                     // 5. Put that number in col 0 row 0 of "TOTAL_OTHER_LOAD_GRID".
-                    TOTAL_OTHER_LOAD_GRID[0, 0].Value = difference;
+                    TOTAL_OTHER_LOAD_GRID[0, 0].Value = Math.Ceiling(difference);
 
                     // 6. Add to the value in "PANEL_LOAD_GRID".
                     double panelLoad = Convert.ToDouble(TOTAL_VA_GRID[0, 0].Value);
@@ -1755,73 +1784,100 @@ namespace ElectricalCommands
             }
         }
 
-        private double get_equipment_load(int rowIndex, int colIndex)
+        private double get_equipment_load(int rowIndex)
         {
-            var side = colIndex < 6 ? "_left" : "_right";
+            var leftSideEquipmentLoad = GetEquipmentLoad(rowIndex, "_left");
+            var rightSideEquipmentLoad = GetEquipmentLoad(rowIndex, "_right");
+
+            return (leftSideEquipmentLoad > rightSideEquipmentLoad)
+                ? leftSideEquipmentLoad
+                : rightSideEquipmentLoad;
+        }
+
+        private double GetEquipmentLoad(int rowIndex, string side)
+        {
             var descriptionCellTag = PANEL_GRID.Rows[rowIndex].Cells["description" + side].Tag;
+            var descriptionCellValue = PANEL_GRID.Rows[rowIndex].Cells["description" + side].Value;
+            var equipmentLoad = 0.0;
+
             if (
                 descriptionCellTag != null
-                && descriptionCellTag
-                    .ToString()
-                    .Contains(
-                        "APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*"
-                    )
+                && (
+                    descriptionCellTag
+                        .ToString()
+                        .Contains(
+                            "APPLY LCL LOAD REDUCTION (USE 80% OF THE LOAD). *NOT ADDED AS NOTE*"
+                        )
+                    || descriptionCellTag
+                        .ToString()
+                        .Contains(
+                            "APPLY LCL LOAD ADDITION (USE 125% OF THE LOAD). *NOT ADDED AS NOTE*"
+                        )
+                )
+                && !String.IsNullOrEmpty(descriptionCellValue.ToString())
             )
             {
-                if (rowIndex >= PANEL_GRID.Rows.Count - 3)
+                if (descriptionCellValue.ToString().All(c => c == '-'))
                 {
                     return 0;
                 }
 
-                var breakerCellValue = PANEL_GRID.Rows[rowIndex].Cells["breaker" + side].Value;
-                var nextBreakerCellValue = PANEL_GRID
-                    .Rows[rowIndex + 1]
-                    .Cells["breaker" + side]
-                    .Value;
-                var breakerCellValueTwoRowsDown = PANEL_GRID
-                    .Rows[rowIndex + 2]
-                    .Cells["breaker" + side]
-                    .Value;
-                int breakerIntValue = 0;
-                if (breakerCellValue != null)
-                {
-                    Int32.TryParse(breakerCellValue.ToString(), out breakerIntValue);
-                }
+                equipmentLoad += sum_phase_values(rowIndex, side);
 
-                if (
-                    breakerCellValue != null
-                    && breakerCellValue.ToString() != ""
-                    && breakerIntValue > 4
-                )
+                if (PANEL_GRID.Rows.Count > rowIndex + 1)
                 {
-                    int rowsToCheck = 1;
+                    var nextRowDescriptionCellValue = PANEL_GRID
+                        .Rows[rowIndex + 1]
+                        .Cells["description" + side]
+                        .Value;
+
+                    var nextRowBreakerCellValue = PANEL_GRID
+                        .Rows[rowIndex + 1]
+                        .Cells["breaker" + side]
+                        .Value;
+
                     if (
-                        nextBreakerCellValue == null
-                        && breakerCellValueTwoRowsDown != null
-                        && breakerCellValueTwoRowsDown.ToString() == "3"
+                        nextRowBreakerCellValue != null
+                        && (
+                            nextRowBreakerCellValue.ToString() == "2"
+                            || String.IsNullOrEmpty(nextRowBreakerCellValue.ToString())
+                        )
+                        && (
+                            String.IsNullOrEmpty(nextRowDescriptionCellValue.ToString())
+                            || nextRowDescriptionCellValue.ToString().All(c => c == '-')
+                        )
                     )
                     {
-                        rowsToCheck = 3;
+                        equipmentLoad += sum_phase_values(rowIndex + 1, side);
                     }
-                    else if (nextBreakerCellValue != null && nextBreakerCellValue.ToString() == "2")
-                    {
-                        rowsToCheck = 2;
-                    }
+                }
 
-                    if (rowsToCheck > 1 && rowIndex >= PANEL_GRID.Rows.Count - rowsToCheck + 1)
-                    {
-                        return 0;
-                    }
+                if (PANEL_GRID.Rows.Count > rowIndex + 2)
+                {
+                    var nextRowDescriptionCellValue = PANEL_GRID
+                        .Rows[rowIndex + 2]
+                        .Cells["description" + side]
+                        .Value;
 
-                    double sum = 0;
-                    for (int i = rowIndex; i < rowIndex + rowsToCheck; i++)
+                    var nextRowBreakerCellValue = PANEL_GRID
+                        .Rows[rowIndex + 2]
+                        .Cells["breaker" + side]
+                        .Value;
+
+                    if (
+                        nextRowBreakerCellValue != null
+                        && nextRowBreakerCellValue.ToString() == "3"
+                        && (
+                            String.IsNullOrEmpty(nextRowDescriptionCellValue.ToString())
+                            || nextRowDescriptionCellValue.ToString().All(c => c == '-')
+                        )
+                    )
                     {
-                        sum += sum_phase_values(i, side);
+                        equipmentLoad += sum_phase_values(rowIndex + 2, side);
                     }
-                    return sum / 1.25;
                 }
             }
-            return 0.0;
+            return equipmentLoad;
         }
 
         public static void put_in_json_file(object thing)
@@ -1860,10 +1916,10 @@ namespace ElectricalCommands
         private double sum_phase_values(int rowIndex, string side)
         {
             double sum = 0;
-            string[] phases = { "A", "B" };
+            string[] phases = { "a", "b" };
             if (PANEL_GRID.Columns.Contains("phase_c" + side))
             {
-                phases = ["A", "B", "C"];
+                phases = ["a", "b", "c"];
             }
 
             foreach (var phase in phases)
@@ -1992,7 +2048,7 @@ namespace ElectricalCommands
             {
                 return false;
             }
-            var note = "APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*";
+            var note = "APPLY LCL LOAD REDUCTION (USE 80% OF THE LOAD). *NOT ADDED AS NOTE*";
             return does_breaker_have_note(rowIndex, colIndex, note);
         }
 
@@ -2715,7 +2771,7 @@ namespace ElectricalCommands
 
                     if (
                         selectedValue.Contains(
-                            "APPLY LCL LOAD REDUCTION (USE 80 % OF THE MCA LOAD). *NOT ADDED AS NOTE*"
+                            "APPLY LCL LOAD REDUCTION (USE 80% OF THE LOAD). *NOT ADDED AS NOTE*"
                         )
                     )
                     {
@@ -2727,6 +2783,7 @@ namespace ElectricalCommands
             }
 
             recalculate_breakers();
+            calculate_lcl_otherload_panelload_feederamps();
         }
 
         private void APPLY_COMBOBOX_SelectedIndexChanged(object sender, EventArgs e)
@@ -2798,6 +2855,7 @@ namespace ElectricalCommands
             }
 
             recalculate_breakers();
+            calculate_lcl_otherload_panelload_feederamps();
         }
 
         private void AUTO_CHECKBOX_CheckedChanged(object sender, EventArgs e)
@@ -2860,6 +2918,11 @@ namespace ElectricalCommands
 
             APPLY_COMBOBOX.SelectedIndex = 1;
             APPLY_COMBOBOX.SelectedIndex = 0;
+        }
+
+        private void DUPLICATE_PANEL_BUTTON_Click(object sender, EventArgs e)
+        {
+            var modalData = retrieve_data_from_modal();
         }
     }
 }

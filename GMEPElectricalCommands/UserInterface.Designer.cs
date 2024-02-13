@@ -92,6 +92,7 @@
       this.LARGEST_LCL_INPUT = new System.Windows.Forms.TextBox();
       this.ALL_EXISTING_BUTTON = new System.Windows.Forms.Button();
       this.REMOVE_EXISTING_CHECKBOX = new System.Windows.Forms.CheckBox();
+      this.DUPLICATE_PANEL_BUTTON = new System.Windows.Forms.Button();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -704,11 +705,22 @@
       this.REMOVE_EXISTING_CHECKBOX.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
       this.REMOVE_EXISTING_CHECKBOX.UseVisualStyleBackColor = true;
       // 
+      // DUPLICATE_PANEL_BUTTON
+      // 
+      this.DUPLICATE_PANEL_BUTTON.Location = new System.Drawing.Point(1109, 14);
+      this.DUPLICATE_PANEL_BUTTON.Name = "DUPLICATE_PANEL_BUTTON";
+      this.DUPLICATE_PANEL_BUTTON.Size = new System.Drawing.Size(137, 23);
+      this.DUPLICATE_PANEL_BUTTON.TabIndex = 195;
+      this.DUPLICATE_PANEL_BUTTON.Text = "DUPLICATE PANEL";
+      this.DUPLICATE_PANEL_BUTTON.UseVisualStyleBackColor = true;
+      this.DUPLICATE_PANEL_BUTTON.Click += new System.EventHandler(this.DUPLICATE_PANEL_BUTTON_Click);
+      // 
       // UserInterface
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
+      this.Controls.Add(this.DUPLICATE_PANEL_BUTTON);
       this.Controls.Add(this.REMOVE_EXISTING_CHECKBOX);
       this.Controls.Add(this.ALL_EXISTING_BUTTON);
       this.Controls.Add(this.LARGEST_LCL_INPUT);
@@ -835,5 +847,6 @@
     private System.Windows.Forms.TextBox LARGEST_LCL_INPUT;
     private System.Windows.Forms.Button ALL_EXISTING_BUTTON;
     private System.Windows.Forms.CheckBox REMOVE_EXISTING_CHECKBOX;
+    private System.Windows.Forms.Button DUPLICATE_PANEL_BUTTON;
   }
 }
