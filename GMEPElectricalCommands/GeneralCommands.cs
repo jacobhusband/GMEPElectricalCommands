@@ -1256,13 +1256,7 @@ namespace ElectricalCommands
       return numIntersections % 2 != 0;
     }
 
-    public static void CreateEntitiesAtEndPoint(
-        Transaction trans,
-        Extents3d extents,
-        Point3d endPoint,
-        string text1,
-        string text2
-    )
+    public static void CreateEntitiesAtEndPoint(Transaction trans, Extents3d extents, Point3d endPoint, string text1, string text2)
     {
       // First Text - "KEYED PLAN"
       CreateAndPositionText(
@@ -1349,12 +1343,7 @@ namespace ElectricalCommands
       }
     }
 
-    private void SaveLineAttributesToFile(
-        Line line,
-        Point3d startPoint,
-        Vector3d vector,
-        string filePath
-    )
+    private void SaveLineAttributesToFile(Line line, Point3d startPoint, Vector3d vector, string filePath)
     {
       using (StreamWriter writer = new StreamWriter(filePath, true))
       {
@@ -1376,16 +1365,7 @@ namespace ElectricalCommands
       }
     }
 
-    private static ObjectId CreateText(
-        string content,
-        string style,
-        TextHorizontalMode horizontalMode,
-        TextVerticalMode verticalMode,
-        double height,
-        double widthFactor,
-        Autodesk.AutoCAD.Colors.Color color,
-        string layer
-    )
+    private static ObjectId CreateText(string content, string style, TextHorizontalMode horizontalMode, TextVerticalMode verticalMode, double height, double widthFactor, Autodesk.AutoCAD.Colors.Color color, string layer)
     {
       var (doc, db, _) = GeneralCommands.GetGlobals();
 
@@ -1437,18 +1417,7 @@ namespace ElectricalCommands
       }
     }
 
-    private static void CreateAndPositionText(
-        Transaction tr,
-        string content,
-        string style,
-        double height,
-        double widthFactor,
-        int colorIndex,
-        string layerName,
-        Point3d position,
-        TextHorizontalMode horizontalMode = TextHorizontalMode.TextLeft,
-        TextVerticalMode verticalMode = TextVerticalMode.TextBase
-    )
+    private static void CreateAndPositionText(Transaction tr, string content, string style, double height, double widthFactor, int colorIndex, string layerName, Point3d position, TextHorizontalMode horizontalMode = TextHorizontalMode.TextLeft, TextVerticalMode verticalMode = TextVerticalMode.TextBase)
     {
       var color = Autodesk.AutoCAD.Colors.Color.FromColorIndex(
           Autodesk.AutoCAD.Colors.ColorMethod.ByLayer,
@@ -1524,13 +1493,7 @@ namespace ElectricalCommands
       return new Point3d(0, 0, 0);
     }
 
-    public static void CreatePolyline(
-        Color color,
-        string layer,
-        Point2d[] vertices,
-        double startWidth,
-        double endWidth
-    )
+    public static void CreatePolyline(Color color, string layer, Point2d[] vertices, double startWidth, double endWidth)
     {
       Document acDoc = Autodesk
           .AutoCAD
@@ -1579,11 +1542,7 @@ namespace ElectricalCommands
       }
     }
 
-    private static void CreateLeaderFromTextToPoint(
-        Entity textEnt,
-        Transaction trans,
-        Extents3d imageExtents
-    )
+    private static void CreateLeaderFromTextToPoint(Entity textEnt, Transaction trans, Extents3d imageExtents)
     {
       Extents3d textExtents = textEnt.GeometricExtents;
       Point3d leftMid = new Point3d(

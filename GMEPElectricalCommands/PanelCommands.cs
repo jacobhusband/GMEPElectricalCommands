@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Windows.Forms;
-using Autodesk.AutoCAD.ApplicationServices;
+﻿using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
@@ -11,6 +6,11 @@ using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.Runtime;
 using Newtonsoft.Json;
 using OfficeOpenXml;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace ElectricalCommands
 {
@@ -469,12 +469,7 @@ namespace ElectricalCommands
       File.WriteAllText(path, combined);
     }
 
-    private static Dictionary<string, Point3d> GetBottomRightCoordinate(
-        Document doc,
-        Editor ed,
-        Dictionary<string, Point3d> selectionPositions,
-        MText mText
-    )
+    private static Dictionary<string, Point3d> GetBottomRightCoordinate(Document doc, Editor ed, Dictionary<string, Point3d> selectionPositions, MText mText)
     {
       Point3d pt_1 = new Point3d(mText.Location.X, mText.Location.Y - 0.3744, 0);
       Point3d pt_2 = new Point3d(mText.Location.X + 1, mText.Location.Y, 0);
@@ -976,11 +971,7 @@ namespace ElectricalCommands
       }
     }
 
-    private string[] GetTextValuesInRegion(
-        Dictionary<string, object> result,
-        Dictionary<string, object> pt1,
-        Dictionary<string, object> pt2
-    )
+    private string[] GetTextValuesInRegion(Dictionary<string, object> result, Dictionary<string, object> pt1, Dictionary<string, object> pt2)
     {
       var textList = ((List<Dictionary<string, object>>)result["text"])
           .OrderBy(text => (double)text["x"]) // Then sort by X-coordinate in ascending order (left to right)
@@ -1225,9 +1216,7 @@ namespace ElectricalCommands
       File.WriteAllText(path, json);
     }
 
-    private Dictionary<string, object> UpdatePanelDataDescriptions(
-        Dictionary<string, object> panelData
-    )
+    private Dictionary<string, object> UpdatePanelDataDescriptions(Dictionary<string, object> panelData)
     {
       // Check if the keys exist in the dictionary
       if (
@@ -1326,11 +1315,7 @@ namespace ElectricalCommands
       return true;
     }
 
-    private static Dictionary<string, object> ProcessThreePolePanel(
-        ExcelWorksheet selectedWorksheet,
-        int row,
-        int col
-    )
+    private static Dictionary<string, object> ProcessThreePolePanel(ExcelWorksheet selectedWorksheet, int row, int col)
     {
       List<string> descriptionLeft = new List<string>();
       List<string> phaseALeft = new List<string>();
@@ -1487,11 +1472,7 @@ namespace ElectricalCommands
       return panel;
     }
 
-    private static Dictionary<string, object> ProcessTwoPolePanel(
-        ExcelWorksheet selectedWorksheet,
-        int row,
-        int col
-    )
+    private static Dictionary<string, object> ProcessTwoPolePanel(ExcelWorksheet selectedWorksheet, int row, int col)
     {
       List<string> descriptionLeft = new List<string>();
       List<string> phaseALeft = new List<string>();
@@ -1641,11 +1622,7 @@ namespace ElectricalCommands
       return panel;
     }
 
-    private static void ReplaceInPanel(
-        Dictionary<string, object> panel,
-        string key,
-        string toRemove
-    )
+    private static void ReplaceInPanel(Dictionary<string, object> panel, string key, string toRemove)
     {
       if (panel.ContainsKey(key))
       {
@@ -1657,9 +1634,7 @@ namespace ElectricalCommands
       }
     }
 
-    private static List<Dictionary<string, object>> ProcessWorksheet(
-        ExcelWorksheet selectedWorksheet
-    )
+    private static List<Dictionary<string, object>> ProcessWorksheet(ExcelWorksheet selectedWorksheet)
     {
       var panels = new List<Dictionary<string, object>>();
       int rowCount = selectedWorksheet.Dimension.Rows;
@@ -1691,12 +1666,7 @@ namespace ElectricalCommands
       Console.WriteLine(ex.Message);
     }
 
-    public void KeepBreakersGivenPoints(
-        Point3d point1,
-        Point3d point2,
-        Point3d point3,
-        string content
-    )
+    public void KeepBreakersGivenPoints(Point3d point1, Point3d point2, Point3d point3, string content)
     {
       var (doc, db, ed) = PanelCommands.GetGlobals();
 
@@ -1784,15 +1754,7 @@ namespace ElectricalCommands
       }
     }
 
-    private void CreateCircleText(
-        BlockTableRecord btr,
-        Transaction tr,
-        Point3d centerPoint,
-        double height,
-        int colorIndex,
-        string textStyle,
-        string content
-    )
+    private void CreateCircleText(BlockTableRecord btr, Transaction tr, Point3d centerPoint, double height, int colorIndex, string textStyle, string content)
     {
       DBText text = new DBText();
       text.SetDatabaseDefaults();
@@ -1893,13 +1855,7 @@ namespace ElectricalCommands
       return layerName;
     }
 
-    private void CreateCalculations(
-        BlockTableRecord btr,
-        Transaction tr,
-        Point3d startPoint,
-        Point3d endPoint,
-        Dictionary<string, object> panelData
-    )
+    private void CreateCalculations(BlockTableRecord btr, Transaction tr, Point3d startPoint, Point3d endPoint, Dictionary<string, object> panelData)
     {
       var (_, _, ed) = GetGlobals();
       double kvaValue;
@@ -2176,15 +2132,7 @@ namespace ElectricalCommands
       );
     }
 
-    private double CreateNotes(
-        BlockTableRecord btr,
-        Transaction tr,
-        Point3d startPoint,
-        Point3d endPoint,
-        string panelType,
-        string customTitle,
-        List<string> customNotes
-    )
+    private double CreateNotes(BlockTableRecord btr, Transaction tr, Point3d startPoint, Point3d endPoint, string panelType, string customTitle, List<string> customNotes)
     {
       string title;
       if (!string.IsNullOrEmpty(customTitle))
@@ -2437,13 +2385,7 @@ namespace ElectricalCommands
       return lines;
     }
 
-    private void CreateCenterLines(
-        BlockTableRecord btr,
-        Transaction tr,
-        Point3d startPoint,
-        Point3d endPoint,
-        bool is2Pole
-    )
+    private void CreateCenterLines(BlockTableRecord btr, Transaction tr, Point3d startPoint, Point3d endPoint, bool is2Pole)
     {
       // Create horizontal line above
       CreateLine(
@@ -2562,13 +2504,7 @@ namespace ElectricalCommands
       CreateCenterLinePattern(tr, btr, startPoint, endPoint, is2Pole);
     }
 
-    private void CreateCenterLinePattern(
-        Transaction tr,
-        BlockTableRecord btr,
-        Point3d startPoint,
-        Point3d endPoint,
-        bool is2Pole
-    )
+    private void CreateCenterLinePattern(Transaction tr, BlockTableRecord btr, Point3d startPoint, Point3d endPoint, bool is2Pole)
     {
       double maxY = endPoint.Y + 0.2533;
       double increaseY = 0.1872;
@@ -2621,14 +2557,7 @@ namespace ElectricalCommands
       }
     }
 
-    public void CreateCircle(
-        BlockTableRecord btr,
-        Transaction tr,
-        Point3d center,
-        double radius,
-        int colorIndex,
-        bool doHatch = true
-    )
+    public void CreateCircle(BlockTableRecord btr, Transaction tr, Point3d center, double radius, int colorIndex, bool doHatch = true)
     {
       using (Circle circle = new Circle())
       {
@@ -2660,12 +2589,7 @@ namespace ElectricalCommands
       }
     }
 
-    private void CreateFooterText(
-        Transaction tr,
-        Point3d endPoint,
-        Dictionary<string, object> panelData,
-        bool is2Pole
-    )
+    private void CreateFooterText(Transaction tr, Point3d endPoint, Dictionary<string, object> panelData, bool is2Pole)
     {
       if (is2Pole)
       {
@@ -2852,14 +2776,7 @@ namespace ElectricalCommands
       return startPoint.Y - (headerHeight + (rowHeight * ((list.Count + 1) / 2)));
     }
 
-    private void CreateRectangle(
-        BlockTableRecord btr,
-        Transaction tr,
-        Point3d topRightCorner,
-        Point3d startPoint,
-        Point3d endPoint,
-        string layerName
-    )
+    private void CreateRectangle(BlockTableRecord btr, Transaction tr, Point3d topRightCorner, Point3d startPoint, Point3d endPoint, string layerName)
     {
       // Create the rectangle
       var rect = new Autodesk.AutoCAD.DatabaseServices.Polyline(4);
@@ -2879,16 +2796,7 @@ namespace ElectricalCommands
       tr.AddNewlyCreatedDBObject(rect, true);
     }
 
-    private static ObjectId CreateText(
-        string content,
-        string style,
-        TextHorizontalMode horizontalMode,
-        TextVerticalMode verticalMode,
-        double height,
-        double widthFactor,
-        Autodesk.AutoCAD.Colors.Color color,
-        string layer
-    )
+    private static ObjectId CreateText(string content, string style, TextHorizontalMode horizontalMode, TextVerticalMode verticalMode, double height, double widthFactor, Autodesk.AutoCAD.Colors.Color color, string layer)
     {
       var (doc, db, _) = PanelCommands.GetGlobals();
 
@@ -2940,18 +2848,7 @@ namespace ElectricalCommands
       }
     }
 
-    private static void CreateAndPositionText(
-        Transaction tr,
-        string content,
-        string style,
-        double height,
-        double widthFactor,
-        int colorIndex,
-        string layerName,
-        Point3d position,
-        TextHorizontalMode horizontalMode = TextHorizontalMode.TextLeft,
-        TextVerticalMode verticalMode = TextVerticalMode.TextBase
-    )
+    private static void CreateAndPositionText(Transaction tr, string content, string style, double height, double widthFactor, int colorIndex, string layerName, Point3d position, TextHorizontalMode horizontalMode = TextHorizontalMode.TextLeft, TextVerticalMode verticalMode = TextVerticalMode.TextBase)
     {
       var color = Autodesk.AutoCAD.Colors.Color.FromColorIndex(
           Autodesk.AutoCAD.Colors.ColorMethod.ByLayer,
@@ -2971,19 +2868,7 @@ namespace ElectricalCommands
       text.Position = position;
     }
 
-    private void CreateAndPositionFittedText(
-        Transaction tr,
-        string content,
-        string style,
-        double height,
-        double widthFactor,
-        int colorIndex,
-        string layerName,
-        Point3d position,
-        double length,
-        TextHorizontalMode horizontalMode = TextHorizontalMode.TextLeft,
-        TextVerticalMode verticalMode = TextVerticalMode.TextBase
-    )
+    private void CreateAndPositionFittedText(Transaction tr, string content, string style, double height, double widthFactor, int colorIndex, string layerName, Point3d position, double length, TextHorizontalMode horizontalMode = TextHorizontalMode.TextLeft, TextVerticalMode verticalMode = TextVerticalMode.TextBase)
     {
       var color = Autodesk.AutoCAD.Colors.Color.FromColorIndex(
           Autodesk.AutoCAD.Colors.ColorMethod.ByLayer,
@@ -3007,18 +2892,7 @@ namespace ElectricalCommands
       text.Position = position;
     }
 
-    private void CreateAndPositionCenteredText(
-        Transaction tr,
-        string content,
-        string style,
-        double height,
-        double widthFactor,
-        int colorIndex,
-        string layerName,
-        Point3d position,
-        TextHorizontalMode horizontalMode = TextHorizontalMode.TextLeft,
-        TextVerticalMode verticalMode = TextVerticalMode.TextBase
-    )
+    private void CreateAndPositionCenteredText(Transaction tr, string content, string style, double height, double widthFactor, int colorIndex, string layerName, Point3d position, TextHorizontalMode horizontalMode = TextHorizontalMode.TextLeft, TextVerticalMode verticalMode = TextVerticalMode.TextBase)
     {
       var color = Autodesk.AutoCAD.Colors.Color.FromColorIndex(
           Autodesk.AutoCAD.Colors.ColorMethod.ByLayer,
@@ -3040,18 +2914,7 @@ namespace ElectricalCommands
       text.AlignmentPoint = new Point3d(x + 0.1903, position.Y, 0);
     }
 
-    private void CreateAndPositionRightText(
-        Transaction tr,
-        string content,
-        string style,
-        double height,
-        double widthFactor,
-        int colorIndex,
-        string layerName,
-        Point3d position,
-        TextHorizontalMode horizontalMode = TextHorizontalMode.TextLeft,
-        TextVerticalMode verticalMode = TextVerticalMode.TextBase
-    )
+    private void CreateAndPositionRightText(Transaction tr, string content, string style, double height, double widthFactor, int colorIndex, string layerName, Point3d position, TextHorizontalMode horizontalMode = TextHorizontalMode.TextLeft, TextVerticalMode verticalMode = TextVerticalMode.TextBase)
     {
       var color = Autodesk.AutoCAD.Colors.Color.FromColorIndex(
           Autodesk.AutoCAD.Colors.ColorMethod.ByLayer,
@@ -3073,12 +2936,7 @@ namespace ElectricalCommands
       text.AlignmentPoint = new Point3d(x + 0.46, position.Y, 0);
     }
 
-    private void CreateTextsWithoutPanelData(
-        Transaction tr,
-        string layerName,
-        Point3d startPoint,
-        bool is2Pole
-    )
+    private void CreateTextsWithoutPanelData(Transaction tr, string layerName, Point3d startPoint, bool is2Pole)
     {
       CreateAndPositionText(
           tr,
@@ -3661,12 +3519,7 @@ namespace ElectricalCommands
       }
     }
 
-    private void CreateTextsWithPanelData(
-        Transaction tr,
-        string layerName,
-        Point3d startPoint,
-        Dictionary<string, object> panelData
-    )
+    private void CreateTextsWithPanelData(Transaction tr, string layerName, Point3d startPoint, Dictionary<string, object> panelData)
     {
       CreateAndPositionText(
           tr,
@@ -3750,15 +3603,7 @@ namespace ElectricalCommands
       );
     }
 
-    private void CreateVerticalLines(
-        Transaction tr,
-        BlockTableRecord btr,
-        Point3d startPoint,
-        double[] distances,
-        double startY,
-        double endY,
-        string layer
-    )
+    private void CreateVerticalLines(Transaction tr, BlockTableRecord btr, Point3d startPoint, double[] distances, double startY, double endY, string layer)
     {
       foreach (double distance in distances)
       {
@@ -3772,17 +3617,7 @@ namespace ElectricalCommands
       }
     }
 
-    private void CreateLines(
-        Transaction tr,
-        BlockTableRecord btr,
-        IEnumerable<(
-            double startX,
-            double startY,
-            double endX,
-            double endY,
-            string layer
-        )> lines
-    )
+    private void CreateLines(Transaction tr, BlockTableRecord btr, IEnumerable<(double startX, double startY, double endX, double endY, string layer)> lines)
     {
       foreach (var (startX, startY, endX, endY, layer) in lines)
       {
@@ -3790,15 +3625,7 @@ namespace ElectricalCommands
       }
     }
 
-    private void CreateLine(
-        Transaction tr,
-        BlockTableRecord btr,
-        double startX,
-        double startY,
-        double endX,
-        double endY,
-        string layer
-    )
+    private void CreateLine(Transaction tr, BlockTableRecord btr, double startX, double startY, double endX, double endY, string layer)
     {
       var lineStart = new Point3d(startX, startY, 0);
       var lineEnd = new Point3d(endX, endY, 0);
@@ -3809,13 +3636,7 @@ namespace ElectricalCommands
       tr.AddNewlyCreatedDBObject(line, true);
     }
 
-    private int ProcessTextData(
-        Transaction tr,
-        BlockTableRecord btr,
-        Point3d startPoint,
-        Dictionary<string, object> panelData,
-        bool is2Pole
-    )
+    private int ProcessTextData(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, bool is2Pole)
     {
       List<bool> leftBreakersHighlight = (List<bool>)panelData["breaker_left_highlights"];
       List<bool> rightBreakersHighlight = (List<bool>)panelData["breaker_right_highlights"];
@@ -3869,11 +3690,7 @@ namespace ElectricalCommands
       return largest_level;
     }
 
-    private Dictionary<string, List<bool>> ConvertTagsAndNotesToDictionary(
-        List<string> tags,
-        List<string> notes,
-        List<string> descriptions
-    )
+    private Dictionary<string, List<bool>> ConvertTagsAndNotesToDictionary(List<string> tags, List<string> notes, List<string> descriptions)
     {
       Dictionary<string, List<bool>> notesWithBools = new Dictionary<string, List<bool>>();
 
@@ -3913,9 +3730,7 @@ namespace ElectricalCommands
       return newNotes;
     }
 
-    private Dictionary<string, List<int>> ConvertBooleansToLevels(
-        Dictionary<string, List<bool>> notesWithBools
-    )
+    private Dictionary<string, List<int>> ConvertBooleansToLevels(Dictionary<string, List<bool>> notesWithBools)
     {
       Dictionary<string, List<int>> notesWithLevels = new Dictionary<string, List<int>>();
       List<int> maxLevelsSoFar = Enumerable
@@ -3946,11 +3761,7 @@ namespace ElectricalCommands
       return notesWithLevels;
     }
 
-    private int InsertBreakerNotes(
-        Point3d startPoint,
-        Dictionary<string, List<bool>> notesWithBools,
-        bool left
-    )
+    private int InsertBreakerNotes(Point3d startPoint, Dictionary<string, List<bool>> notesWithBools, bool left)
     {
       if (notesWithBools.Count == 0)
       {
@@ -4110,16 +3921,7 @@ namespace ElectricalCommands
       }
     }
 
-    private (
-        List<string>,
-        List<string>,
-        List<string>,
-        List<string>,
-        List<string>,
-        List<string>,
-        List<bool>,
-        List<string>
-    ) GetCorrectBreakerData(Dictionary<string, object> panelData, bool left, bool is2Pole)
+    private (List<string>, List<string>, List<string>, List<string>, List<string>, List<string>, List<bool>, List<string>) GetCorrectBreakerData(Dictionary<string, object> panelData, bool left, bool is2Pole)
     {
       var descriptions = new List<string>();
       var breakers = new List<string>();
@@ -4177,14 +3979,7 @@ namespace ElectricalCommands
       );
     }
 
-    private void ProcessSideData(
-        Transaction tr,
-        BlockTableRecord btr,
-        Point3d startPoint,
-        Dictionary<string, object> panelData,
-        bool left,
-        bool is2Pole
-    )
+    private void ProcessSideData(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, bool left, bool is2Pole)
     {
       var (descriptions, breakers, circuits, _, _, _, _, _) = GetCorrectBreakerData(
           panelData,
@@ -4224,14 +4019,7 @@ namespace ElectricalCommands
       }
     }
 
-    private void ProcessSideData2P(
-        Transaction tr,
-        BlockTableRecord btr,
-        Point3d startPoint,
-        Dictionary<string, object> panelData,
-        bool left,
-        bool is2Pole
-    )
+    private void ProcessSideData2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, bool left, bool is2Pole)
     {
       var (descriptions, breakers, circuits, _, _, _, _, _) = GetCorrectBreakerData(
           panelData,
@@ -4267,16 +4055,7 @@ namespace ElectricalCommands
       }
     }
 
-    private void CreateHalfBreaker(
-        Transaction tr,
-        BlockTableRecord btr,
-        Point3d startPoint,
-        Dictionary<string, object> panelData,
-        Dictionary<string, double> data,
-        bool left,
-        bool is2Pole,
-        int i
-    )
+    private void CreateHalfBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, Dictionary<string, double> data, bool left, bool is2Pole, int i)
     {
       var (
           descriptions,
@@ -4356,16 +4135,7 @@ namespace ElectricalCommands
       CreateHorizontalLine(startPoint.X, startPoint.Y, circuit, left, tr, btr);
     }
 
-    private void CreateHalfBreaker2P(
-        Transaction tr,
-        BlockTableRecord btr,
-        Point3d startPoint,
-        Dictionary<string, object> panelData,
-        Dictionary<string, double> data,
-        bool left,
-        bool is2Pole,
-        int i
-    )
+    private void CreateHalfBreaker2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, Dictionary<string, double> data, bool left, bool is2Pole, int i)
     {
       var (
           descriptions,
@@ -4445,16 +4215,7 @@ namespace ElectricalCommands
       CreateHorizontalLine(startPoint.X, startPoint.Y, circuit, left, tr, btr);
     }
 
-    private void Create1PoleBreaker(
-        Transaction tr,
-        BlockTableRecord btr,
-        Point3d startPoint,
-        Dictionary<string, object> panelData,
-        Dictionary<string, double> data,
-        bool left,
-        bool is2Pole,
-        int i
-    )
+    private void Create1PoleBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, Dictionary<string, double> data, bool left, bool is2Pole, int i)
     {
       var (
           descriptions,
@@ -4529,16 +4290,7 @@ namespace ElectricalCommands
       CreateHorizontalLine(startPoint.X, startPoint.Y, circuit, left, tr, btr);
     }
 
-    private void Create1PoleBreaker2P(
-        Transaction tr,
-        BlockTableRecord btr,
-        Point3d startPoint,
-        Dictionary<string, object> panelData,
-        Dictionary<string, double> data,
-        bool left,
-        bool is2Pole,
-        int i
-    )
+    private void Create1PoleBreaker2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, Dictionary<string, double> data, bool left, bool is2Pole, int i)
     {
       var (
           descriptions,
@@ -4613,16 +4365,7 @@ namespace ElectricalCommands
       CreateHorizontalLine(startPoint.X, startPoint.Y, circuit, left, tr, btr);
     }
 
-    private void Create2PoleBreaker(
-        Transaction tr,
-        BlockTableRecord btr,
-        Point3d startPoint,
-        Dictionary<string, object> panelData,
-        Dictionary<string, double> data,
-        bool left,
-        bool is2Pole,
-        int i
-    )
+    private void Create2PoleBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, Dictionary<string, double> data, bool left, bool is2Pole, int i)
     {
       var (
           descriptions,
@@ -4709,16 +4452,7 @@ namespace ElectricalCommands
       CreateBreakerLine(startPoint, i, left, tr, btr, 4);
     }
 
-    private void Create2PoleBreaker2P(
-        Transaction tr,
-        BlockTableRecord btr,
-        Point3d startPoint,
-        Dictionary<string, object> panelData,
-        Dictionary<string, double> data,
-        bool left,
-        bool is2Pole,
-        int i
-    )
+    private void Create2PoleBreaker2P(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, Dictionary<string, double> data, bool left, bool is2Pole, int i)
     {
       var (
           descriptions,
@@ -4806,16 +4540,7 @@ namespace ElectricalCommands
       CreateBreakerLine(startPoint, i, left, tr, btr, 4);
     }
 
-    private void Create3PoleBreaker(
-        Transaction tr,
-        BlockTableRecord btr,
-        Point3d startPoint,
-        Dictionary<string, object> panelData,
-        Dictionary<string, double> data,
-        bool left,
-        bool is2Pole,
-        int i
-    )
+    private void Create3PoleBreaker(Transaction tr, BlockTableRecord btr, Point3d startPoint, Dictionary<string, object> panelData, Dictionary<string, double> data, bool left, bool is2Pole, int i)
     {
       var (
           descriptions,
@@ -4906,14 +4631,7 @@ namespace ElectricalCommands
       CreateBreakerLine(startPoint, i, left, tr, btr, 6);
     }
 
-    private void CreateBreakerLine(
-        Point3d startPoint,
-        int i,
-        bool left,
-        Transaction tr,
-        BlockTableRecord btr,
-        int span
-    )
+    private void CreateBreakerLine(Point3d startPoint, int i, bool left, Transaction tr, BlockTableRecord btr, int span)
     {
       double x1,
           x2;
@@ -5050,12 +4768,7 @@ namespace ElectricalCommands
       }
     }
 
-    public List<string> GetPhaseList(
-        int i,
-        List<string> phaseA,
-        List<string> phaseB,
-        List<string> phaseC
-    )
+    public List<string> GetPhaseList(int i, List<string> phaseA, List<string> phaseB, List<string> phaseC)
     {
       if (i % 6 == 0)
       {
@@ -5110,14 +4823,7 @@ namespace ElectricalCommands
       }
     }
 
-    private void ProcessLineData(
-        Transaction tr,
-        BlockTableRecord btr,
-        Point3d startPoint,
-        Point3d endPoint,
-        double endOfDataY,
-        bool is2Pole
-    )
+    private void ProcessLineData(Transaction tr, BlockTableRecord btr, Point3d startPoint, Point3d endPoint, double endOfDataY, bool is2Pole)
     {
       string layerName = "0";
       double left1,
@@ -5405,14 +5111,7 @@ namespace ElectricalCommands
       }
     }
 
-    private double CreateHorizontalLine(
-        double startPointX,
-        double startPointY,
-        string circuitNumber,
-        bool left,
-        Transaction tr,
-        BlockTableRecord btr
-    )
+    private double CreateHorizontalLine(double startPointX, double startPointY, string circuitNumber, bool left, Transaction tr, BlockTableRecord btr)
     {
       int circuitNumReducer;
       double lineStartX;
@@ -5467,17 +5166,7 @@ namespace ElectricalCommands
       );
     }
 
-    private double CreateCircuitLine(
-        int circuitNumInt,
-        int circuitNumReducer,
-        double startPointY,
-        double deltaY,
-        double lineStartX,
-        double lineStartX2,
-        Transaction tr,
-        BlockTableRecord btr,
-        bool half = false
-    )
+    private double CreateCircuitLine(int circuitNumInt, int circuitNumReducer, double startPointY, double deltaY, double lineStartX, double lineStartX2, Transaction tr, BlockTableRecord btr, bool half = false)
     {
       circuitNumInt = (circuitNumInt - circuitNumReducer) / 2;
       double lineStartY = startPointY - (0.935999999999979 + (deltaY * circuitNumInt));
