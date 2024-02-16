@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Windows.Forms;
-using Autodesk.AutoCAD.ApplicationServices;
+﻿using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.Runtime;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace ElectricalCommands
 {
@@ -925,6 +925,107 @@ namespace ElectricalCommands
       ed.Regen();
     }
 
+    [CommandMethod("WOT")]
+    public static void WipeoutAroundText(ObjectId? textObjectId = null)
+    {
+      Document doc = Autodesk
+          .AutoCAD
+          .ApplicationServices
+          .Application
+          .DocumentManager
+          .MdiActiveDocument;
+      Database db = doc.Database;
+      Editor ed = doc.Editor;
+
+      if (!textObjectId.HasValue)
+      {
+        // Prompt the user to select a text object
+        PromptEntityOptions opts = new PromptEntityOptions("\nSelect a text object: ");
+        opts.SetRejectMessage("\nOnly text objects are allowed.");
+        opts.AddAllowedClass(typeof(DBText), true);
+        opts.AddAllowedClass(typeof(MText), true);
+        PromptEntityResult per = ed.GetEntity(opts);
+
+        if (per.Status != PromptStatus.OK)
+          return;
+
+        textObjectId = per.ObjectId;
+      }
+
+      double margin = 0.05;
+
+      using (Transaction tr = db.TransactionManager.StartTransaction())
+      {
+        Entity ent = (Entity)tr.GetObject(textObjectId.Value, OpenMode.ForRead);
+        double rotation = 0;
+        Point3d basePoint = Point3d.Origin; // default to origin
+
+        if (ent is DBText text)
+        {
+          rotation = text.Rotation;
+          basePoint = text.Position;
+          text.UpgradeOpen();
+          text.Rotation = 0;
+        }
+        else if (ent is MText mtext)
+        {
+          rotation = mtext.Rotation;
+          basePoint = mtext.Location;
+          mtext.UpgradeOpen();
+          mtext.Rotation = 0;
+        }
+
+        Extents3d extents = ent.GeometricExtents; // Recalculate extents after rotation
+
+        Point3d minPoint = extents.MinPoint;
+        Point3d maxPoint = extents.MaxPoint;
+
+        // Add margin
+        Point3d pt1 = new Point3d(minPoint.X - margin, minPoint.Y - margin, 0);
+        Point3d pt2 = new Point3d(maxPoint.X + margin, maxPoint.Y + margin, 0);
+        Point3d pt3 = new Point3d(pt1.X, pt2.Y, 0);
+        Point3d pt4 = new Point3d(pt2.X, pt1.Y, 0);
+
+        Point2dCollection pts = new Point2dCollection
+                {
+                    new Point2d(pt1.X, pt1.Y),
+                    new Point2d(pt4.X, pt4.Y),
+                    new Point2d(pt2.X, pt2.Y),
+                    new Point2d(pt3.X, pt3.Y),
+                    new Point2d(pt1.X, pt1.Y) // Close the loop
+                };
+
+        Wipeout wo = new Wipeout();
+        wo.SetDatabaseDefaults(db);
+        wo.SetFrom(pts, new Vector3d(0.0, 0.0, 1.0));
+
+        BlockTableRecord currentSpace = (BlockTableRecord)
+            tr.GetObject(db.CurrentSpaceId, OpenMode.ForWrite);
+
+        // Rotate wipeout and text back to their original rotation using common base point
+        wo.TransformBy(Matrix3d.Rotation(rotation, new Vector3d(0, 0, 1), basePoint));
+        if (ent is DBText)
+        {
+          ((DBText)ent).Rotation = rotation;
+        }
+        else if (ent is MText)
+        {
+          ((MText)ent).Rotation = rotation;
+        }
+
+        currentSpace.AppendEntity(wo);
+        tr.AddNewlyCreatedDBObject(wo, true);
+
+        // Send the text object to the front
+        DrawOrderTable dot = (DrawOrderTable)
+            tr.GetObject(currentSpace.DrawOrderTableId, OpenMode.ForWrite);
+        ObjectIdCollection ids = new ObjectIdCollection { textObjectId.Value };
+        dot.MoveToTop(ids);
+
+        tr.Commit();
+      }
+    }
+
     public void CreateBlock()
     {
       var (doc, db, _) = GeneralCommands.GetGlobals();
@@ -1107,106 +1208,6 @@ namespace ElectricalCommands
       var ed = doc.Editor;
 
       return (doc, db, ed);
-    }
-
-    public static void WipeoutAroundText(ObjectId? textObjectId = null)
-    {
-      Document doc = Autodesk
-          .AutoCAD
-          .ApplicationServices
-          .Application
-          .DocumentManager
-          .MdiActiveDocument;
-      Database db = doc.Database;
-      Editor ed = doc.Editor;
-
-      if (!textObjectId.HasValue)
-      {
-        // Prompt the user to select a text object
-        PromptEntityOptions opts = new PromptEntityOptions("\nSelect a text object: ");
-        opts.SetRejectMessage("\nOnly text objects are allowed.");
-        opts.AddAllowedClass(typeof(DBText), true);
-        opts.AddAllowedClass(typeof(MText), true);
-        PromptEntityResult per = ed.GetEntity(opts);
-
-        if (per.Status != PromptStatus.OK)
-          return;
-
-        textObjectId = per.ObjectId;
-      }
-
-      double margin = 0.05;
-
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
-        Entity ent = (Entity)tr.GetObject(textObjectId.Value, OpenMode.ForRead);
-        double rotation = 0;
-        Point3d basePoint = Point3d.Origin; // default to origin
-
-        if (ent is DBText text)
-        {
-          rotation = text.Rotation;
-          basePoint = text.Position;
-          text.UpgradeOpen();
-          text.Rotation = 0;
-        }
-        else if (ent is MText mtext)
-        {
-          rotation = mtext.Rotation;
-          basePoint = mtext.Location;
-          mtext.UpgradeOpen();
-          mtext.Rotation = 0;
-        }
-
-        Extents3d extents = ent.GeometricExtents; // Recalculate extents after rotation
-
-        Point3d minPoint = extents.MinPoint;
-        Point3d maxPoint = extents.MaxPoint;
-
-        // Add margin
-        Point3d pt1 = new Point3d(minPoint.X - margin, minPoint.Y - margin, 0);
-        Point3d pt2 = new Point3d(maxPoint.X + margin, maxPoint.Y + margin, 0);
-        Point3d pt3 = new Point3d(pt1.X, pt2.Y, 0);
-        Point3d pt4 = new Point3d(pt2.X, pt1.Y, 0);
-
-        Point2dCollection pts = new Point2dCollection
-                {
-                    new Point2d(pt1.X, pt1.Y),
-                    new Point2d(pt4.X, pt4.Y),
-                    new Point2d(pt2.X, pt2.Y),
-                    new Point2d(pt3.X, pt3.Y),
-                    new Point2d(pt1.X, pt1.Y) // Close the loop
-                };
-
-        Wipeout wo = new Wipeout();
-        wo.SetDatabaseDefaults(db);
-        wo.SetFrom(pts, new Vector3d(0.0, 0.0, 1.0));
-
-        BlockTableRecord currentSpace = (BlockTableRecord)
-            tr.GetObject(db.CurrentSpaceId, OpenMode.ForWrite);
-
-        // Rotate wipeout and text back to their original rotation using common base point
-        wo.TransformBy(Matrix3d.Rotation(rotation, new Vector3d(0, 0, 1), basePoint));
-        if (ent is DBText)
-        {
-          ((DBText)ent).Rotation = rotation;
-        }
-        else if (ent is MText)
-        {
-          ((MText)ent).Rotation = rotation;
-        }
-
-        currentSpace.AppendEntity(wo);
-        tr.AddNewlyCreatedDBObject(wo, true);
-
-        // Send the text object to the front
-        DrawOrderTable dot = (DrawOrderTable)
-            tr.GetObject(currentSpace.DrawOrderTableId, OpenMode.ForWrite);
-        ObjectIdCollection ids = new ObjectIdCollection { textObjectId.Value };
-        dot.MoveToTop(ids);
-
-        tr.Commit();
-      }
     }
 
     public static bool IsPointInside(Polyline polyline, Point3d point)
