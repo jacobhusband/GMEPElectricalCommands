@@ -8,6 +8,8 @@ using Newtonsoft.Json;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Drawing2D;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
