@@ -30,6 +30,8 @@ namespace ElectricalCommands
 
       if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
       {
+        var databases = GetDatabasesFromDWGFiles(ofd);
+
         HashSet<string> allXrefFileNames = ModifySelectedDWGFiles(ed, ofd);
 
         // Convert allXrefFileNames to an array
@@ -48,7 +50,7 @@ namespace ElectricalCommands
       }
     }
 
-    [CommandMethod("ATTACHALLXREFS")]
+    [CommandMethod("ATTACHXREFS")]
     public void AttachAllXrefs()
     {
       Editor ed = Application.DocumentManager.MdiActiveDocument.Editor;
@@ -64,7 +66,6 @@ namespace ElectricalCommands
         {
           XrefGraphNode xrefGraphNode = xrefGraph.GetXrefNode(i);
 
-          // Check if the node is an xref and is an overlay (i.e., it is nested)
           if (xrefGraphNode.XrefStatus == XrefStatus.Resolved && !xrefGraphNode.IsNested)
           {
             // Check if the BlockTableRecordId is not Null
@@ -111,6 +112,102 @@ namespace ElectricalCommands
       ed.WriteMessage("All overlay xrefs have been changed to attachments.");
     }
 
+    [CommandMethod("ATTACHXREFSINFILE")]
+    public void AttachAllXrefsInFileCommand()
+    {
+      // Prompt the user to select a DWG file
+      System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog
+      {
+        Multiselect = false,
+        Filter = "DWG files (*.dwg)|*.dwg",
+        Title = "Select a DWG File"
+      };
+
+      if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+      {
+        // Call the AttachAllXrefsInFile method with the selected file
+        AttachAllXrefsInFile(ofd.FileName);
+      }
+    }
+
+    public void AttachAllXrefsInFile(string filePath)
+    {
+      // Create a new database and read the DWG file
+      using (Database db = new Database(false, true))
+      {
+        db.ReadDwgFile(filePath, FileShare.ReadWrite, true, "");
+
+        using (Transaction tr = db.TransactionManager.StartTransaction())
+        {
+          // Get the XrefGraph of the current database
+          XrefGraph xrefGraph = db.GetHostDwgXrefGraph(true);
+
+          // Traverse the XrefGraph
+          for (int i = 0; i < xrefGraph.NumNodes; i++)
+          {
+            XrefGraphNode xrefGraphNode = xrefGraph.GetXrefNode(i);
+
+            if (xrefGraphNode.XrefStatus == XrefStatus.Resolved && !xrefGraphNode.IsNested)
+            {
+              // Check if the BlockTableRecordId is not Null
+              if (!xrefGraphNode.BlockTableRecordId.IsNull)
+              {
+                // Get the BlockTableRecord for the xref
+                BlockTableRecord btr = (BlockTableRecord)tr.GetObject(xrefGraphNode.BlockTableRecordId, OpenMode.ForWrite);
+
+                // Detach the xref
+                db.DetachXref(btr.ObjectId);
+
+                // Get the full path of the xref file
+                string xrefPath = xrefGraphNode.Database.Filename;
+
+                // Reattach the xref as an attachment
+                ObjectId xrefId = db.AttachXref(xrefPath, btr.Name);
+
+                if (!xrefId.IsNull)
+                {
+                  // Bind the xref, which changes its type to Attach
+                  db.BindXrefs(new ObjectIdCollection() { xrefId }, true);
+
+                  // Get the BlockTable
+                  BlockTable bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
+
+                  // Get the BlockTableRecord for the Model Space
+                  BlockTableRecord modelSpace = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
+
+                  // Create a new BlockReference for the xref
+                  BlockReference xrefReference = new BlockReference(Point3d.Origin, xrefId);
+
+                  // Add the BlockReference to the Model Space
+                  modelSpace.AppendEntity(xrefReference);
+                  tr.AddNewlyCreatedDBObject(xrefReference, true);
+                }
+              }
+            }
+          }
+
+          tr.Commit();
+        }
+
+        // Save the changes to the DWG file
+        db.SaveAs(filePath, DwgVersion.Current);
+      }
+    }
+
+    public List<Database> GetDatabasesFromDWGFiles(System.Windows.Forms.OpenFileDialog ofd)
+    {
+      List<Database> databases = new List<Database>();
+
+      foreach (string file in ofd.FileNames)
+      {
+        Database db = new Database(false, true);
+        db.ReadDwgFile(file, FileShare.ReadWrite, true, "");
+        databases.Add(db);
+      }
+
+      return databases;
+    }
+
     private HashSet<string> ModifySelectedDWGFiles(Editor ed, System.Windows.Forms.OpenFileDialog ofd)
     {
       HashSet<string> allXrefFileNames = new HashSet<string>();
@@ -126,17 +223,6 @@ namespace ElectricalCommands
 
           // Get the xref graph of the database
           XrefGraph xrefGraph = db.GetHostDwgXrefGraph(true);
-
-          // Traverse the xref graph
-          for (int i = 0; i < xrefGraph.NumNodes; i++)
-          {
-            XrefGraphNode xrefGraphNode = xrefGraph.GetXrefNode(i);
-
-            if (xrefGraphNode.XrefStatus == XrefStatus.Resolved && xrefGraphNode.IsNested)
-            {
-              ReattachXrefAsAttachment(db, xrefGraphNode);
-            }
-          }
 
           string[] xrefFileNames = GetXrefsOfXrefFile(db);
 
@@ -214,40 +300,6 @@ namespace ElectricalCommands
       }
 
       return allXrefFileNames;
-    }
-
-    private void ReattachXrefAsAttachment(Database db, XrefGraphNode xrefGraphNode)
-    {
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
-        // Get the BlockTableRecord for the xref
-        BlockTableRecord btr = (BlockTableRecord)tr.GetObject(xrefGraphNode.BlockTableRecordId, OpenMode.ForWrite);
-
-        // Detach the xref
-        db.DetachXref(btr.ObjectId);
-
-        // Get the full path of the xref file
-        string xrefPath = xrefGraphNode.Database.Filename;
-
-        // Reattach the xref as an attachment
-        ObjectId xrefId = db.AttachXref(xrefPath, btr.Name);
-
-        if (!xrefId.IsNull)
-        {
-          // Get the BlockTable
-          BlockTable bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
-
-          // Get the BlockTableRecord for the Model Space
-          BlockTableRecord modelSpace = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
-
-          // Create a new BlockReference for the xref
-          BlockReference xrefReference = new BlockReference(Point3d.Origin, xrefId);
-
-          // Add the BlockReference to the Model Space
-          modelSpace.AppendEntity(xrefReference);
-          tr.AddNewlyCreatedDBObject(xrefReference, true);
-        }
-      }
     }
 
     private string[] GetXrefsOfXrefFile(Database db)
