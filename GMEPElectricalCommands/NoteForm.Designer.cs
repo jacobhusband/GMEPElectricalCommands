@@ -1,6 +1,6 @@
 ﻿namespace ElectricalCommands
 {
-  partial class noteForm
+  partial class NoteForm
   {
     /// <summary>
     /// Required designer variable.

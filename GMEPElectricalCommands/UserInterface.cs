@@ -1,4 +1,10 @@
-﻿using System;
+﻿using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.Geometry;
+using Autodesk.AutoCAD.GraphicsSystem;
+using Newtonsoft.Json;
+using OfficeOpenXml.Packaging.Ionic.Zlib;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -9,12 +15,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.Geometry;
-using Autodesk.AutoCAD.GraphicsSystem;
-using Newtonsoft.Json;
-using OfficeOpenXml.Packaging.Ionic.Zlib;
 
 namespace ElectricalCommands
 {
@@ -22,8 +22,8 @@ namespace ElectricalCommands
   {
     private PanelCommands myCommandsInstance;
     private MainForm mainForm;
-    private NEWPANELFORM newPanelForm;
-    private noteForm notesForm;
+    private NewPanelForm newPanelForm;
+    private NoteForm notesForm;
     private List<string> notesStorage = new List<string>();
     private List<DataGridViewCell> selectedCells;
     private List<string> defaultNotes;
@@ -31,7 +31,7 @@ namespace ElectricalCommands
     private bool initialization;
     private object oldValue;
 
-    public UserInterface(PanelCommands myCommands, MainForm mainForm, NEWPANELFORM newPanelForm, string tabName, bool is3PH = false)
+    public UserInterface(PanelCommands myCommands, MainForm mainForm, NewPanelForm newPanelForm, string tabName, bool is3PH = false)
     {
       InitializeComponent();
       myCommandsInstance = myCommands;
@@ -43,9 +43,9 @@ namespace ElectricalCommands
       this.defaultNotes =
       [
           "ADD SUFFIX (E). *NOT ADDED AS NOTE*",
-          "ADD SUFFIX (R). *NOT ADDED AS NOTE*",
-          "APPLY LCL LOAD REDUCTION (USE 80% OF THE LOAD). *NOT ADDED AS NOTE*",
-          "APPLY LCL LOAD ADDITION (USE 125% OF THE LOAD). *NOT ADDED AS NOTE*",
+        "ADD SUFFIX (R). *NOT ADDED AS NOTE*",
+        "APPLY LCL LOAD REDUCTION (USE 80% OF THE LOAD). *NOT ADDED AS NOTE*",
+        "APPLY LCL LOAD ADDITION (USE 125% OF THE LOAD). *NOT ADDED AS NOTE*",
       ];
 
       INFO_LABEL.Text = "";
@@ -2689,7 +2689,7 @@ namespace ElectricalCommands
     {
       if (this.notesForm == null || this.notesForm.IsDisposed)
       {
-        this.notesForm = new noteForm(this);
+        this.notesForm = new NoteForm(this);
         this.notesForm.Show();
         this.notesForm.Text = $"Panel '{PANEL_NAME_INPUT.Text}' Notes";
       }

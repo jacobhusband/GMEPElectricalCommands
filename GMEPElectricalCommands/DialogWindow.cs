@@ -13,7 +13,7 @@ namespace ElectricalCommands
   public partial class MainForm : Form
   {
     private PanelCommands myCommandsInstance;
-    private NEWPANELFORM newPanelForm;
+    private NewPanelForm newPanelForm;
     private List<UserInterface> userControls;
     private Document acDoc;
 
@@ -21,7 +21,7 @@ namespace ElectricalCommands
     {
       InitializeComponent();
       this.myCommandsInstance = myCommands;
-      this.newPanelForm = new NEWPANELFORM(this);
+      this.newPanelForm = new NewPanelForm(this);
       this.userControls = new List<UserInterface>();
       this.Shown += MAINFORM_SHOWN;
       this.FormClosing += MAINFORM_CLOSING;

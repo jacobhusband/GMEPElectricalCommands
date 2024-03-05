@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -8,17 +9,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Newtonsoft.Json;
 
 namespace ElectricalCommands
 {
-  public partial class noteForm : Form
+  public partial class NoteForm : Form
   {
     private UserInterface userInterface;
     private List<string> notesStorage;
     private List<string> defaultNotes;
 
-    public noteForm(UserInterface userInterface)
+    public NoteForm(UserInterface userInterface)
     {
       InitializeComponent();
 

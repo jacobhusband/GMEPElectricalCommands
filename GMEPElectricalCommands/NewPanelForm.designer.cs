@@ -1,6 +1,6 @@
 ﻿namespace ElectricalCommands
 {
-  partial class NEWPANELFORM
+  partial class NewPanelForm
   {
     /// <summary>
     /// Required designer variable.

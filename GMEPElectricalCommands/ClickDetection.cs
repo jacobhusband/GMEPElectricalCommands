@@ -5,18 +5,18 @@ using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.Runtime;
 using System;
 using System.Collections.Generic;
-using System.Drawing.Drawing2D;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ElectricalCommands
 {
-  public class Class1
+  public class ClickDetection
   {
-    [CommandMethod("CaptureClickArea")]
-    public void CaptureClickArea()
+    [CommandMethod("Recep")]
+    public void Recep()
     {
       Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Editor ed = doc.Editor;

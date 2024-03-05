@@ -11,11 +11,11 @@ using System.Windows.Forms;
 
 namespace ElectricalCommands
 {
-  public partial class NEWPANELFORM : Form
+  public partial class NewPanelForm : Form
   {
     private MainForm _mainForm;
 
-    public NEWPANELFORM(MainForm mainForm)
+    public NewPanelForm(MainForm mainForm)
     {
       InitializeComponent();
       this.StartPosition = FormStartPosition.CenterParent;
