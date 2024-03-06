@@ -437,6 +437,9 @@ namespace ElectricalCommands
       {
         Close();
         myCommandsInstance.Create_Panels(panels);
+
+        Autodesk.AutoCAD.ApplicationServices.Application.MainWindow.WindowState = Autodesk.AutoCAD.Windows.Window.State.Maximized;
+        Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Window.Focus();
       }
     }
 

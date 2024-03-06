@@ -2623,13 +2623,13 @@ namespace ElectricalCommands
     {
       Dictionary<string, object> panelDataList = retrieve_data_from_modal();
 
-      using (
-          DocumentLock docLock =
-              Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.LockDocument()
-      )
+      using (DocumentLock docLock = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.LockDocument())
       {
         this.mainForm.Close();
         myCommandsInstance.Create_Panel(panelDataList);
+
+        Autodesk.AutoCAD.ApplicationServices.Application.MainWindow.WindowState = Autodesk.AutoCAD.Windows.Window.State.Maximized;
+        Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Window.Focus();
       }
     }
 
