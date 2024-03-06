@@ -307,6 +307,13 @@ namespace ElectricalCommands
                     -(extents.Value.MinPoint.Y + (extents.Value.MaxPoint.Y - extents.Value.MinPoint.Y) / 2),
                     -(extents.Value.MinPoint.Z + (extents.Value.MaxPoint.Z - extents.Value.MinPoint.Z) / 2)) : Point3d.Origin;
 
+                int index = Array.IndexOf(files, file);
+
+                if (index >= 1)
+                {
+                  center = new Point3d(center.X + 2500 * index, center.Y, center.Z);
+                }
+
                 // Add the Xref to the model space at the center of its bounding box
                 BlockReference xrefReference = new BlockReference(center, xrefId);
                 modelSpace.AppendEntity(xrefReference);
