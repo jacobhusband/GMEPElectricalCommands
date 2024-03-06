@@ -30,7 +30,11 @@ namespace ElectricalCommands
 
       if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
       {
-        var databases = GetDatabasesFromDWGFiles(ofd);
+        // Call the AttachAllXrefsInFile method for each selected file
+        foreach (string filePath in ofd.FileNames)
+        {
+          AttachAllXrefsInFile(filePath);
+        }
 
         HashSet<string> allXrefFileNames = ModifySelectedDWGFiles(ed, ofd);
 
@@ -45,167 +49,42 @@ namespace ElectricalCommands
 
         // Call the MagentaElectricalLayers method with the selected files
         MagentaElectricalLayers(allXrefFileNamesArray);
-
-        ed.WriteMessage("Processing complete.");
       }
     }
 
-    [CommandMethod("ATTACHXREFS")]
-    public void AttachAllXrefs()
+    private void AttachAllXrefsInFile(string filePath)
     {
-      Editor ed = Application.DocumentManager.MdiActiveDocument.Editor;
-      Database currentDb = Application.DocumentManager.MdiActiveDocument.Database;
+      Editor editor = Application.DocumentManager.MdiActiveDocument.Editor;
 
-      using (Transaction tr = currentDb.TransactionManager.StartTransaction())
-      {
-        // Get the XrefGraph of the current database
-        XrefGraph xrefGraph = currentDb.GetHostDwgXrefGraph(true);
-
-        // Traverse the XrefGraph
-        for (int i = 0; i < xrefGraph.NumNodes; i++)
-        {
-          XrefGraphNode xrefGraphNode = xrefGraph.GetXrefNode(i);
-
-          if (xrefGraphNode.XrefStatus == XrefStatus.Resolved && !xrefGraphNode.IsNested)
-          {
-            // Check if the BlockTableRecordId is not Null
-            if (!xrefGraphNode.BlockTableRecordId.IsNull)
-            {
-              // Get the BlockTableRecord for the xref
-              BlockTableRecord btr = (BlockTableRecord)tr.GetObject(xrefGraphNode.BlockTableRecordId, OpenMode.ForWrite);
-
-              // Detach the xref
-              currentDb.DetachXref(btr.ObjectId);
-
-              // Get the full path of the xref file
-              string xrefPath = xrefGraphNode.Database.Filename;
-
-              // Reattach the xref as an attachment
-              ObjectId xrefId = currentDb.AttachXref(xrefPath, btr.Name);
-
-              if (!xrefId.IsNull)
-              {
-                // Get the BlockTable
-                BlockTable bt = (BlockTable)tr.GetObject(currentDb.BlockTableId, OpenMode.ForRead);
-
-                // Get the BlockTableRecord for the Model Space
-                BlockTableRecord modelSpace = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
-
-                // Create a new BlockReference for the xref
-                BlockReference xrefReference = new BlockReference(Point3d.Origin, xrefId);
-
-                // Add the BlockReference to the Model Space
-                modelSpace.AppendEntity(xrefReference);
-                tr.AddNewlyCreatedDBObject(xrefReference, true);
-              }
-            }
-            else
-            {
-              ed.WriteMessage($"The BlockTableRecordId for the xref {xrefGraphNode.Name} is Null.");
-            }
-          }
-        }
-
-        tr.Commit();
-      }
-
-      ed.WriteMessage("All overlay xrefs have been changed to attachments.");
-    }
-
-    [CommandMethod("ATTACHXREFSINFILE")]
-    public void AttachAllXrefsInFileCommand()
-    {
-      // Prompt the user to select a DWG file
-      System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog
-      {
-        Multiselect = false,
-        Filter = "DWG files (*.dwg)|*.dwg",
-        Title = "Select a DWG File"
-      };
-
-      if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-      {
-        // Call the AttachAllXrefsInFile method with the selected file
-        AttachAllXrefsInFile(ofd.FileName);
-      }
-    }
-
-    public void AttachAllXrefsInFile(string filePath)
-    {
-      // Create a new database and read the DWG file
       using (Database db = new Database(false, true))
       {
         db.ReadDwgFile(filePath, FileShare.ReadWrite, true, "");
 
         using (Transaction tr = db.TransactionManager.StartTransaction())
         {
-          // Get the XrefGraph of the current database
           XrefGraph xrefGraph = db.GetHostDwgXrefGraph(true);
 
-          // Traverse the XrefGraph
           for (int i = 0; i < xrefGraph.NumNodes; i++)
           {
             XrefGraphNode xrefGraphNode = xrefGraph.GetXrefNode(i);
 
-            if (xrefGraphNode.XrefStatus == XrefStatus.Resolved && !xrefGraphNode.IsNested)
+            if (xrefGraphNode.XrefStatus == XrefStatus.Unresolved && !xrefGraphNode.IsNested)
             {
-              // Check if the BlockTableRecordId is not Null
               if (!xrefGraphNode.BlockTableRecordId.IsNull)
               {
-                // Get the BlockTableRecord for the xref
                 BlockTableRecord btr = (BlockTableRecord)tr.GetObject(xrefGraphNode.BlockTableRecordId, OpenMode.ForWrite);
-
-                // Detach the xref
-                db.DetachXref(btr.ObjectId);
-
-                // Get the full path of the xref file
-                string xrefPath = xrefGraphNode.Database.Filename;
-
-                // Reattach the xref as an attachment
-                ObjectId xrefId = db.AttachXref(xrefPath, btr.Name);
-
-                if (!xrefId.IsNull)
+                if (btr.IsFromOverlayReference)
                 {
-                  // Bind the xref, which changes its type to Attach
-                  db.BindXrefs(new ObjectIdCollection() { xrefId }, true);
-
-                  // Get the BlockTable
-                  BlockTable bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
-
-                  // Get the BlockTableRecord for the Model Space
-                  BlockTableRecord modelSpace = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
-
-                  // Create a new BlockReference for the xref
-                  BlockReference xrefReference = new BlockReference(Point3d.Origin, xrefId);
-
-                  // Add the BlockReference to the Model Space
-                  modelSpace.AppendEntity(xrefReference);
-                  tr.AddNewlyCreatedDBObject(xrefReference, true);
+                  btr.IsFromOverlayReference = false;
                 }
               }
             }
           }
-
           tr.Commit();
         }
 
-        // Save the changes to the DWG file
         db.SaveAs(filePath, DwgVersion.Current);
       }
-    }
-
-    public List<Database> GetDatabasesFromDWGFiles(System.Windows.Forms.OpenFileDialog ofd)
-    {
-      List<Database> databases = new List<Database>();
-
-      foreach (string file in ofd.FileNames)
-      {
-        Database db = new Database(false, true);
-        db.ReadDwgFile(file, FileShare.ReadWrite, true, "");
-        databases.Add(db);
-      }
-
-      return databases;
     }
 
     private HashSet<string> ModifySelectedDWGFiles(Editor ed, System.Windows.Forms.OpenFileDialog ofd)
@@ -247,23 +126,22 @@ namespace ElectricalCommands
               tr.AddNewlyCreatedDBObject(layerRecord, true);
             }
 
-            // Create a new layer named "0-GMEP-DIMS" and set its color to 8 (gray)
-            if (!layerTable.Has("0-GMEP-DIMS"))
+            // Create a new layer named "0-GMEP-DIMS-LEADS" and set its color to 8 (gray)
+            if (!layerTable.Has("0-GMEP-DIMS-LEADS"))
             {
               layerTable.UpgradeOpen();
               LayerTableRecord layerRecordDims = new LayerTableRecord
               {
-                Name = "0-GMEP-DIMS",
+                Name = "0-GMEP-DIMS-LEADS",
                 Color = Autodesk.AutoCAD.Colors.Color.FromColorIndex(Autodesk.AutoCAD.Colors.ColorMethod.ByAci, 8)
               };
               layerTable.Add(layerRecordDims);
               tr.AddNewlyCreatedDBObject(layerRecordDims, true);
             }
 
-            // Get the ObjectId of the "0" layer and the "0-GMEP" layer
             ObjectId zeroLayerId = layerTable["0"];
             ObjectId gmepLayerId = layerTable["0-GMEP"];
-            ObjectId gmepDimsLayerId = layerTable["0-GMEP-DIMS"];
+            ObjectId gmepDimsLayerId = layerTable["0-GMEP-DIMS-LEADS"];
 
             BlockTable bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
             BlockTableRecord btr = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
@@ -273,12 +151,10 @@ namespace ElectricalCommands
               Entity ent = tr.GetObject(objId, OpenMode.ForWrite) as Entity;
               if (ent != null && ent.LayerId == zeroLayerId)
               {
-                // Move the entity from the "0" layer to the "0-GMEP" layer
                 ent.LayerId = gmepLayerId;
               }
-              else if (ent != null && (ent is Dimension || ent is RotatedDimension || ent is AlignedDimension || ent is Autodesk.AutoCAD.DatabaseServices.ArcDimension || ent is RadialDimension || ent is DiametricDimension || ent is DBText || ent is MText || ent is Leader || ent is MLeader))
+              else if (ent != null && (ent is Dimension || ent is RotatedDimension || ent is AlignedDimension || ent is Autodesk.AutoCAD.DatabaseServices.ArcDimension || ent is RadialDimension || ent is DiametricDimension || ent is Leader || ent is MLeader))
               {
-                // Move the dimension, text, mtext, and leader entities to the "0-GMEP-DIMS" layer
                 ent.LayerId = gmepDimsLayerId;
               }
               SetEntityColorToByLayer(ent, tr, 4);
@@ -291,7 +167,7 @@ namespace ElectricalCommands
         }
         catch (Autodesk.AutoCAD.Runtime.Exception ex)
         {
-          ed.WriteMessage($"Error processing file {file}: {ex.Message}");
+          ed.WriteMessage($"Error processing file {file}: {ex.Message}\n");
         }
         finally
         {
@@ -356,8 +232,6 @@ namespace ElectricalCommands
 
         tr.Commit();
       }
-
-      ed.WriteMessage("Processing complete.");
     }
 
     public void MagentaElectricalLayers(string[] xrefFileNames)
@@ -388,8 +262,6 @@ namespace ElectricalCommands
 
         tr.Commit();
       }
-
-      ed.WriteMessage("Processing complete.");
     }
 
     public void AddDwgAsXref(string[] files, Editor ed, Database currentDb)
@@ -443,9 +315,9 @@ namespace ElectricalCommands
             }
 
             LayerTable layerTableMain = (LayerTable)tr.GetObject(currentDb.LayerTableId, OpenMode.ForRead);
-            if (layerTableMain.Has(Path.GetFileNameWithoutExtension(file) + "|0-GMEP-DIMS"))
+            if (layerTableMain.Has(Path.GetFileNameWithoutExtension(file) + "|0-GMEP-DIMS-LEADS"))
             {
-              LayerTableRecord layerRecordMain = (LayerTableRecord)tr.GetObject(layerTableMain[Path.GetFileNameWithoutExtension(file) + "|0-GMEP-DIMS"], OpenMode.ForWrite);
+              LayerTableRecord layerRecordMain = (LayerTableRecord)tr.GetObject(layerTableMain[Path.GetFileNameWithoutExtension(file) + "|0-GMEP-DIMS-LEADS"], OpenMode.ForWrite);
               layerRecordMain.IsFrozen = true;
             }
           }
