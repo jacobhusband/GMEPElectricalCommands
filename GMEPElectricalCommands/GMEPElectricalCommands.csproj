@@ -33,14 +33,26 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="accoremgd">
+    <!-- References for AutoCAD 2023 on GMEPE82 computer -->
+    <Reference Include="accoremgd" Condition="'$(ComputerName)' == 'GMEPE82'">
       <HintPath>..\..\..\..\..\..\Program Files\Autodesk\AutoCAD 2023\accoremgd.dll</HintPath>
     </Reference>
-    <Reference Include="acdbmgd">
+    <Reference Include="acdbmgd" Condition="'$(ComputerName)' == 'GMEPE82'">
       <HintPath>..\..\..\..\..\..\Program Files\Autodesk\AutoCAD 2023\acdbmgd.dll</HintPath>
     </Reference>
-    <Reference Include="acmgd">
+    <Reference Include="acmgd" Condition="'$(ComputerName)' == 'GMEPE82'">
       <HintPath>..\..\..\..\..\..\Program Files\Autodesk\AutoCAD 2023\acmgd.dll</HintPath>
+    </Reference>
+
+    <!-- References for AutoCAD 2024 on Jacob computer -->
+    <Reference Include="accoremgd" Condition="'$(ComputerName)' == 'Jacob'">
+      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\AutoCAD 2024\accoremgd.dll</HintPath>
+    </Reference>
+    <Reference Include="acdbmgd" Condition="'$(ComputerName)' == 'Jacob'">
+      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\AutoCAD 2024\acdbmgd.dll</HintPath>
+    </Reference>
+    <Reference Include="acmgd" Condition="'$(ComputerName)' == 'Jacob'">
+      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\AutoCAD 2024\acmgd.dll</HintPath>
     </Reference>
     <Reference Include="EPPlus, Version=6.2.10.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
       <HintPath>..\packages\EPPlus.6.2.10\lib\net462\EPPlus.dll</HintPath>
@@ -131,13 +143,13 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include=".gitignore">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"C:\Program Files\Autodesk\AutoCAD 2023\acad.exe" "C:\Users\JacobH\OneDrive - GMEPE\Documents\Programming\Residential DWG\Residential Template - 24x36.dwg"</PostBuildEvent>
+    <PostBuildEvent Condition="'$(ComputerName)' == 'GMEPE82'">
+      "C:\Users\JacobH\OneDrive - GMEPE\Documents\Programming\Residential DWG\Residential Template - 24x36.dwg"
+    </PostBuildEvent>
+    <PostBuildEvent Condition="'$(ComputerName)' == 'Jacob'">
+      "C:\Program Files\Autodesk\AutoCAD 2024\acad.exe" "C:\Users\jakeh\Documents\ELEC\template\Template_Electrical_CA_Lite.dwg"
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>
