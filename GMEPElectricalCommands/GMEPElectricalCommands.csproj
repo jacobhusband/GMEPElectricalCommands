@@ -131,6 +131,11 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include=".gitignore">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>"C:\Program Files\Autodesk\AutoCAD 2024\acad.exe" "C:\Users\jakeh\Documents\ELEC\template\Template_Electrical_CA_Lite.dwg"</PostBuildEvent>
