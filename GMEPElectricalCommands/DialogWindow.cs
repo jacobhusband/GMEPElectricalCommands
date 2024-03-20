@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.DatabaseServices;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.AutoCAD.DatabaseServices;
-using Newtonsoft.Json;
 
 namespace ElectricalCommands
 {
@@ -497,5 +497,92 @@ namespace ElectricalCommands
         store_data_in_autocad_file(panelData);
       }
     }
+  }
+
+  public enum Phase
+  {
+    A,
+    B,
+    C
+  }
+
+  internal class Breaker
+  {
+    public string Description { get; set; }
+    public int Wattage { get; set; }
+    public int Size { get; set; }
+
+    public Breaker(string description, object wattage, object size)
+    {
+      Description = description;
+
+      if (int.TryParse(wattage.ToString(), out int parsedWattage))
+      {
+        Wattage = parsedWattage;
+      }
+      else
+      {
+        Wattage = 0; // Set Wattage to 0 if parsing fails
+      }
+
+      if (int.TryParse(size.ToString(), out int parsedSize))
+      {
+        Size = parsedSize;
+      }
+      else
+      {
+        Size = 0; // Set Size to 0 if parsing fails
+      }
+    }
+  }
+
+  internal class Circuit
+  {
+    public string Name { get; set; }
+    public List<Breaker> Breakers { get; set; }
+
+    public Circuit(string name, List<Breaker> breakers)
+    {
+      Name = name;
+      Breakers = breakers;
+    }
+
+    public Phase GetPhase()
+    {
+      // Remove all non-digit characters from the circuit name
+      string circuitNumberString = new string(Name.Where(char.IsDigit).ToArray());
+
+      if (int.TryParse(circuitNumberString, out int circuitNumber))
+      {
+        int remainderByThree = (circuitNumber - 1) % 6;
+
+        switch (remainderByThree)
+        {
+          case 0:
+          case 1:
+            return Phase.A;
+
+          case 2:
+          case 3:
+            return Phase.B;
+
+          case 4:
+          case 5:
+            return Phase.C;
+
+          default:
+            throw new ArgumentException("Invalid circuit number.");
+        }
+      }
+      else
+      {
+        throw new ArgumentException("Invalid circuit name. Cannot determine the phase.");
+      }
+    }
+  }
+
+  internal class Panel
+  {
+    public string Name { get; set; }
   }
 }

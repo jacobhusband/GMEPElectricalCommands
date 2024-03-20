@@ -43,7 +43,6 @@
     <Reference Include="acmgd" Condition="'$(ComputerName)' == 'GMEPE82'">
       <HintPath>..\..\..\..\..\..\Program Files\Autodesk\AutoCAD 2023\acmgd.dll</HintPath>
     </Reference>
-
     <!-- References for AutoCAD 2024 on Jacob computer -->
     <Reference Include="accoremgd" Condition="'$(ComputerName)' == 'DESKTOP-91VH2HV'">
       <HintPath>..\..\..\..\..\..\Program Files\Autodesk\AutoCAD 2024\accoremgd.dll</HintPath>
@@ -151,5 +150,9 @@
     <PostBuildEvent Condition="'$(ComputerName)' == 'DESKTOP-91VH2HV'">
       "C:\Program Files\Autodesk\AutoCAD 2024\acad.exe" "C:\Users\jakeh\Documents\ELEC\template\Template_Electrical_CA_Lite.dwg"
     </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>"C:\Users\JacobH\OneDrive - GMEPE\Documents\Programming\Residential DWG\Residential Template - 24x36.dwg"
+</PostBuildEvent>
   </PropertyGroup>
 </Project>
