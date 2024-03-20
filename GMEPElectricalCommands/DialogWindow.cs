@@ -583,6 +583,7 @@ namespace ElectricalCommands
 
   internal class Panel
   {
+    public string Title { get; set; }
     public string Name { get; set; }
     public string Location { get; set; }
     public string Main { get; set; }
