@@ -250,7 +250,7 @@ namespace ElectricalCommands
         }
       }
 
-      store_data_in_autocad_file(panelData);
+      StoreDataInJsonFile(panelData);
     }
 
     internal bool panel_name_exists(string panelName)
@@ -357,12 +357,12 @@ namespace ElectricalCommands
             panelStorage.Add(userControl.retrieve_data_from_modal());
           }
 
-          store_data_in_autocad_file(panelStorage);
+          StoreDataInJsonFile(panelStorage);
         }
       }
     }
 
-    public void store_data_in_autocad_file(List<Dictionary<string, object>> saveData)
+    public void StoreDataInJsonFile(List<Dictionary<string, object>> saveData)
     {
       string acDocPath = Path.GetDirectoryName(this.acDoc.Name);
       string panelSavesDirectory = Path.Combine(acDocPath, "panel saves");
@@ -494,7 +494,7 @@ namespace ElectricalCommands
         >(jsonData);
 
         // Save the panel data
-        store_data_in_autocad_file(panelData);
+        StoreDataInJsonFile(panelData);
       }
     }
   }
@@ -584,5 +584,14 @@ namespace ElectricalCommands
   internal class Panel
   {
     public string Name { get; set; }
+    public string Location { get; set; }
+    public string Main { get; set; }
+    public string BusRating { get; set; }
+    public int[] Voltages { get; set; }
+    public string Phase { get; set; }
+    public int Wires { get; set; }
+    public string Mounting { get; set; }
+    public bool Existing { get; set; }
+    public List<Circuit> Circuits { get; set; }
   }
 }
