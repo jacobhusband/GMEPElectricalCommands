@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace ElectricalCommands
 {
-  public partial class Help : Form
+  public partial class HelpForm : Form
   {
-    public Help()
+    public HelpForm()
     {
       InitializeComponent();
 

@@ -1,6 +1,6 @@
 ﻿namespace ElectricalCommands
 {
-  partial class UserInterface
+  partial class PanelUserControl
   {
     /// <summary> 
     /// Required designer variable.

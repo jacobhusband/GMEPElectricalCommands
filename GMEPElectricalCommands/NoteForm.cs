@@ -14,11 +14,11 @@ namespace ElectricalCommands
 {
   public partial class NoteForm : Form
   {
-    private UserInterface userInterface;
+    private PanelUserControl userInterface;
     private List<string> notesStorage;
     private List<string> defaultNotes;
 
-    public NoteForm(UserInterface userInterface)
+    public NoteForm(PanelUserControl userInterface)
     {
       InitializeComponent();
 

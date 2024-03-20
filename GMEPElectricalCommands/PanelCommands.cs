@@ -238,804 +238,745 @@ namespace ElectricalCommands
       Create_Panels(null);
     }
 
-    [CommandMethod("CADPANELIMPORT")]
-    public void CADPANELIMPORT()
+    private Dictionary<string, object> UpdatePanelDataDescriptions(Dictionary<string, object> panelData)
     {
-      Document doc = Autodesk
-          .AutoCAD
-          .ApplicationServices
-          .Application
-          .DocumentManager
-          .MdiActiveDocument;
-      Editor ed = doc.Editor;
-
-      // Prompt the user to select objects
-      PromptSelectionResult selection = ed.GetSelection();
-
-      if (selection.Status != PromptStatus.OK)
+      // Check if the keys exist in the dictionary
+      if (
+          panelData.ContainsKey("description_left_tags")
+          && panelData.ContainsKey("description_right_tags")
+      )
       {
-        return;
-      }
+        // Get the lists from the dictionary
+        List<string> leftTags = panelData["description_left_tags"] as List<string>;
+        List<string> rightTags = panelData["description_right_tags"] as List<string>;
 
-      using (Transaction tr = doc.TransactionManager.StartTransaction())
-      {
-        Dictionary<string, Point3d> selectionPositions = new Dictionary<string, Point3d>();
-        List<Dictionary<string, Point3d>> panelSelectionAreas =
-            new List<Dictionary<string, Point3d>>();
+        // Get the description lists
+        List<string> leftDescriptions = panelData["description_left"] as List<string>;
+        List<string> rightDescriptions = panelData["description_right"] as List<string>;
 
-        foreach (SelectedObject selectedObject in selection.Value)
+        // Iterate over the left tags
+        for (int i = 0; i < leftTags.Count; i++)
         {
-          Entity entity = (Entity)tr.GetObject(selectedObject.ObjectId, OpenMode.ForRead);
-
-          if (entity is DBText dbText)
+          if (leftTags[i].Contains("ADD SUFFIX (E). *NOT ADDED AS NOTE*"))
           {
-            if (
-                dbText.TextString.Contains("PANEL")
-                && !dbText.TextString.Contains("LOAD")
-                && dbText.Height >= 0.12
-            )
+            // Add the suffix to the associated description if it's not "existing load", "EXISTING LOAD", "space", or "SPACE"
+            string lowerDescription = leftDescriptions[i * 2].ToLower();
+            if (lowerDescription != "existing load" && lowerDescription != "space")
             {
-              Point3d pt_1 = new Point3d(
-                  dbText.Position.X,
-                  dbText.Position.Y + 0.3744,
-                  0
-              );
-              Point3d pt_2 = new Point3d(dbText.Position.X + 1, dbText.Position.Y, 0);
-
-              PromptSelectionResult selection_2 = ed.SelectCrossingWindow(pt_1, pt_2);
-
-              if (selection_2.Status == PromptStatus.OK)
+              leftDescriptions[i * 2] = "(E)" + leftDescriptions[i * 2];
+              if (!string.IsNullOrEmpty(leftDescriptions[i * 2 + 1]))
               {
-                foreach (SelectedObject thing in selection_2.Value)
-                {
-                  using (
-                      Transaction tr2 = doc.TransactionManager.StartTransaction()
-                  )
-                  {
-                    Entity sub_entity = (Entity)
-                        tr2.GetObject(thing.ObjectId, OpenMode.ForRead);
-                    if (sub_entity is Polyline polyline)
-                    {
-                      Point3d topLeft = new Point3d(
-                          polyline.Bounds.Value.MinPoint.X,
-                          polyline.Bounds.Value.MaxPoint.Y,
-                          0
-                      );
-                      Point3d bottomRight = new Point3d(
-                          polyline.Bounds.Value.MaxPoint.X,
-                          polyline.Bounds.Value.MinPoint.Y,
-                          0
-                      );
-
-                      selectionPositions.Add("top_left", topLeft);
-                      selectionPositions.Add("bottom_right", bottomRight);
-                    }
-                  }
-                }
+                leftDescriptions[i * 2 + 1] = "(E)" + leftDescriptions[i * 2 + 1];
               }
             }
           }
-          else if (entity is MText mText)
+          else if (leftTags[i].Contains("ADD SUFFIX (R). *NOT ADDED AS NOTE*"))
           {
-            if (
-                mText.Contents.Contains("PANEL")
-                && !mText.Contents.Contains("LOAD")
-                && mText.TextHeight >= 0.12
-            )
+            // Add the suffix to the associated description
+            leftDescriptions[i * 2] = "(R)" + leftDescriptions[i * 2];
+            if (!string.IsNullOrEmpty(leftDescriptions[i * 2 + 1]))
             {
-              Point3d pt_1 = new Point3d(
-                  mText.Location.X,
-                  mText.Location.Y + 0.3744,
-                  0
-              );
-              Point3d pt_2 = new Point3d(mText.Location.X + 1, mText.Location.Y, 0);
+              leftDescriptions[i * 2 + 1] = "(R)" + leftDescriptions[i * 2 + 1];
+            }
+          }
 
-              PromptSelectionResult selection_2 = ed.SelectCrossingWindow(pt_1, pt_2);
-
-              if (selection_2.Status == PromptStatus.OK)
+          if (rightTags[i].Contains("ADD SUFFIX (E). *NOT ADDED AS NOTE*"))
+          {
+            // Add the suffix to the associated description if it's not "existing load", "EXISTING LOAD", "space", or "SPACE"
+            string lowerDescription = rightDescriptions[i * 2].ToLower();
+            if (lowerDescription != "existing load" && lowerDescription != "space")
+            {
+              rightDescriptions[i * 2] = "(E)" + rightDescriptions[i * 2];
+              if (!string.IsNullOrEmpty(rightDescriptions[i * 2 + 1]))
               {
-                foreach (SelectedObject thing in selection_2.Value)
-                {
-                  using (
-                      Transaction tr2 = doc.TransactionManager.StartTransaction()
-                  )
-                  {
-                    Entity sub_entity = (Entity)
-                        tr2.GetObject(thing.ObjectId, OpenMode.ForRead);
-                    if (sub_entity is Line line)
-                    {
-                      Point3d topLeft = new Point3d(
-                          line.Bounds.Value.MinPoint.X,
-                          line.Bounds.Value.MaxPoint.Y,
-                          0
-                      );
-
-                      if (!selectionPositions.ContainsKey("top_left"))
-                      {
-                        selectionPositions.Add("top_left", topLeft);
-
-                        MText subtotal = LocateSubTotal(line);
-
-                        selectionPositions = GetBottomRightCoordinate(
-                            doc,
-                            ed,
-                            selectionPositions,
-                            subtotal
-                        );
-                      }
-                    }
-                  }
-                }
+                rightDescriptions[i * 2 + 1] = "(E)" + rightDescriptions[i * 2 + 1];
               }
             }
           }
-          if (
-              selectionPositions.ContainsKey("top_left")
-              && selectionPositions.ContainsKey("bottom_right")
-          )
+          else if (rightTags[i].Contains("ADD SUFFIX (R). *NOT ADDED AS NOTE*"))
           {
-            panelSelectionAreas.Add(selectionPositions);
-            selectionPositions = new Dictionary<string, Point3d>();
+            // Add the suffix to the associated description
+            rightDescriptions[i * 2] = "(R)" + rightDescriptions[i * 2];
+            if (!string.IsNullOrEmpty(rightDescriptions[i * 2 + 1]))
+            {
+              rightDescriptions[i * 2 + 1] = "(R)" + rightDescriptions[i * 2 + 1];
+            }
           }
         }
 
-        PanelBreakdown(panelSelectionAreas);
+        // Update the descriptions in the dictionary
+        panelData["description_left"] = leftDescriptions;
+        panelData["description_right"] = rightDescriptions;
       }
+
+      return panelData;
     }
 
-    [CommandMethod("SETPANELREGION")]
-    public void SetPanelRegion()
+    private void CreateTextsWithoutPanelData(Transaction tr, string layerName, Point3d startPoint, bool is2Pole)
     {
-      var doc = Autodesk
-          .AutoCAD
-          .ApplicationServices
-          .Application
-          .DocumentManager
-          .MdiActiveDocument;
-      var ed = doc.Editor;
-
-      // Prompt for the origin point
-      PromptPointResult ppr = ed.GetPoint("\nEnter the origin point: ");
-      if (ppr.Status != PromptStatus.OK)
-        return;
-      Point3d origin = ppr.Value;
-
-      // Prompt for the first corner point
-      ppr = ed.GetPoint("\nEnter the first corner point: ");
-      if (ppr.Status != PromptStatus.OK)
-        return;
-      Point3d pt1 = ppr.Value;
-
-      // Prompt for the second corner point
-      ppr = ed.GetPoint("\nEnter the second corner point: ");
-      if (ppr.Status != PromptStatus.OK)
-        return;
-      Point3d pt2 = ppr.Value;
-
-      // Define the selection filter
-      TypedValue[] filter = new TypedValue[]
-      {
-                new TypedValue((int)DxfCode.Start, "TEXT,MTEXT"),
-      };
-
-      // Select the text and MText entities within the rectangular region
-      PromptSelectionResult psr = ed.SelectCrossingWindow(
-          pt1,
-          pt2,
-          new SelectionFilter(filter)
+      CreateAndPositionText(
+          tr,
+          "PANEL",
+          "ROMANC",
+          0.1872,
+          0.75,
+          0,
+          layerName,
+          new Point3d(startPoint.X + 0.231944251649111, startPoint.Y - 0.299822699224023, 0)
       );
-      if (psr.Status != PromptStatus.OK)
-        return;
-
-      // Prompt for the selection name
-      PromptResult pr = ed.GetString("\nEnter a name for the selection: ");
-      if (pr.Status != PromptStatus.OK)
-        return;
-      string name = pr.StringResult;
-
-      // Get the text and MText entities
-      List<string> text = new List<string>();
-      using (Transaction tr = doc.TransactionManager.StartTransaction())
-      {
-        foreach (SelectedObject so in psr.Value)
-        {
-          var entity = tr.GetObject(so.ObjectId, OpenMode.ForRead);
-
-          if (entity is DBText dbText)
-          {
-            text.Add(dbText.TextString);
-          }
-          else if (entity is MText mText)
-          {
-            text.Add(mText.Contents);
-          }
-        }
-      }
-
-      // Create the strings
-      string point1 =
-          $"var pt1 = new Dictionary<string, object> {{ {{ \"x\", {pt1.X - origin.X} }}, {{ \"y\", {pt1.Y - origin.Y} }} }};";
-      string point2 =
-          $"var pt2 = new Dictionary<string, object> {{ {{ \"x\", {pt2.X - origin.X} }}, {{ \"y\", {pt2.Y - origin.Y} }} }};";
-
-      // Combine the strings
-      string combined = $"{point1}\n{point2}\n";
-      foreach (var item in text)
-      {
-        combined += $"{item}\n";
-      }
-
-      // Save the string to a file
-      string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-      string path = Path.Combine(desktopPath, name + ".txt");
-      File.WriteAllText(path, combined);
-    }
-
-    private static Dictionary<string, Point3d> GetBottomRightCoordinate(Document doc, Editor ed, Dictionary<string, Point3d> selectionPositions, MText mText)
-    {
-      Point3d pt_1 = new Point3d(mText.Location.X, mText.Location.Y - 0.3744, 0);
-      Point3d pt_2 = new Point3d(mText.Location.X + 1, mText.Location.Y, 0);
-
-      PromptSelectionResult selection_2 = ed.SelectCrossingWindow(pt_1, pt_2);
-
-      if (selection_2.Status == PromptStatus.OK)
-      {
-        foreach (SelectedObject thing in selection_2.Value)
-        {
-          using (Transaction tr2 = doc.TransactionManager.StartTransaction())
-          {
-            Entity sub_entity = (Entity)tr2.GetObject(thing.ObjectId, OpenMode.ForRead);
-            if (sub_entity is Line line)
-            {
-              if (line.Length > 8)
-              {
-                Point3d bottomRight = new Point3d(
-                    line.Bounds.Value.MaxPoint.X,
-                    line.Bounds.Value.MinPoint.Y,
-                    0
-                );
-
-                if (!selectionPositions.ContainsKey("bottom_right"))
-                {
-                  selectionPositions.Add("bottom_right", bottomRight);
-                  return selectionPositions;
-                }
-              }
-            }
-          }
-        }
-      }
-      return selectionPositions;
-    }
-
-    private MText LocateSubTotal(Line line)
-    {
-      var (doc, db, ed) = GetGlobals();
-
-      using (var tr = db.TransactionManager.StartTransaction())
-      {
-        var bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
-        var btr = (BlockTableRecord)
-            tr.GetObject(bt[BlockTableRecord.PaperSpace], OpenMode.ForRead);
-
-        double minDistance = double.MaxValue;
-        MText closestText = null;
-
-        foreach (var id in btr)
-        {
-          var entity = (Entity)tr.GetObject(id, OpenMode.ForRead);
-          if (entity is MText text)
-          {
-            if (
-                text.Location.Y < line.StartPoint.Y
-                && text.Location.X >= line.StartPoint.X
-                && text.Location.X <= line.EndPoint.X
-                && text.Contents == "\\FArial; SUB-TOTAL"
-            )
-            {
-              var distance = line.StartPoint.Y - text.Location.Y;
-              if (distance < minDistance)
-              {
-                minDistance = distance;
-                closestText = text;
-              }
-            }
-          }
-        }
-        tr.Commit();
-        return closestText;
-      }
-    }
-
-    public void PanelBreakdown(List<Dictionary<string, Point3d>> panelSelectionAreas)
-    {
-      var resultList = new List<Dictionary<string, object>>();
-      var doc = Autodesk
-          .AutoCAD
-          .ApplicationServices
-          .Application
-          .DocumentManager
-          .MdiActiveDocument;
-      var ed = doc.Editor;
-
-      using (Transaction tr = doc.TransactionManager.StartTransaction())
-      {
-        ZoomCamera(panelSelectionAreas);
-
-        foreach (var area in panelSelectionAreas)
-        {
-          if (area.ContainsKey("top_left") && area.ContainsKey("bottom_right"))
-          {
-            Point3d pt1 = area["top_left"];
-            Point3d pt2 = area["bottom_right"];
-
-            TypedValue[] filter = [new TypedValue((int)DxfCode.Start, "TEXT,MTEXT"),];
-
-            PromptSelectionResult psr = ed.SelectCrossingWindow(
-                pt1,
-                pt2,
-                new SelectionFilter(filter)
-            );
-
-            var textList = new List<Dictionary<string, object>>();
-
-            foreach (SelectedObject so in psr.Value)
-            {
-              var entity = tr.GetObject(so.ObjectId, OpenMode.ForRead);
-
-              string textValue = null;
-              Point3d position = new Point3d();
-
-              if (entity is DBText dbText)
-              {
-                textValue = dbText.TextString;
-                position = dbText.Position;
-              }
-              else if (entity is MText mText)
-              {
-                textValue = mText.Contents;
-                position = mText.Location;
-              }
-
-              if (textValue != null)
-              {
-                textValue = textValue
-                    .Replace("\\FArial;", "")
-                    .Replace("\\Farial|c0;", "")
-                    .Replace("{", "")
-                    .Replace("}", "")
-                    .Trim();
-
-                double relativeX = position.X - pt1.X;
-                double relativeY = position.Y - pt1.Y;
-
-                textList.Add(
-                    new Dictionary<string, object>
-                    {
-                                        { "value", textValue },
-                                        { "x", relativeX },
-                                        { "y", relativeY }
-                    }
-                );
-              }
-            }
-
-            var result = new Dictionary<string, object>
-                        {
-                            {
-                                "polyline",
-                                new Dictionary<string, Dictionary<string, object>>
-                                {
-                                    {
-                                        "top_left",
-                                        new Dictionary<string, object> { { "x", 0 }, { "y", 0 } }
-                                    },
-                                    {
-                                        "top_right",
-                                        new Dictionary<string, object>
-                                        {
-                                            { "x", pt2.X - pt1.X },
-                                            { "y", 0 }
-                                        }
-                                    },
-                                    {
-                                        "bottom_right",
-                                        new Dictionary<string, object>
-                                        {
-                                            { "x", pt2.X - pt1.X },
-                                            { "y", pt2.Y - pt1.Y }
-                                        }
-                                    },
-                                    {
-                                        "bottom_left",
-                                        new Dictionary<string, object>
-                                        {
-                                            { "x", 0 },
-                                            { "y", pt2.Y - pt1.Y }
-                                        }
-                                    }
-                                }
-                            },
-                            { "text", textList }
-                        };
-
-            resultList.Add(result);
-          }
-        }
-
-        tr.Commit();
-      }
-
-      ParseCADPanelObjects(resultList);
-    }
-
-    private void ZoomCamera(List<Dictionary<string, Point3d>> panelSelectionAreas)
-    {
-      var doc = Autodesk
-          .AutoCAD
-          .ApplicationServices
-          .Application
-          .DocumentManager
-          .MdiActiveDocument;
-      var ed = doc.Editor;
-
-      double minX = double.MaxValue;
-      double minY = double.MaxValue;
-      double maxX = double.MinValue;
-      double maxY = double.MinValue;
-
-      foreach (var area in panelSelectionAreas)
-      {
-        if (area.ContainsKey("top_left"))
-        {
-          Point3d topLeft = area["top_left"];
-          minX = Math.Min(minX, topLeft.X);
-          maxY = Math.Max(maxY, topLeft.Y);
-        }
-
-        if (area.ContainsKey("bottom_right"))
-        {
-          Point3d bottomRight = area["bottom_right"];
-          maxX = Math.Max(maxX, bottomRight.X);
-          minY = Math.Min(minY, bottomRight.Y);
-        }
-      }
-
-      Point3d pt1 = new Point3d(minX, maxY, 0);
-      Point3d pt2 = new Point3d(maxX, minY, 0);
-
-      string cmd = string.Format(
-          "._zoom _window {0},{1},{2} {3},{4},{5} ",
-          pt1.X,
-          pt1.Y,
-          pt1.Z,
-          pt2.X,
-          pt2.Y,
-          pt2.Z
+      CreateAndPositionText(
+          tr,
+          "DESCRIPTION",
+          "Standard",
+          0.1248,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 0.305517965881791, startPoint.Y - 0.638118222684739, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "W",
+          "Standard",
+          0.101088,
+          0.75,
+          0,
+          layerName,
+          new Point3d(startPoint.X + 8.64365164909793, startPoint.Y - 0.155688865359394, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "VOLT AMPS",
+          "Standard",
+          0.11232,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 1.9015733562577, startPoint.Y - 0.532524377875689, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "L",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 2.97993751651882, startPoint.Y - 0.483601235896458, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "T",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 2.97993751651882, startPoint.Y - 0.59526740969153, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "G",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 2.97993751651882, startPoint.Y - 0.702157646684782, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "R",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 3.20889406685785, startPoint.Y - 0.482921120531671, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "E",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 3.20889406685785, startPoint.Y - 0.594587294326715, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "C",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 3.20889406685785, startPoint.Y - 0.701477531319966, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "M",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 3.43493724520761, startPoint.Y - 0.482921120531671, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "I",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 3.4427934214732, startPoint.Y - 0.594587294326715, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "S",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 3.43493724520761, startPoint.Y - 0.701477531319966, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "BKR",
+          "Standard",
+          0.09152,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 3.63691080609988, startPoint.Y - 0.61662650707666, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "CKT",
+          "Standard",
+          0.0832,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 3.94429929014041, startPoint.Y - 0.529332995532684, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          " NO",
+          "Standard",
+          0.0832,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 3.90688892697108, startPoint.Y - 0.673306258645766, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "BUS",
+          "Standard",
+          0.11232,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 4.32282163085404, startPoint.Y - 0.527068325709052, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "CKT",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 4.88897460099258, startPoint.Y - 0.535275052777223, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          " NO",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 4.85530527414039, startPoint.Y - 0.664850989579008, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "BKR",
+          "Standard",
+          0.082368,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 5.14497871612878, startPoint.Y - 0.612478980835647, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "M",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 5.4736003885796, startPoint.Y - 0.483601235896458, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "I",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 5.48257887574016, startPoint.Y - 0.59526740969153, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "S",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 5.4736003885796, startPoint.Y - 0.702157646684782, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "R",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 5.70588736710022, startPoint.Y - 0.482921120531671, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "E",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 5.70588736710022, startPoint.Y - 0.594587294326715, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "C",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 5.70588736710022, startPoint.Y - 0.701477531319966, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "L",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 5.93367350805136, startPoint.Y - 0.484281352862808, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "T",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 5.93367350805136, startPoint.Y - 0.595947526657881, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "G",
+          "Standard",
+          0.07488,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 5.93367350805136, startPoint.Y - 0.702837763651132, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "VOLT AMPS",
+          "Standard",
+          0.11232,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 6.32453930091015, startPoint.Y - 0.532297673821773, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "DESCRIPTION",
+          "Standard",
+          0.1248,
+          0.75,
+          256,
+          "0",
+          new Point3d(startPoint.X + 7.68034755863846, startPoint.Y - 0.636791573573134, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "LOCATION",
+          "Standard",
+          0.11232,
+          0.75,
+          0,
+          layerName,
+          new Point3d(startPoint.X + 2.32067207718262, startPoint.Y - 0.155059196495415, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "MAIN (AMP)",
+          "Standard",
+          0.11232,
+          0.75,
+          0,
+          layerName,
+          new Point3d(startPoint.X + 2.32089885857886, startPoint.Y - 0.338479316609039, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "BUS RATING",
+          "Standard",
+          0.1248,
+          0.75,
+          0,
+          layerName,
+          new Point3d(startPoint.X + 5.18507633525223, startPoint.Y - 0.271963067880222, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "MOUNTING:",
+          "Standard",
+          0.11232,
+          0.75,
+          0,
+          layerName,
+          new Point3d(startPoint.X + 7.01560982102967, startPoint.Y - 0.329154148660905, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "V",
+          "Standard",
+          0.09984,
+          0.75,
+          0,
+          layerName,
+          new Point3d(startPoint.X + 7.80112268015148, startPoint.Y - 0.158231303238949, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          "O",
+          "Standard",
+          0.101088,
+          0.75,
+          0,
+          layerName,
+          new Point3d(startPoint.X + 8.30325740318381, startPoint.Y - 0.151432601608803, 0)
       );
 
-      doc.SendStringToExecute(cmd, true, false, true);
-    }
-
-    private void ParseCADPanelObjects(List<Dictionary<string, object>> resultList)
-    {
-      var parsedDataList = new List<Dictionary<string, object>>();
-
-      foreach (var result in resultList)
+      if (is2Pole)
       {
-        var panelName = ParsePanelName(result);
-
-        if (panelName == "")
-        {
-          continue;
-        }
-
-        var location = ParseLocation(result);
-        var main = ParseMain(result);
-        var bus_rating = ParseBusRating(result);
-        var voltage_low = ParseVoltageLow(result);
-        var voltage_high = ParseVoltageHigh(result);
-        var phase = ParsePhase(result);
-        var wire = ParseWire(result);
-        var mounting = ParseMounting(result);
-
-        Dictionary<string, object> parsedData = new Dictionary<string, object>
-                {
-                    { "panelName", panelName },
-                    { "location", location },
-                    { "main", main },
-                    { "bus_rating", bus_rating },
-                    { "voltage_low", voltage_low },
-                    { "voltage_high", voltage_high },
-                    { "phase", phase },
-                    { "wire", wire },
-                    { "mounting", mounting }
-                };
-
-        parsedDataList.Add(parsedData);
-      }
-    }
-
-    private object ParseMounting(Dictionary<string, object> result)
-    {
-      var pt1 = new Dictionary<string, object>
-            {
-                { "x", 6.67500000000001 },
-                { "y", -0.200000000000003 }
-            };
-      var pt2 = new Dictionary<string, object>
-            {
-                { "x", 8.98559999999998 },
-                { "y", -0.400000000000006 }
-            };
-
-      var textValues = GetTextValuesInRegion(result, pt1, pt2);
-      var mounting = string.Join("", textValues).Replace(" ", "");
-
-      mounting = mounting.Replace("MOUNTING", "").Replace(":", "").Replace(" ", "");
-
-      if (mounting == "REC" || mounting == "RECESS")
-      {
-        mounting = "RECESSED";
-      }
-
-      return mounting;
-    }
-
-    private object ParseWire(Dictionary<string, object> result)
-    {
-      var pt1 = new Dictionary<string, object> { { "x", 6.67500000000001 }, { "y", 0 } };
-      var pt2 = new Dictionary<string, object>
-            {
-                { "x", 8.98559999999998 },
-                { "y", -0.187199999999848 }
-            };
-
-      var textValues = GetTextValuesInRegion(result, pt1, pt2);
-      var wire = string.Join("", textValues).Replace(" ", "");
-      var index = wire.IndexOf('W');
-
-      if (index > 0)
-      {
-        return wire[index - 1];
-      }
-      else
-      {
-        return "3";
-      }
-    }
-
-    private object ParsePhase(Dictionary<string, object> result)
-    {
-      var pt1 = new Dictionary<string, object> { { "x", 6.67500000000001 }, { "y", 0 } };
-      var pt2 = new Dictionary<string, object>
-            {
-                { "x", 8.98559999999998 },
-                { "y", -0.187199999999848 }
-            };
-
-      var textValues = GetTextValuesInRegion(result, pt1, pt2);
-      var phase = string.Join("", textValues).Replace(" ", "");
-      var index = phase.IndexOf('V');
-
-      if (index < phase.Length - 1)
-      {
-        return phase[index + 1];
-      }
-      else
-      {
-        return "1";
-      }
-    }
-
-    private object ParseVoltageHigh(Dictionary<string, object> result)
-    {
-      var pt1 = new Dictionary<string, object> { { "x", 6.67500000000001 }, { "y", 0 } };
-      var pt2 = new Dictionary<string, object>
-            {
-                { "x", 8.98559999999998 },
-                { "y", -0.187199999999848 }
-            };
-
-      var textValues = GetTextValuesInRegion(result, pt1, pt2);
-
-      foreach (var textValue in textValues)
-      {
-        if (textValue.Contains("208"))
-        {
-          return "208";
-        }
-        else if (textValue.Contains("240"))
-        {
-          return "240";
-        }
-        else if (textValue.Contains("480"))
-        {
-          return "480";
-        }
-      }
-      return "208";
-    }
-
-    private object ParseVoltageLow(Dictionary<string, object> result)
-    {
-      var pt1 = new Dictionary<string, object> { { "x", 6.67500000000001 }, { "y", 0 } };
-      var pt2 = new Dictionary<string, object>
-            {
-                { "x", 8.98559999999998 },
-                { "y", -0.187199999999848 }
-            };
-
-      var textValues = GetTextValuesInRegion(result, pt1, pt2);
-
-      foreach (var textValue in textValues)
-      {
-        if (textValue.Contains("120"))
-        {
-          return "120";
-        }
-        else if (textValue.Contains("277"))
-        {
-          return "277";
-        }
-      }
-      return "120";
-    }
-
-    private string ParseBusRating(Dictionary<string, object> result)
-    {
-      var pt1 = new Dictionary<string, object> { { "x", 5.06661018521663 }, { "y", 0 } };
-      var pt2 = new Dictionary<string, object> { { "x", 6.67 }, { "y", -0.374399999999696 } };
-      var textValues = GetTextValuesInRegion(result, pt1, pt2);
-      var main = string.Join(" ", textValues).ToUpper();
-      return new string(main.Where(char.IsDigit).ToArray());
-    }
-
-    private string ParseLocation(Dictionary<string, object> result)
-    {
-      var pt1 = new Dictionary<string, object> { { "x", 2.2222 }, { "y", 0.0 } };
-      var pt2 = new Dictionary<string, object>
-            {
-                { "x", 5.0666 },
-                { "y", -0.1872000000000007 }
-            };
-      var textValues = GetTextValuesInRegion(result, pt1, pt2);
-      var location = string.Join(" ", textValues).ToUpper();
-
-      return location.Replace("LOCATION", "").Trim();
-    }
-
-    private string ParsePanelName(Dictionary<string, object> result)
-    {
-      var pt1 = new Dictionary<string, object> { { "x", 0.0 }, { "y", 0.0 } };
-      var pt2 = new Dictionary<string, object>
-            {
-                { "x", 2.2222 },
-                { "y", -0.37439999999999962 }
-            };
-
-      if (!result.ContainsKey("text"))
-      {
-        return "";
-      }
-
-      var textList = (List<Dictionary<string, object>>)result["text"];
-      var textValues = GetTextValuesInRegion(result, pt1, pt2);
-      var panelName = string.Join(" ", textValues);
-
-      if (!panelName.Contains("PANEL"))
-      {
-        return "";
-      }
-
-      if (!panelName.Contains('\'') && !panelName.Contains('`'))
-      {
-        return "";
-      }
-
-      int firstQuoteIndex = panelName.IndexOfAny(['\'', '`']);
-      int lastQuoteIndex = panelName.LastIndexOfAny(['\'', '`']);
-
-      if (firstQuoteIndex >= 0 && lastQuoteIndex > firstQuoteIndex)
-      {
-        return panelName.Substring(
-            firstQuoteIndex + 1,
-            lastQuoteIndex - firstQuoteIndex - 1
+        CreateAndPositionText(
+            tr,
+            "OA",
+            "Standard",
+            0.1248,
+            0.75,
+            256,
+            "0",
+            new Point3d(
+                startPoint.X + 1.87939466183889,
+                startPoint.Y - 0.720370467604425,
+                0
+            )
+        );
+        CreateAndPositionText(
+            tr,
+            "OB",
+            "Standard",
+            0.1248,
+            0.75,
+            256,
+            "0",
+            new Point3d(
+                startPoint.X + 2.50641160863188,
+                startPoint.Y - 0.720370467604425,
+                0
+            )
+        );
+        CreateAndPositionText(
+            tr,
+            "OA",
+            "Standard",
+            0.1248,
+            0.75,
+            256,
+            "0",
+            new Point3d(
+                startPoint.X + 4.19245469916268,
+                startPoint.Y - 0.720370467604425,
+                0
+            )
+        );
+        CreateAndPositionText(
+            tr,
+            "OB",
+            "Standard",
+            0.1248,
+            0.75,
+            256,
+            "0",
+            new Point3d(
+                startPoint.X + 4.59766144739842,
+                startPoint.Y - 0.720370467604425,
+                0
+            )
+        );
+        CreateAndPositionText(
+            tr,
+            "OA",
+            "Standard",
+            0.1248,
+            0.75,
+            256,
+            "0",
+            new Point3d(startPoint.X + 6.2528343633212, startPoint.Y - 0.720370467604425, 0)
+        );
+        CreateAndPositionText(
+            tr,
+            "OB",
+            "Standard",
+            0.1248,
+            0.75,
+            256,
+            "0",
+            new Point3d(
+                startPoint.X + 6.91903366501083,
+                startPoint.Y - 0.720370467604425,
+                0
+            )
         );
       }
-
-      return panelName;
-    }
-
-    private string ParseMain(Dictionary<string, object> result)
-    {
-      var pt1 = new Dictionary<string, object>
-            {
-                { "x", 2.2221755722507623 },
-                { "y", -0.18719999999984793 }
-            };
-      var pt2 = new Dictionary<string, object>
-            {
-                { "x", 5.0666101852166321 },
-                { "y", -0.37439999999969586 }
-            };
-      var textValues = GetTextValuesInRegion(result, pt1, pt2);
-      var main = string.Join(" ", textValues).ToUpper();
-      var digitsOnly = new string(main.Where(char.IsDigit).ToArray());
-
-      if (main.Contains("M") && main.Contains("L") && main.Contains("O"))
-      {
-        return "M.L.O.";
-      }
       else
       {
-        return digitsOnly;
+        CreateAndPositionText(
+            tr,
+            "OA",
+            "Standard",
+            0.11232,
+            0.75,
+            256,
+            "0",
+            new Point3d(
+                startPoint.X + 1.75923320841673,
+                startPoint.Y - 0.715823582939777,
+                0
+            )
+        );
+        CreateAndPositionText(
+            tr,
+            "OB",
+            "Standard",
+            0.11232,
+            0.75,
+            256,
+            "0",
+            new Point3d(
+                startPoint.X + 2.17200390182074,
+                startPoint.Y - 0.714690056264089,
+                0
+            )
+        );
+        CreateAndPositionText(
+            tr,
+            "OC",
+            "Standard",
+            0.11232,
+            0.75,
+            256,
+            "0",
+            new Point3d(
+                startPoint.X + 2.57149885762158,
+                startPoint.Y - 0.718725420176355,
+                0
+            )
+        );
+        CreateAndPositionText(
+            tr,
+            "OA",
+            "Standard",
+            0.11232,
+            0.75,
+            256,
+            "0",
+            new Point3d(
+                startPoint.X + 4.22229040316483,
+                startPoint.Y - 0.714236644953189,
+                0
+            )
+        );
+        CreateAndPositionText(
+            tr,
+            "OB",
+            "Standard",
+            0.11232,
+            0.75,
+            256,
+            "0",
+            new Point3d(
+                startPoint.X + 4.42655098606872,
+                startPoint.Y - 0.714236644953189,
+                0
+            )
+        );
+        CreateAndPositionText(
+            tr,
+            "OC",
+            "Standard",
+            0.11232,
+            0.75,
+            256,
+            "0",
+            new Point3d(
+                startPoint.X + 4.63417850165774,
+                startPoint.Y - 0.713042660752734,
+                0
+            )
+        );
+        CreateAndPositionText(
+            tr,
+            "OA",
+            "Standard",
+            0.11232,
+            0.75,
+            256,
+            "0",
+            new Point3d(startPoint.X + 6.22324655852697, startPoint.Y - 0.71537017323044, 0)
+        );
+        CreateAndPositionText(
+            tr,
+            "OB",
+            "Standard",
+            0.11232,
+            0.75,
+            256,
+            "0",
+            new Point3d(
+                startPoint.X + 6.63397621936463,
+                startPoint.Y - 0.714690057865624,
+                0
+            )
+        );
+        CreateAndPositionText(
+            tr,
+            "OC",
+            "Standard",
+            0.11232,
+            0.75,
+            256,
+            "0",
+            new Point3d(
+                startPoint.X + 7.03324439586629,
+                startPoint.Y - 0.718272010467018,
+                0
+            )
+        );
       }
     }
 
-    private string[] GetTextValuesInRegion(Dictionary<string, object> result, Dictionary<string, object> pt1, Dictionary<string, object> pt2)
+    private void CreateTextsWithPanelData(Transaction tr, string layerName, Point3d startPoint, Dictionary<string, object> panelData)
     {
-      var textList = ((List<Dictionary<string, object>>)result["text"])
-          .OrderBy(text => (double)text["x"]) // Then sort by X-coordinate in ascending order (left to right)
-          .ToList();
-
-      var textValues = new List<string>();
-
-      foreach (var text in textList)
-      {
-        var x = (double)text["x"];
-        var y = (double)text["y"];
-
-        if (pt1["x"].GetType() == typeof(int))
-        {
-          pt1["x"] = Convert.ToDouble(pt1["x"]);
-        }
-        if (pt1["y"].GetType() == typeof(int))
-        {
-          pt1["y"] = Convert.ToDouble(pt1["y"]);
-        }
-        if (pt2["x"].GetType() == typeof(int))
-        {
-          pt2["x"] = Convert.ToDouble(pt2["x"]);
-        }
-        if (pt2["y"].GetType() == typeof(int))
-        {
-          pt2["y"] = Convert.ToDouble(pt2["y"]);
-        }
-
-        if (
-            x >= (double)pt1["x"]
-            && x <= (double)pt2["x"]
-            && y >= (double)pt2["y"]
-            && y <= (double)pt1["y"]
-        )
-        {
-          textValues.Add(text["value"].ToString());
-        }
-      }
-
-      return textValues.ToArray();
-    }
-
-    public static (Document doc, Database db, Editor ed) GetGlobals()
-    {
-      var doc = Autodesk
-          .AutoCAD
-          .ApplicationServices
-          .Application
-          .DocumentManager
-          .MdiActiveDocument;
-      var db = doc.Database;
-      var ed = doc.Editor;
-
-      return (doc, db, ed);
-    }
-
-    public void Create_Panel(Dictionary<string, object> panelData)
-    {
-      List<Dictionary<string, object>> panels = new List<Dictionary<string, object>>();
-      panels.Add(panelData);
-      Create_Panels(panels);
+      CreateAndPositionText(
+          tr,
+          panelData["panel"] as string,
+          "ROMANC",
+          0.1872,
+          0.75,
+          2,
+          layerName,
+          new Point3d(startPoint.X + 1.17828457810867, startPoint.Y - 0.299822699224023, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          panelData["location"] as string,
+          "ROMANS",
+          0.09375,
+          1,
+          2,
+          layerName,
+          new Point3d(startPoint.X + 3.19605976175148, startPoint.Y - 0.137807184107345, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          panelData["main"] as string,
+          "ROMANS",
+          0.09375,
+          1,
+          2,
+          layerName,
+          new Point3d(startPoint.X + 3.24033367283675, startPoint.Y - 0.32590837886957, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          panelData["bus_rating"] as string,
+          "ROMANS",
+          0.12375,
+          1,
+          2,
+          layerName,
+          new Point3d(startPoint.X + 6.2073642121926, startPoint.Y - 0.274622599308543, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          panelData["voltage1"] as string + "/" + panelData["voltage2"] as string,
+          "ROMANS",
+          0.09375,
+          1,
+          2,
+          layerName,
+          new Point3d(startPoint.X + 7.04393671550224, startPoint.Y - 0.141653203021775, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          panelData["mounting"] as string,
+          "ROMANS",
+          0.09375,
+          1,
+          2,
+          layerName,
+          new Point3d(startPoint.X + 7.87802551675406, startPoint.Y - 0.331292901876935, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          panelData["phase"] as string,
+          "ROMANS",
+          0.09375,
+          1,
+          2,
+          layerName,
+          new Point3d(startPoint.X + 8.1253996026328, startPoint.Y - 0.141653203021775, 0)
+      );
+      CreateAndPositionText(
+          tr,
+          panelData["wire"] as string,
+          "ROMANS",
+          0.09375,
+          1,
+          2,
+          layerName,
+          new Point3d(startPoint.X + 8.50104048135836, startPoint.Y - 0.141653203021775, 0)
+      );
     }
 
     public void Create_Panels(List<Dictionary<string, object>> panelDataList)
@@ -1185,111 +1126,75 @@ namespace ElectricalCommands
       }
     }
 
-    public static void put_in_json_file(object thing)
+    private static List<Dictionary<string, object>> ImportExcelData()
     {
-      // json write the panel data to the desktop
-      string json = JsonConvert.SerializeObject(thing, Formatting.Indented);
-      string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+      var (doc, db, ed) = GetGlobals();
 
+      var openFileDialog = new System.Windows.Forms.OpenFileDialog
+      {
+        Filter = "Excel Files|*.xlsx;*.xls",
+        Title = "Select Excel File"
+      };
+
+      List<Dictionary<string, object>> panels = new List<Dictionary<string, object>>();
+
+      if (openFileDialog.ShowDialog() == DialogResult.OK)
+      {
+        string filePath = openFileDialog.FileName;
+        try
+        {
+          FileInfo fileInfo = GetFileInfo(filePath);
+          using (var package = GetExcelPackage(fileInfo))
+          {
+            ExcelWorkbook workbook = package.Workbook;
+            if (ValidateWorkbook(workbook))
+            {
+              foreach (var selectedWorksheet in workbook.Worksheets)
+              {
+                if (selectedWorksheet.Name.ToLower().Contains("panel"))
+                {
+                  panels.AddRange(ProcessWorksheet(selectedWorksheet));
+                }
+              }
+            }
+          }
+        }
+        catch (FileNotFoundException ex)
+        {
+          HandleExceptions(ex);
+        }
+        catch (Autodesk.AutoCAD.Runtime.Exception ex)
+        {
+          HandleExceptions(ex);
+        }
+      }
+      else
+      {
+        Console.WriteLine("No file selected.");
+      }
+
+      return panels;
+    }
+
+    public static (Document doc, Database db, Editor ed) GetGlobals()
+    {
       var doc = Autodesk
           .AutoCAD
           .ApplicationServices
           .Application
           .DocumentManager
           .MdiActiveDocument;
+      var db = doc.Database;
       var ed = doc.Editor;
 
-      string baseFileName = "Test";
-
-      if (string.IsNullOrEmpty(baseFileName))
-      {
-        baseFileName = "panel_data";
-      }
-      string extension = ".json";
-      string path = Path.Combine(desktopPath, baseFileName + extension);
-
-      int count = 1;
-      while (File.Exists(path))
-      {
-        string tempFileName = string.Format("{0}({1})", baseFileName, count++);
-        path = Path.Combine(desktopPath, tempFileName + extension);
-      }
-
-      File.WriteAllText(path, json);
+      return (doc, db, ed);
     }
 
-    private Dictionary<string, object> UpdatePanelDataDescriptions(Dictionary<string, object> panelData)
+    public void Create_Panel(Dictionary<string, object> panelData)
     {
-      // Check if the keys exist in the dictionary
-      if (
-          panelData.ContainsKey("description_left_tags")
-          && panelData.ContainsKey("description_right_tags")
-      )
-      {
-        // Get the lists from the dictionary
-        List<string> leftTags = panelData["description_left_tags"] as List<string>;
-        List<string> rightTags = panelData["description_right_tags"] as List<string>;
-
-        // Get the description lists
-        List<string> leftDescriptions = panelData["description_left"] as List<string>;
-        List<string> rightDescriptions = panelData["description_right"] as List<string>;
-
-        // Iterate over the left tags
-        for (int i = 0; i < leftTags.Count; i++)
-        {
-          if (leftTags[i].Contains("ADD SUFFIX (E). *NOT ADDED AS NOTE*"))
-          {
-            // Add the suffix to the associated description if it's not "existing load", "EXISTING LOAD", "space", or "SPACE"
-            string lowerDescription = leftDescriptions[i * 2].ToLower();
-            if (lowerDescription != "existing load" && lowerDescription != "space")
-            {
-              leftDescriptions[i * 2] = "(E)" + leftDescriptions[i * 2];
-              if (!string.IsNullOrEmpty(leftDescriptions[i * 2 + 1]))
-              {
-                leftDescriptions[i * 2 + 1] = "(E)" + leftDescriptions[i * 2 + 1];
-              }
-            }
-          }
-          else if (leftTags[i].Contains("ADD SUFFIX (R). *NOT ADDED AS NOTE*"))
-          {
-            // Add the suffix to the associated description
-            leftDescriptions[i * 2] = "(R)" + leftDescriptions[i * 2];
-            if (!string.IsNullOrEmpty(leftDescriptions[i * 2 + 1]))
-            {
-              leftDescriptions[i * 2 + 1] = "(R)" + leftDescriptions[i * 2 + 1];
-            }
-          }
-
-          if (rightTags[i].Contains("ADD SUFFIX (E). *NOT ADDED AS NOTE*"))
-          {
-            // Add the suffix to the associated description if it's not "existing load", "EXISTING LOAD", "space", or "SPACE"
-            string lowerDescription = rightDescriptions[i * 2].ToLower();
-            if (lowerDescription != "existing load" && lowerDescription != "space")
-            {
-              rightDescriptions[i * 2] = "(E)" + rightDescriptions[i * 2];
-              if (!string.IsNullOrEmpty(rightDescriptions[i * 2 + 1]))
-              {
-                rightDescriptions[i * 2 + 1] = "(E)" + rightDescriptions[i * 2 + 1];
-              }
-            }
-          }
-          else if (rightTags[i].Contains("ADD SUFFIX (R). *NOT ADDED AS NOTE*"))
-          {
-            // Add the suffix to the associated description
-            rightDescriptions[i * 2] = "(R)" + rightDescriptions[i * 2];
-            if (!string.IsNullOrEmpty(rightDescriptions[i * 2 + 1]))
-            {
-              rightDescriptions[i * 2 + 1] = "(R)" + rightDescriptions[i * 2 + 1];
-            }
-          }
-        }
-
-        // Update the descriptions in the dictionary
-        panelData["description_left"] = leftDescriptions;
-        panelData["description_right"] = rightDescriptions;
-      }
-
-      return panelData;
+      List<Dictionary<string, object>> panels = new List<Dictionary<string, object>>();
+      panels.Add(panelData);
+      Create_Panels(panels);
     }
 
     private static FileInfo GetFileInfo(string filePath)
@@ -1789,56 +1694,6 @@ namespace ElectricalCommands
 
       btr.AppendEntity(text);
       tr.AddNewlyCreatedDBObject(text, true);
-    }
-
-    private static List<Dictionary<string, object>> ImportExcelData()
-    {
-      var (doc, db, ed) = GetGlobals();
-
-      var openFileDialog = new System.Windows.Forms.OpenFileDialog
-      {
-        Filter = "Excel Files|*.xlsx;*.xls",
-        Title = "Select Excel File"
-      };
-
-      List<Dictionary<string, object>> panels = new List<Dictionary<string, object>>();
-
-      if (openFileDialog.ShowDialog() == DialogResult.OK)
-      {
-        string filePath = openFileDialog.FileName;
-        try
-        {
-          FileInfo fileInfo = GetFileInfo(filePath);
-          using (var package = GetExcelPackage(fileInfo))
-          {
-            ExcelWorkbook workbook = package.Workbook;
-            if (ValidateWorkbook(workbook))
-            {
-              foreach (var selectedWorksheet in workbook.Worksheets)
-              {
-                if (selectedWorksheet.Name.ToLower().Contains("panel"))
-                {
-                  panels.AddRange(ProcessWorksheet(selectedWorksheet));
-                }
-              }
-            }
-          }
-        }
-        catch (FileNotFoundException ex)
-        {
-          HandleExceptions(ex);
-        }
-        catch (Autodesk.AutoCAD.Runtime.Exception ex)
-        {
-          HandleExceptions(ex);
-        }
-      }
-      else
-      {
-        Console.WriteLine("No file selected.");
-      }
-
-      return panels;
     }
 
     public string CreateOrGetLayer(string layerName, Database db, Transaction tr)
@@ -2936,673 +2791,6 @@ namespace ElectricalCommands
       text.Justify = AttachmentPoint.BaseRight;
       double x = position.X;
       text.AlignmentPoint = new Point3d(x + 0.46, position.Y, 0);
-    }
-
-    private void CreateTextsWithoutPanelData(Transaction tr, string layerName, Point3d startPoint, bool is2Pole)
-    {
-      CreateAndPositionText(
-          tr,
-          "PANEL",
-          "ROMANC",
-          0.1872,
-          0.75,
-          0,
-          layerName,
-          new Point3d(startPoint.X + 0.231944251649111, startPoint.Y - 0.299822699224023, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "DESCRIPTION",
-          "Standard",
-          0.1248,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 0.305517965881791, startPoint.Y - 0.638118222684739, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "W",
-          "Standard",
-          0.101088,
-          0.75,
-          0,
-          layerName,
-          new Point3d(startPoint.X + 8.64365164909793, startPoint.Y - 0.155688865359394, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "VOLT AMPS",
-          "Standard",
-          0.11232,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 1.9015733562577, startPoint.Y - 0.532524377875689, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "L",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 2.97993751651882, startPoint.Y - 0.483601235896458, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "T",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 2.97993751651882, startPoint.Y - 0.59526740969153, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "G",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 2.97993751651882, startPoint.Y - 0.702157646684782, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "R",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 3.20889406685785, startPoint.Y - 0.482921120531671, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "E",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 3.20889406685785, startPoint.Y - 0.594587294326715, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "C",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 3.20889406685785, startPoint.Y - 0.701477531319966, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "M",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 3.43493724520761, startPoint.Y - 0.482921120531671, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "I",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 3.4427934214732, startPoint.Y - 0.594587294326715, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "S",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 3.43493724520761, startPoint.Y - 0.701477531319966, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "BKR",
-          "Standard",
-          0.09152,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 3.63691080609988, startPoint.Y - 0.61662650707666, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "CKT",
-          "Standard",
-          0.0832,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 3.94429929014041, startPoint.Y - 0.529332995532684, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          " NO",
-          "Standard",
-          0.0832,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 3.90688892697108, startPoint.Y - 0.673306258645766, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "BUS",
-          "Standard",
-          0.11232,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 4.32282163085404, startPoint.Y - 0.527068325709052, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "CKT",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 4.88897460099258, startPoint.Y - 0.535275052777223, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          " NO",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 4.85530527414039, startPoint.Y - 0.664850989579008, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "BKR",
-          "Standard",
-          0.082368,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 5.14497871612878, startPoint.Y - 0.612478980835647, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "M",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 5.4736003885796, startPoint.Y - 0.483601235896458, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "I",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 5.48257887574016, startPoint.Y - 0.59526740969153, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "S",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 5.4736003885796, startPoint.Y - 0.702157646684782, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "R",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 5.70588736710022, startPoint.Y - 0.482921120531671, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "E",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 5.70588736710022, startPoint.Y - 0.594587294326715, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "C",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 5.70588736710022, startPoint.Y - 0.701477531319966, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "L",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 5.93367350805136, startPoint.Y - 0.484281352862808, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "T",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 5.93367350805136, startPoint.Y - 0.595947526657881, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "G",
-          "Standard",
-          0.07488,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 5.93367350805136, startPoint.Y - 0.702837763651132, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "VOLT AMPS",
-          "Standard",
-          0.11232,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 6.32453930091015, startPoint.Y - 0.532297673821773, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "DESCRIPTION",
-          "Standard",
-          0.1248,
-          0.75,
-          256,
-          "0",
-          new Point3d(startPoint.X + 7.68034755863846, startPoint.Y - 0.636791573573134, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "LOCATION",
-          "Standard",
-          0.11232,
-          0.75,
-          0,
-          layerName,
-          new Point3d(startPoint.X + 2.32067207718262, startPoint.Y - 0.155059196495415, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "MAIN (AMP)",
-          "Standard",
-          0.11232,
-          0.75,
-          0,
-          layerName,
-          new Point3d(startPoint.X + 2.32089885857886, startPoint.Y - 0.338479316609039, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "BUS RATING",
-          "Standard",
-          0.1248,
-          0.75,
-          0,
-          layerName,
-          new Point3d(startPoint.X + 5.18507633525223, startPoint.Y - 0.271963067880222, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "MOUNTING:",
-          "Standard",
-          0.11232,
-          0.75,
-          0,
-          layerName,
-          new Point3d(startPoint.X + 7.01560982102967, startPoint.Y - 0.329154148660905, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "V",
-          "Standard",
-          0.09984,
-          0.75,
-          0,
-          layerName,
-          new Point3d(startPoint.X + 7.80112268015148, startPoint.Y - 0.158231303238949, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          "O",
-          "Standard",
-          0.101088,
-          0.75,
-          0,
-          layerName,
-          new Point3d(startPoint.X + 8.30325740318381, startPoint.Y - 0.151432601608803, 0)
-      );
-
-      if (is2Pole)
-      {
-        CreateAndPositionText(
-            tr,
-            "OA",
-            "Standard",
-            0.1248,
-            0.75,
-            256,
-            "0",
-            new Point3d(
-                startPoint.X + 1.87939466183889,
-                startPoint.Y - 0.720370467604425,
-                0
-            )
-        );
-        CreateAndPositionText(
-            tr,
-            "OB",
-            "Standard",
-            0.1248,
-            0.75,
-            256,
-            "0",
-            new Point3d(
-                startPoint.X + 2.50641160863188,
-                startPoint.Y - 0.720370467604425,
-                0
-            )
-        );
-        CreateAndPositionText(
-            tr,
-            "OA",
-            "Standard",
-            0.1248,
-            0.75,
-            256,
-            "0",
-            new Point3d(
-                startPoint.X + 4.19245469916268,
-                startPoint.Y - 0.720370467604425,
-                0
-            )
-        );
-        CreateAndPositionText(
-            tr,
-            "OB",
-            "Standard",
-            0.1248,
-            0.75,
-            256,
-            "0",
-            new Point3d(
-                startPoint.X + 4.59766144739842,
-                startPoint.Y - 0.720370467604425,
-                0
-            )
-        );
-        CreateAndPositionText(
-            tr,
-            "OA",
-            "Standard",
-            0.1248,
-            0.75,
-            256,
-            "0",
-            new Point3d(startPoint.X + 6.2528343633212, startPoint.Y - 0.720370467604425, 0)
-        );
-        CreateAndPositionText(
-            tr,
-            "OB",
-            "Standard",
-            0.1248,
-            0.75,
-            256,
-            "0",
-            new Point3d(
-                startPoint.X + 6.91903366501083,
-                startPoint.Y - 0.720370467604425,
-                0
-            )
-        );
-      }
-      else
-      {
-        CreateAndPositionText(
-            tr,
-            "OA",
-            "Standard",
-            0.11232,
-            0.75,
-            256,
-            "0",
-            new Point3d(
-                startPoint.X + 1.75923320841673,
-                startPoint.Y - 0.715823582939777,
-                0
-            )
-        );
-        CreateAndPositionText(
-            tr,
-            "OB",
-            "Standard",
-            0.11232,
-            0.75,
-            256,
-            "0",
-            new Point3d(
-                startPoint.X + 2.17200390182074,
-                startPoint.Y - 0.714690056264089,
-                0
-            )
-        );
-        CreateAndPositionText(
-            tr,
-            "OC",
-            "Standard",
-            0.11232,
-            0.75,
-            256,
-            "0",
-            new Point3d(
-                startPoint.X + 2.57149885762158,
-                startPoint.Y - 0.718725420176355,
-                0
-            )
-        );
-        CreateAndPositionText(
-            tr,
-            "OA",
-            "Standard",
-            0.11232,
-            0.75,
-            256,
-            "0",
-            new Point3d(
-                startPoint.X + 4.22229040316483,
-                startPoint.Y - 0.714236644953189,
-                0
-            )
-        );
-        CreateAndPositionText(
-            tr,
-            "OB",
-            "Standard",
-            0.11232,
-            0.75,
-            256,
-            "0",
-            new Point3d(
-                startPoint.X + 4.42655098606872,
-                startPoint.Y - 0.714236644953189,
-                0
-            )
-        );
-        CreateAndPositionText(
-            tr,
-            "OC",
-            "Standard",
-            0.11232,
-            0.75,
-            256,
-            "0",
-            new Point3d(
-                startPoint.X + 4.63417850165774,
-                startPoint.Y - 0.713042660752734,
-                0
-            )
-        );
-        CreateAndPositionText(
-            tr,
-            "OA",
-            "Standard",
-            0.11232,
-            0.75,
-            256,
-            "0",
-            new Point3d(startPoint.X + 6.22324655852697, startPoint.Y - 0.71537017323044, 0)
-        );
-        CreateAndPositionText(
-            tr,
-            "OB",
-            "Standard",
-            0.11232,
-            0.75,
-            256,
-            "0",
-            new Point3d(
-                startPoint.X + 6.63397621936463,
-                startPoint.Y - 0.714690057865624,
-                0
-            )
-        );
-        CreateAndPositionText(
-            tr,
-            "OC",
-            "Standard",
-            0.11232,
-            0.75,
-            256,
-            "0",
-            new Point3d(
-                startPoint.X + 7.03324439586629,
-                startPoint.Y - 0.718272010467018,
-                0
-            )
-        );
-      }
-    }
-
-    private void CreateTextsWithPanelData(Transaction tr, string layerName, Point3d startPoint, Dictionary<string, object> panelData)
-    {
-      CreateAndPositionText(
-          tr,
-          panelData["panel"] as string,
-          "ROMANC",
-          0.1872,
-          0.75,
-          2,
-          layerName,
-          new Point3d(startPoint.X + 1.17828457810867, startPoint.Y - 0.299822699224023, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          panelData["location"] as string,
-          "ROMANS",
-          0.09375,
-          1,
-          2,
-          layerName,
-          new Point3d(startPoint.X + 3.19605976175148, startPoint.Y - 0.137807184107345, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          panelData["main"] as string,
-          "ROMANS",
-          0.09375,
-          1,
-          2,
-          layerName,
-          new Point3d(startPoint.X + 3.24033367283675, startPoint.Y - 0.32590837886957, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          panelData["bus_rating"] as string,
-          "ROMANS",
-          0.12375,
-          1,
-          2,
-          layerName,
-          new Point3d(startPoint.X + 6.2073642121926, startPoint.Y - 0.274622599308543, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          panelData["voltage1"] as string + "/" + panelData["voltage2"] as string,
-          "ROMANS",
-          0.09375,
-          1,
-          2,
-          layerName,
-          new Point3d(startPoint.X + 7.04393671550224, startPoint.Y - 0.141653203021775, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          panelData["mounting"] as string,
-          "ROMANS",
-          0.09375,
-          1,
-          2,
-          layerName,
-          new Point3d(startPoint.X + 7.87802551675406, startPoint.Y - 0.331292901876935, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          panelData["phase"] as string,
-          "ROMANS",
-          0.09375,
-          1,
-          2,
-          layerName,
-          new Point3d(startPoint.X + 8.1253996026328, startPoint.Y - 0.141653203021775, 0)
-      );
-      CreateAndPositionText(
-          tr,
-          panelData["wire"] as string,
-          "ROMANS",
-          0.09375,
-          1,
-          2,
-          layerName,
-          new Point3d(startPoint.X + 8.50104048135836, startPoint.Y - 0.141653203021775, 0)
-      );
     }
 
     private void CreateVerticalLines(Transaction tr, BlockTableRecord btr, Point3d startPoint, double[] distances, double startY, double endY, string layer)

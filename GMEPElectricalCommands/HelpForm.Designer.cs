@@ -1,6 +1,6 @@
 ﻿namespace ElectricalCommands
 {
-  partial class Help
+  partial class HelpForm
   {
     /// <summary>
     /// Required designer variable.
@@ -28,7 +28,7 @@
     /// </summary>
     private void InitializeComponent()
     {
-      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Help));
+      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(HelpForm));
       this.HELP_TEXTBOX = new System.Windows.Forms.TextBox();
       this.SuspendLayout();
       // 
