@@ -18,7 +18,7 @@ using System.Windows.Forms;
 
 namespace ElectricalCommands
 {
-  public partial class UserInterface : UserControl
+  public partial class PanelUserControl : UserControl
   {
     private PanelCommands myCommandsInstance;
     private MainForm mainForm;
@@ -31,7 +31,7 @@ namespace ElectricalCommands
     private bool initialization;
     private object oldValue;
 
-    public UserInterface(PanelCommands myCommands, MainForm mainForm, NewPanelForm newPanelForm, string tabName, bool is3PH = false)
+    public PanelUserControl(PanelCommands myCommands, MainForm mainForm, NewPanelForm newPanelForm, string tabName, bool is3PH = false)
     {
       InitializeComponent();
       myCommandsInstance = myCommands;

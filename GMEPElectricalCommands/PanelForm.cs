@@ -14,7 +14,7 @@ namespace ElectricalCommands
   {
     private PanelCommands myCommandsInstance;
     private NewPanelForm newPanelForm;
-    private List<UserInterface> userControls;
+    private List<PanelUserControl> userControls;
     private Document acDoc;
 
     public MainForm(PanelCommands myCommands)
@@ -22,7 +22,7 @@ namespace ElectricalCommands
       InitializeComponent();
       this.myCommandsInstance = myCommands;
       this.newPanelForm = new NewPanelForm(this);
-      this.userControls = new List<UserInterface>();
+      this.userControls = new List<PanelUserControl>();
       this.Shown += MAINFORM_SHOWN;
       this.FormClosing += MAINFORM_CLOSING;
       this.KeyPreview = true;
@@ -50,14 +50,14 @@ namespace ElectricalCommands
       );
     }
 
-    public List<UserInterface> retrieve_userControls()
+    public List<PanelUserControl> retrieve_userControls()
     {
       return this.userControls;
     }
 
     public UserControl findUserControl(string panelName)
     {
-      foreach (UserInterface userControl in userControls)
+      foreach (PanelUserControl userControl in userControls)
       {
         string userControlName = userControl.Name.Replace("'", "");
         userControlName = userControlName.Replace(" ", "");
@@ -132,7 +132,7 @@ namespace ElectricalCommands
       {
         string panelName = panel["panel"].ToString();
         bool is3PH = panel.ContainsKey("phase_c_left");
-        UserInterface userControl1 = create_new_panel_tab(panelName, is3PH);
+        PanelUserControl userControl1 = create_new_panel_tab(panelName, is3PH);
         userControl1.clear_modal_and_remove_rows(panel);
         userControl1.populate_modal_with_panel_data(panel);
         var notes = JsonConvert.DeserializeObject<List<string>>(panel["notes"].ToString());
@@ -145,7 +145,7 @@ namespace ElectricalCommands
       foreach (Dictionary<string, object> panel in panelStorage)
       {
         string panelName = panel["panel"].ToString();
-        UserInterface userControl1 = (UserInterface)findUserControl(panelName);
+        PanelUserControl userControl1 = (PanelUserControl)findUserControl(panelName);
         if (userControl1 == null)
         {
           continue;
@@ -214,7 +214,7 @@ namespace ElectricalCommands
       }
     }
 
-    internal void delete_panel(UserInterface userControl1)
+    internal void delete_panel(PanelUserControl userControl1)
     {
       DialogResult dialogResult = MessageBox.Show(
           "Are you sure you want to delete this panel?",
@@ -235,7 +235,7 @@ namespace ElectricalCommands
       }
     }
 
-    private void remove_panel_from_storage(UserInterface userControl1)
+    private void remove_panel_from_storage(PanelUserControl userControl1)
     {
       var panelData = retrieve_saved_panel_data();
 
@@ -275,7 +275,7 @@ namespace ElectricalCommands
       tabPage.Controls.Add(control);
     }
 
-    public UserInterface create_new_panel_tab(string tabName, bool is3PH)
+    public PanelUserControl create_new_panel_tab(string tabName, bool is3PH)
     {
       // if tabname has "PANEL" in it replace it with "Panel"
       if (tabName.Contains("PANEL") || tabName.Contains("Panel"))
@@ -294,7 +294,7 @@ namespace ElectricalCommands
       PANEL_TABS.SelectedTab = newTabPage;
 
       // Create a new UserControl
-      UserInterface userControl1 = new UserInterface(
+      PanelUserControl userControl1 = new PanelUserControl(
           this.myCommandsInstance,
           this,
           this.newPanelForm,
@@ -352,7 +352,7 @@ namespace ElectricalCommands
       {
         using (DocumentLock docLock = this.acDoc.LockDocument())
         {
-          foreach (UserInterface userControl in this.userControls)
+          foreach (PanelUserControl userControl in this.userControls)
           {
             panelStorage.Add(userControl.retrieve_data_from_modal());
           }
@@ -407,7 +407,7 @@ namespace ElectricalCommands
 
     private void MAINFORM_DEACTIVATE(object sender, EventArgs e)
     {
-      foreach (UserInterface userControl in userControls)
+      foreach (PanelUserControl userControl in userControls)
       {
         DataGridView panelGrid = userControl.retrieve_panelGrid();
         panelGrid.ClearSelection();
@@ -421,10 +421,10 @@ namespace ElectricalCommands
 
     private void CREATE_ALL_PANELS_BUTTON_Click(object sender, EventArgs e)
     {
-      List<UserInterface> userControls = retrieve_userControls();
+      List<PanelUserControl> userControls = retrieve_userControls();
       List<Dictionary<string, object>> panels = new List<Dictionary<string, object>>();
 
-      foreach (UserInterface userControl in userControls)
+      foreach (PanelUserControl userControl in userControls)
       {
         Dictionary<string, object> panelData = userControl.retrieve_data_from_modal();
         panels.Add(panelData);
@@ -455,7 +455,7 @@ namespace ElectricalCommands
 
     private void HELP_BUTTON_Click(object sender, EventArgs e)
     {
-      Help helpForm = new Help();
+      HelpForm helpForm = new HelpForm();
 
       helpForm.ShowDialog();
     }

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ElectricalCommands
 {
-  public class XrefCommands
+  public class SetupXREFCommands
   {
     [CommandMethod("SETUPXREFS")]
     public void SetupXrefs()
