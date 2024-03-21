@@ -72,9 +72,6 @@ namespace ElectricalCommands
       PANEL_NAME_INPUT.TextChanged += new EventHandler(this.PANEL_NAME_INPUT_TextChanged);
       PANEL_GRID.CellFormatting += PANEL_GRID_CellFormatting;
       PANEL_GRID.CellClick += new DataGridViewCellEventHandler(this.PANEL_GRID_CellClick);
-      PANEL_GRID.EditingControlShowing += new DataGridViewEditingControlShowingEventHandler(
-          PANEL_GRID_EditingControlShowing
-      );
       PANEL_NAME_INPUT.Click += (sender, e) =>
       {
         PANEL_NAME_INPUT.SelectAll();
@@ -2173,7 +2170,6 @@ namespace ElectricalCommands
     {
       if (
           !dataGridViewCell.OwningColumn.Name.Contains("breaker")
-          || !REMOVE_EXISTING_CHECKBOX.Checked
       )
       {
         return;
@@ -2216,7 +2212,6 @@ namespace ElectricalCommands
     {
       if (
           !dataGridViewCell.OwningColumn.Name.Contains("description")
-          || !REMOVE_EXISTING_CHECKBOX.Checked
       )
       {
         return;
@@ -2514,12 +2509,6 @@ namespace ElectricalCommands
       }
     }
 
-    private void PANEL_GRID_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
-    {
-      e.Control.TextChanged -= new EventHandler(EDITING_CONTROL_Text_Changed);
-      e.Control.TextChanged += new EventHandler(EDITING_CONTROL_Text_Changed);
-    }
-
     private void PANEL_GRID_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
     {
       if (e.RowIndex >= 0 && e.ColumnIndex >= 0) // Check if it's not the header cell
@@ -2541,39 +2530,6 @@ namespace ElectricalCommands
           }
 
           e.Handled = true;
-        }
-      }
-    }
-
-    private async void EDITING_CONTROL_Text_Changed(object sender, EventArgs e)
-    {
-      TextBox tb = sender as TextBox;
-      if (tb != null)
-      {
-        if (
-            MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text != ""
-            && PANEL_GRID.CurrentCell.OwningColumn.Name.Contains("description")
-        )
-        {
-          if (tb.Text.Length > Convert.ToInt32(MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text))
-          {
-            tb.Text = tb.Text.Substring(
-                0,
-                Convert.ToInt32(MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text)
-            );
-            tb.SelectionStart = tb.Text.Length;
-            INFO_LABEL.Text =
-                $"You are trying to enter too many characters into a cell that belongs to a \"description\" column. The maximum number of characters for this cell is {MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text}.";
-            await Task.Delay(5000);
-          }
-
-          if (
-              INFO_LABEL.Text
-              == $"You are trying to enter too many characters into a cell that belongs to a \"description\" column. The maximum number of characters for this cell is {MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Text}."
-          )
-          {
-            INFO_LABEL.Text = string.Empty;
-          }
         }
       }
     }

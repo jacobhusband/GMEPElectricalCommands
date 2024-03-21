@@ -28,12 +28,7 @@ namespace ElectricalCommands
       this.KeyPreview = true;
       this.KeyDown += new KeyEventHandler(MAINFORM_KEYDOWN);
       this.Deactivate += MAINFORM_DEACTIVATE;
-      this.acDoc = Autodesk
-          .AutoCAD
-          .ApplicationServices
-          .Application
-          .DocumentManager
-          .MdiActiveDocument;
+      this.acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       this.acDoc.BeginDocumentClose -= new DocumentBeginCloseEventHandler(docBeginDocClose);
       this.acDoc.BeginDocumentClose += new DocumentBeginCloseEventHandler(docBeginDocClose);
     }
@@ -316,9 +311,10 @@ namespace ElectricalCommands
       List<Dictionary<string, object>> allPanelData = new List<Dictionary<string, object>>();
 
       string acDocPath = Path.GetDirectoryName(this.acDoc.Name);
-      string panelSavesDirectory = Path.Combine(acDocPath, "panel saves");
+      string savesDirectory = Path.Combine(acDocPath, "Saves");
+      string panelSavesDirectory = Path.Combine(savesDirectory, "Panel");
 
-      // Check if the directory exists
+      // Check if the "Saves/Panel" directory exists
       if (Directory.Exists(panelSavesDirectory))
       {
         // Get all JSON files in the directory
@@ -335,9 +331,7 @@ namespace ElectricalCommands
           string jsonData = File.ReadAllText(mostRecentJsonFile);
 
           // Deserialize the JSON data to a list of dictionaries
-          allPanelData = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(
-              jsonData
-          );
+          allPanelData = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(jsonData);
         }
       }
 
@@ -365,9 +359,16 @@ namespace ElectricalCommands
     public void StoreDataInJsonFile(List<Dictionary<string, object>> saveData)
     {
       string acDocPath = Path.GetDirectoryName(this.acDoc.Name);
-      string panelSavesDirectory = Path.Combine(acDocPath, "panel saves");
+      string savesDirectory = Path.Combine(acDocPath, "Saves");
+      string panelSavesDirectory = Path.Combine(savesDirectory, "Panel");
 
-      // Create the directory if it doesn't exist
+      // Create the "Saves" directory if it doesn't exist
+      if (!Directory.Exists(savesDirectory))
+      {
+        Directory.CreateDirectory(savesDirectory);
+      }
+
+      // Create the "Saves/Panel" directory if it doesn't exist
       if (!Directory.Exists(panelSavesDirectory))
       {
         Directory.CreateDirectory(panelSavesDirectory);

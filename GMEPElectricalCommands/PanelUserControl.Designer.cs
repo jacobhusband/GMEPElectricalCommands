@@ -86,12 +86,8 @@
       this.CUSTOM_TITLE_TEXT = new System.Windows.Forms.TextBox();
       this.CUSTOM_TITLE_LABEL = new System.Windows.Forms.Label();
       this.REMOVE_NOTE_BUTTON = new System.Windows.Forms.Button();
-      this.MAX_DESCRIPTION_CELL_CHAR_LABEL = new System.Windows.Forms.Label();
-      this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX = new System.Windows.Forms.TextBox();
       this.AUTO_CHECKBOX = new System.Windows.Forms.CheckBox();
       this.LARGEST_LCL_INPUT = new System.Windows.Forms.TextBox();
-      this.ALL_EXISTING_BUTTON = new System.Windows.Forms.Button();
-      this.REMOVE_EXISTING_CHECKBOX = new System.Windows.Forms.CheckBox();
       this.DUPLICATE_PANEL_BUTTON = new System.Windows.Forms.Button();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
@@ -640,27 +636,6 @@
       this.REMOVE_NOTE_BUTTON.UseVisualStyleBackColor = true;
       this.REMOVE_NOTE_BUTTON.Click += new System.EventHandler(this.REMOVE_NOTE_BUTTON_Click);
       // 
-      // MAX_DESCRIPTION_CELL_CHAR_LABEL
-      // 
-      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.AutoSize = true;
-      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.BackColor = System.Drawing.Color.Transparent;
-      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.ForeColor = System.Drawing.SystemColors.ControlText;
-      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.Location = new System.Drawing.Point(1078, 604);
-      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.Margin = new System.Windows.Forms.Padding(0);
-      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.Name = "MAX_DESCRIPTION_CELL_CHAR_LABEL";
-      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.Size = new System.Drawing.Size(240, 13);
-      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.TabIndex = 189;
-      this.MAX_DESCRIPTION_CELL_CHAR_LABEL.Text = "MAXIMUM DESCRIPTION CELL CHARACTERS";
-      // 
-      // MAX_DESCRIPTION_CELL_CHAR_TEXTBOX
-      // 
-      this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-      this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Location = new System.Drawing.Point(1324, 600);
-      this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Name = "MAX_DESCRIPTION_CELL_CHAR_TEXTBOX";
-      this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.Size = new System.Drawing.Size(39, 20);
-      this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.TabIndex = 190;
-      this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-      // 
       // AUTO_CHECKBOX
       // 
       this.AUTO_CHECKBOX.AutoSize = true;
@@ -684,27 +659,6 @@
       this.LARGEST_LCL_INPUT.Size = new System.Drawing.Size(142, 20);
       this.LARGEST_LCL_INPUT.TabIndex = 192;
       // 
-      // ALL_EXISTING_BUTTON
-      // 
-      this.ALL_EXISTING_BUTTON.Location = new System.Drawing.Point(505, 538);
-      this.ALL_EXISTING_BUTTON.Name = "ALL_EXISTING_BUTTON";
-      this.ALL_EXISTING_BUTTON.Size = new System.Drawing.Size(103, 23);
-      this.ALL_EXISTING_BUTTON.TabIndex = 193;
-      this.ALL_EXISTING_BUTTON.Text = "ALL EXISTING";
-      this.ALL_EXISTING_BUTTON.UseVisualStyleBackColor = true;
-      this.ALL_EXISTING_BUTTON.Click += new System.EventHandler(this.ALL_EXISTING_BUTTON_Click);
-      // 
-      // REMOVE_EXISTING_CHECKBOX
-      // 
-      this.REMOVE_EXISTING_CHECKBOX.AutoSize = true;
-      this.REMOVE_EXISTING_CHECKBOX.Location = new System.Drawing.Point(616, 541);
-      this.REMOVE_EXISTING_CHECKBOX.Name = "REMOVE_EXISTING_CHECKBOX";
-      this.REMOVE_EXISTING_CHECKBOX.Size = new System.Drawing.Size(192, 17);
-      this.REMOVE_EXISTING_CHECKBOX.TabIndex = 194;
-      this.REMOVE_EXISTING_CHECKBOX.Text = "REMOVE EXISTING ON CHANGE";
-      this.REMOVE_EXISTING_CHECKBOX.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-      this.REMOVE_EXISTING_CHECKBOX.UseVisualStyleBackColor = true;
-      // 
       // DUPLICATE_PANEL_BUTTON
       // 
       this.DUPLICATE_PANEL_BUTTON.Location = new System.Drawing.Point(1109, 14);
@@ -715,18 +669,14 @@
       this.DUPLICATE_PANEL_BUTTON.UseVisualStyleBackColor = true;
       this.DUPLICATE_PANEL_BUTTON.Click += new System.EventHandler(this.DUPLICATE_PANEL_BUTTON_Click);
       // 
-      // UserInterface
+      // PanelUserControl
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
       this.Controls.Add(this.DUPLICATE_PANEL_BUTTON);
-      this.Controls.Add(this.REMOVE_EXISTING_CHECKBOX);
-      this.Controls.Add(this.ALL_EXISTING_BUTTON);
       this.Controls.Add(this.LARGEST_LCL_INPUT);
       this.Controls.Add(this.AUTO_CHECKBOX);
-      this.Controls.Add(this.MAX_DESCRIPTION_CELL_CHAR_TEXTBOX);
-      this.Controls.Add(this.MAX_DESCRIPTION_CELL_CHAR_LABEL);
       this.Controls.Add(this.REMOVE_NOTE_BUTTON);
       this.Controls.Add(this.CUSTOM_TITLE_LABEL);
       this.Controls.Add(this.CUSTOM_TITLE_TEXT);
@@ -767,7 +717,7 @@
       this.Controls.Add(this.PHASE_COMBOBOX);
       this.Controls.Add(this.MOUNTING_COMBOBOX);
       this.Controls.Add(this.WIRE_COMBOBOX);
-      this.Name = "UserInterface";
+      this.Name = "PanelUserControl";
       this.Size = new System.Drawing.Size(1382, 663);
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).EndInit();
@@ -841,12 +791,8 @@
     private System.Windows.Forms.TextBox CUSTOM_TITLE_TEXT;
     private System.Windows.Forms.Label CUSTOM_TITLE_LABEL;
     private System.Windows.Forms.Button REMOVE_NOTE_BUTTON;
-    private System.Windows.Forms.Label MAX_DESCRIPTION_CELL_CHAR_LABEL;
-    private System.Windows.Forms.TextBox MAX_DESCRIPTION_CELL_CHAR_TEXTBOX;
     private System.Windows.Forms.CheckBox AUTO_CHECKBOX;
     private System.Windows.Forms.TextBox LARGEST_LCL_INPUT;
-    private System.Windows.Forms.Button ALL_EXISTING_BUTTON;
-    private System.Windows.Forms.CheckBox REMOVE_EXISTING_CHECKBOX;
     private System.Windows.Forms.Button DUPLICATE_PANEL_BUTTON;
   }
 }
