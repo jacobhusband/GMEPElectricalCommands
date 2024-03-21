@@ -35,7 +35,7 @@ namespace ElectricalCommands
 
     private void docBeginDocClose(object sender, DocumentBeginCloseEventArgs e)
     {
-      save_panel_to_autocad_document();
+      SavePanelDataToLocalJsonFile();
       string fileName = this.acDoc.Name;
       this.acDoc.Database.SaveAs(
           fileName,
@@ -85,9 +85,83 @@ namespace ElectricalCommands
       }
       else
       {
-        set_up_cell_values_from_panel_data(panelStorage);
-        set_up_tags_from_panel_data(panelStorage);
+        MakeTabsAndPopulate(panelStorage);
       }
+    }
+
+    public void DuplicatePanel()
+    {
+      // Get the currently selected tab
+      TabPage selectedTab = PANEL_TABS.SelectedTab;
+
+      // Check if a tab is selected
+      if (selectedTab != null)
+      {
+        // Get the UserControl associated with the selected tab
+        PanelUserControl selectedUserControl = (PanelUserControl)selectedTab.Controls[0];
+
+        // Retrieve the panel data from the selected UserControl
+        Dictionary<string, object> selectedPanelData = selectedUserControl.retrieve_data_from_modal();
+
+        SavePanelDataToLocalJsonFile();
+
+        // Retrieve the saved panel data
+        List<Dictionary<string, object>> panelStorage = retrieve_saved_panel_data();
+
+        // Create a copy of the selected panel data
+        Dictionary<string, object> duplicatePanelData = new Dictionary<string, object>(selectedPanelData);
+
+        // Get the original panel name
+        string originalPanelName = selectedPanelData["panel"].ToString();
+
+        // Generate a new panel name with a number appended
+        string newPanelName = GetNewPanelName(originalPanelName);
+
+        // Update the panel name in the duplicate panel data
+        duplicatePanelData["panel"] = newPanelName;
+
+        // Add the duplicate panel data to the panel storage
+        panelStorage.Add(duplicatePanelData);
+
+        // Save the updated panel data
+        StoreDataInJsonFile(panelStorage);
+
+        initialize_modal();
+      }
+    }
+
+    private string GetNewPanelName(string originalPanelName)
+    {
+      string newPanelName = originalPanelName;
+
+      // Check if the original panel name ends with a number
+      int lastNumber = 0;
+      int index = originalPanelName.Length - 1;
+      while (index >= 0 && char.IsDigit(originalPanelName[index]))
+      {
+        lastNumber = lastNumber * 10 + (originalPanelName[index] - '0');
+        index--;
+      }
+
+      if (lastNumber > 0)
+      {
+        // Increment the last number
+        lastNumber++;
+        newPanelName = originalPanelName.Substring(0, index + 1) + lastNumber.ToString();
+      }
+      else
+      {
+        // Append "2" to the original panel name
+        newPanelName = originalPanelName + "2";
+      }
+
+      return newPanelName;
+    }
+
+    private void MakeTabsAndPopulate(List<Dictionary<string, object>> panelStorage)
+    {
+      set_up_cell_values_from_panel_data(panelStorage);
+      set_up_tags_from_panel_data(panelStorage);
     }
 
     public static void put_in_json_file(object thing)
@@ -338,7 +412,7 @@ namespace ElectricalCommands
       return allPanelData;
     }
 
-    public void save_panel_to_autocad_document()
+    public void SavePanelDataToLocalJsonFile()
     {
       List<Dictionary<string, object>> panelStorage = new List<Dictionary<string, object>>();
 
@@ -390,7 +464,7 @@ namespace ElectricalCommands
     private void MAINFORM_CLOSING(object sender, FormClosingEventArgs e)
     {
       this.acDoc.BeginDocumentClose -= new DocumentBeginCloseEventHandler(docBeginDocClose);
-      save_panel_to_autocad_document();
+      SavePanelDataToLocalJsonFile();
     }
 
     public void PANEL_NAME_INPUT_TextChanged(object sender, EventArgs e, string input)
@@ -463,14 +537,14 @@ namespace ElectricalCommands
 
     private void SAVE_BUTTON_Click(object sender, EventArgs e)
     {
-      save_panel_to_autocad_document();
+      SavePanelDataToLocalJsonFile();
     }
 
     private void MAINFORM_KEYDOWN(object sender, KeyEventArgs e)
     {
       if (e.Control && e.KeyCode == Keys.S)
       {
-        save_panel_to_autocad_document();
+        SavePanelDataToLocalJsonFile();
       }
     }
 
@@ -497,6 +571,11 @@ namespace ElectricalCommands
         // Save the panel data
         StoreDataInJsonFile(panelData);
       }
+    }
+
+    private void DUPLICATE_PANEL_BUTTON_Click(object sender, EventArgs e)
+    {
+      DuplicatePanel();
     }
   }
 }

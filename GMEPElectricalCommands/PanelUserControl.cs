@@ -2783,59 +2783,9 @@ namespace ElectricalCommands
       }
     }
 
-    private void ALL_EXISTING_BUTTON_Click(object sender, EventArgs e)
+    public bool Is3PH()
     {
-      STATUS_COMBOBOX.SelectedIndex = 1;
-
-      string note1 = "DENOTES EXISTING CIRCUIT BREAKER TO REMAIN; ALL OTHERS ARE NEW.";
-      string note2 = "ADD SUFFIX (E). *NOT ADDED AS NOTE*";
-
-      foreach (DataGridViewRow row in PANEL_GRID.Rows)
-      {
-        if (row.Cells["description_left"] != null)
-        {
-          string cellTag = row.Cells["description_left"].Tag?.ToString();
-          if (string.IsNullOrEmpty(cellTag) || !cellTag.Contains(note1))
-          {
-            row.Cells["description_left"].Tag = string.IsNullOrEmpty(cellTag)
-                ? note1
-                : cellTag + "|" + note1;
-            cellTag = row.Cells["description_left"].Tag.ToString();
-          }
-          if (string.IsNullOrEmpty(cellTag) || !cellTag.Contains(note2))
-          {
-            row.Cells["description_left"].Tag = string.IsNullOrEmpty(cellTag)
-                ? note2
-                : cellTag + "|" + note2;
-          }
-        }
-
-        if (row.Cells["description_right"] != null)
-        {
-          string cellTag = row.Cells["description_right"].Tag?.ToString();
-          if (string.IsNullOrEmpty(cellTag) || !cellTag.Contains(note1))
-          {
-            row.Cells["description_right"].Tag = string.IsNullOrEmpty(cellTag)
-                ? note1
-                : cellTag + "|" + note1;
-            cellTag = row.Cells["description_right"].Tag.ToString();
-          }
-          if (string.IsNullOrEmpty(cellTag) || !cellTag.Contains(note2))
-          {
-            row.Cells["description_right"].Tag = string.IsNullOrEmpty(cellTag)
-                ? note2
-                : cellTag + "|" + note2;
-          }
-        }
-      }
-
-      APPLY_COMBOBOX.SelectedIndex = 1;
-      APPLY_COMBOBOX.SelectedIndex = 0;
-    }
-
-    private void DUPLICATE_PANEL_BUTTON_Click(object sender, EventArgs e)
-    {
-      var modalData = retrieve_data_from_modal();
+      return PHASE_COMBOBOX.SelectedItem.ToString().ToUpper() == "3";
     }
   }
 }

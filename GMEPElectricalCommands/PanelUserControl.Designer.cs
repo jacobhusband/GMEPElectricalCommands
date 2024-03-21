@@ -88,7 +88,6 @@
       this.REMOVE_NOTE_BUTTON = new System.Windows.Forms.Button();
       this.AUTO_CHECKBOX = new System.Windows.Forms.CheckBox();
       this.LARGEST_LCL_INPUT = new System.Windows.Forms.TextBox();
-      this.DUPLICATE_PANEL_BUTTON = new System.Windows.Forms.Button();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -659,22 +658,11 @@
       this.LARGEST_LCL_INPUT.Size = new System.Drawing.Size(142, 20);
       this.LARGEST_LCL_INPUT.TabIndex = 192;
       // 
-      // DUPLICATE_PANEL_BUTTON
-      // 
-      this.DUPLICATE_PANEL_BUTTON.Location = new System.Drawing.Point(1109, 14);
-      this.DUPLICATE_PANEL_BUTTON.Name = "DUPLICATE_PANEL_BUTTON";
-      this.DUPLICATE_PANEL_BUTTON.Size = new System.Drawing.Size(137, 23);
-      this.DUPLICATE_PANEL_BUTTON.TabIndex = 195;
-      this.DUPLICATE_PANEL_BUTTON.Text = "DUPLICATE PANEL";
-      this.DUPLICATE_PANEL_BUTTON.UseVisualStyleBackColor = true;
-      this.DUPLICATE_PANEL_BUTTON.Click += new System.EventHandler(this.DUPLICATE_PANEL_BUTTON_Click);
-      // 
       // PanelUserControl
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
-      this.Controls.Add(this.DUPLICATE_PANEL_BUTTON);
       this.Controls.Add(this.LARGEST_LCL_INPUT);
       this.Controls.Add(this.AUTO_CHECKBOX);
       this.Controls.Add(this.REMOVE_NOTE_BUTTON);
@@ -793,6 +781,5 @@
     private System.Windows.Forms.Button REMOVE_NOTE_BUTTON;
     private System.Windows.Forms.CheckBox AUTO_CHECKBOX;
     private System.Windows.Forms.TextBox LARGEST_LCL_INPUT;
-    private System.Windows.Forms.Button DUPLICATE_PANEL_BUTTON;
   }
 }
