@@ -57,17 +57,16 @@ namespace ElectricalCommands
     private void LocatingAllXrefs(string filePath)
     {
       Editor editor = Application.DocumentManager.MdiActiveDocument.Editor;
-
       Database db = Application.DocumentManager.MdiActiveDocument.Database;
 
       using (Transaction tr = db.TransactionManager.StartTransaction())
       {
         XrefGraph xrefGraph = db.GetHostDwgXrefGraph(true);
+        ObjectIdCollection xrefIdsToReload = new ObjectIdCollection();
 
         for (int i = 0; i < xrefGraph.NumNodes; i++)
         {
           XrefGraphNode xrefGraphNode = xrefGraph.GetXrefNode(i);
-
           if (xrefGraphNode.XrefStatus == XrefStatus.Unresolved || xrefGraphNode.XrefStatus == XrefStatus.FileNotFound)
           {
             if (!xrefGraphNode.BlockTableRecordId.IsNull)
@@ -82,6 +81,7 @@ namespace ElectricalCommands
                 btr.UpgradeOpen();
                 btr.PathName = newRelativePath;
                 editor.WriteMessage($"Updated Path: {btr.PathName}\n");
+                xrefIdsToReload.Add(btr.ObjectId);
               }
               else
               {
@@ -89,6 +89,12 @@ namespace ElectricalCommands
               }
             }
           }
+        }
+
+        if (xrefIdsToReload.Count > 0)
+        {
+          db.ReloadXrefs(xrefIdsToReload);
+          editor.WriteMessage("External references reloaded.\n");
         }
 
         tr.Commit();
