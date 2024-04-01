@@ -20,35 +20,78 @@ namespace ElectricalCommands
       Editor ed = Application.DocumentManager.MdiActiveDocument.Editor;
       Database currentDb = Application.DocumentManager.MdiActiveDocument.Database;
 
-      // Prompt user to select DWG files
-      System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog
-      {
-        Multiselect = true,
-        Filter = "DWG files (*.dwg)|*.dwg",
-        Title = "Select DWG Files"
-      };
+      LocatingAllXrefs(currentDb.Filename);
 
-      if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+      //// Prompt user to select DWG files
+      //System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog
+      //{
+      //  Multiselect = true,
+      //  Filter = "DWG files (*.dwg)|*.dwg",
+      //  Title = "Select DWG Files"
+      //};
+
+      //if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+      //{
+      //  // Call the AttachAllXrefsInFile method for each selected file
+      //  foreach (string filePath in ofd.FileNames)
+      //  {
+      //    AttachAllXrefsInFile(filePath);
+      //  }
+
+      //  HashSet<string> allXrefFileNames = ModifySelectedDWGFiles(ed, ofd);
+
+      //  // Convert allXrefFileNames to an array
+      //  string[] allXrefFileNamesArray = allXrefFileNames.ToArray();
+
+      //  // Call the AddDwgAsXref method with the selected files, the editor, and the database
+      //  AddDwgAsXref(ofd.FileNames, ed, currentDb);
+
+      //  // Call the GrayXref method with the selected files
+      //  GrayXref(allXrefFileNamesArray);
+
+      //  // Call the MagentaElectricalLayers method with the selected files
+      //  MagentaElectricalLayers(allXrefFileNamesArray);
+      //}
+    }
+
+    private void LocatingAllXrefs(string filePath)
+    {
+      Editor editor = Application.DocumentManager.MdiActiveDocument.Editor;
+
+      Database db = Application.DocumentManager.MdiActiveDocument.Database;
+
+      using (Transaction tr = db.TransactionManager.StartTransaction())
       {
-        // Call the AttachAllXrefsInFile method for each selected file
-        foreach (string filePath in ofd.FileNames)
+        XrefGraph xrefGraph = db.GetHostDwgXrefGraph(true);
+
+        for (int i = 0; i < xrefGraph.NumNodes; i++)
         {
-          AttachAllXrefsInFile(filePath);
+          XrefGraphNode xrefGraphNode = xrefGraph.GetXrefNode(i);
+
+          if (xrefGraphNode.XrefStatus == XrefStatus.Unresolved || xrefGraphNode.XrefStatus == XrefStatus.FileNotFound)
+          {
+            if (!xrefGraphNode.BlockTableRecordId.IsNull)
+            {
+              BlockTableRecord btr = tr.GetObject(xrefGraphNode.BlockTableRecordId, OpenMode.ForRead) as BlockTableRecord;
+              string originalPath = btr.PathName;
+              string xrefFileName = Path.GetFileName(originalPath);
+              string newRelativePath = $"..\\XREF\\{xrefFileName}";
+
+              if (File.Exists(Path.Combine(Path.GetDirectoryName(filePath), newRelativePath)))
+              {
+                btr.UpgradeOpen();
+                btr.PathName = newRelativePath;
+                editor.WriteMessage($"Updated Path: {btr.PathName}\n");
+              }
+              else
+              {
+                editor.WriteMessage($"File not found at the new relative path: {newRelativePath}\n");
+              }
+            }
+          }
         }
 
-        HashSet<string> allXrefFileNames = ModifySelectedDWGFiles(ed, ofd);
-
-        // Convert allXrefFileNames to an array
-        string[] allXrefFileNamesArray = allXrefFileNames.ToArray();
-
-        // Call the AddDwgAsXref method with the selected files, the editor, and the database
-        AddDwgAsXref(ofd.FileNames, ed, currentDb);
-
-        // Call the GrayXref method with the selected files
-        GrayXref(allXrefFileNamesArray);
-
-        // Call the MagentaElectricalLayers method with the selected files
-        MagentaElectricalLayers(allXrefFileNamesArray);
+        tr.Commit();
       }
     }
 

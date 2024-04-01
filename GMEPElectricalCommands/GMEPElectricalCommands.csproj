@@ -153,7 +153,7 @@
       "C:\Users\JacobH\OneDrive - GMEPE\Documents\Programming\Residential DWG\Residential Template - 24x36.dwg"
     </PostBuildEvent>
     <PostBuildEvent Condition="'$(ComputerName)' == 'DESKTOP-91VH2HV'">
-      "C:\Program Files\Autodesk\AutoCAD 2024\acad.exe" "C:\Users\jakeh\Documents\ELEC\template\Template_Electrical_CA_Lite.dwg"
+      "C:\Program Files\Autodesk\AutoCAD 2024\acad.exe" "C:\Users\jakeh\Desktop\Update XREF Paths Template - Copy\ELEC\Template.dwg"
     </PostBuildEvent>
   </PropertyGroup>
 </Project>
