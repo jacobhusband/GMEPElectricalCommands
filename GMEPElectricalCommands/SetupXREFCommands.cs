@@ -64,6 +64,8 @@ namespace ElectricalCommands
         XrefGraph xrefGraph = db.GetHostDwgXrefGraph(true);
         ObjectIdCollection xrefIdsToReload = new ObjectIdCollection();
 
+        string xrefFolderPath = Path.Combine(Path.GetDirectoryName(filePath), "..", "XREF");
+
         for (int i = 0; i < xrefGraph.NumNodes; i++)
         {
           XrefGraphNode xrefGraphNode = xrefGraph.GetXrefNode(i);
@@ -74,10 +76,12 @@ namespace ElectricalCommands
               BlockTableRecord btr = tr.GetObject(xrefGraphNode.BlockTableRecordId, OpenMode.ForRead) as BlockTableRecord;
               string originalPath = btr.PathName;
               string xrefFileName = Path.GetFileName(originalPath);
-              string newRelativePath = $"..\\XREF\\{xrefFileName}";
 
-              if (File.Exists(Path.Combine(Path.GetDirectoryName(filePath), newRelativePath)))
+              string[] matchingFiles = Directory.GetFiles(xrefFolderPath, xrefFileName, SearchOption.AllDirectories);
+              if (matchingFiles.Length > 0)
               {
+                string newRelativePath = Path.Combine("..", "XREF", matchingFiles[0]);
+
                 btr.UpgradeOpen();
                 btr.PathName = newRelativePath;
                 editor.WriteMessage($"Updated Path: {btr.PathName}\n");
@@ -85,7 +89,7 @@ namespace ElectricalCommands
               }
               else
               {
-                editor.WriteMessage($"File not found at the new relative path: {newRelativePath}\n");
+                editor.WriteMessage($"File not found in the XREF folder or its subdirectories: {xrefFileName}\n");
               }
             }
           }
