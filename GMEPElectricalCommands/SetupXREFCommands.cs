@@ -77,7 +77,11 @@ namespace ElectricalCommands
               string originalPath = btr.PathName;
               string xrefFileName = Path.GetFileName(originalPath);
 
-              string[] matchingFiles = Directory.GetFiles(xrefFolderPath, xrefFileName, SearchOption.AllDirectories);
+              string[] matchingFiles = Directory.GetFiles(xrefFolderPath, xrefFileName, SearchOption.AllDirectories)
+                  .Where(f => !Directory.GetParent(f).Name.Contains("backup"))
+                  .OrderByDescending(f => Directory.GetCreationTime(Directory.GetParent(f).FullName))
+                  .ToArray();
+
               if (matchingFiles.Length > 0)
               {
                 string newRelativePath = Path.Combine("..", "XREF", matchingFiles[0]);
