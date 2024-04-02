@@ -36,22 +36,24 @@ namespace ElectricalCommands
         foreach (string filePath in ofd.FileNames)
         {
           LocateXrefsForFile(filePath);
-          //AttachAllXrefsInFile(filePath);
+          AttachAllXrefsInFile(filePath);
         }
 
-        //HashSet<string> allXrefFileNames = ModifySelectedDWGFiles(ed, ofd);
+        HashSet<string> allXrefFileNames = ModifySelectedDWGFiles(ed, ofd);
 
-        //// Convert allXrefFileNames to an array
-        //string[] allXrefFileNamesArray = allXrefFileNames.ToArray();
+        ed.WriteMessage($"All Xref File Names: {string.Join(", ", allXrefFileNames)}\n");
 
-        // Call the AddDwgAsXref method with the selected files, the editor, and the database
+        // Convert allXrefFileNames to an array
+        string[] allXrefFileNamesArray = allXrefFileNames.ToArray();
+
+        //Call the AddDwgAsXref method with the selected files, the editor, and the database
         AddDwgAsXref(ofd.FileNames, ed, currentDb);
 
-        //// Call the GrayXref method with the selected files
-        //GrayXref(allXrefFileNamesArray);
+        // Call the GrayXref method with the selected files
+        GrayXref(allXrefFileNamesArray);
 
-        //// Call the MagentaElectricalLayers method with the selected files
-        //MagentaElectricalLayers(allXrefFileNamesArray);
+        // Call the MagentaElectricalLayers method with the selected files
+        MagentaElectricalLayers(allXrefFileNamesArray);
       }
     }
 
@@ -254,22 +256,8 @@ namespace ElectricalCommands
               tr.AddNewlyCreatedDBObject(layerRecord, true);
             }
 
-            // Create a new layer named "0-GMEP-DIMS-LEADS" and set its color to 8 (gray)
-            if (!layerTable.Has("0-GMEP-DIMS-LEADS"))
-            {
-              layerTable.UpgradeOpen();
-              LayerTableRecord layerRecordDims = new LayerTableRecord
-              {
-                Name = "0-GMEP-DIMS-LEADS",
-                Color = Autodesk.AutoCAD.Colors.Color.FromColorIndex(Autodesk.AutoCAD.Colors.ColorMethod.ByAci, 8)
-              };
-              layerTable.Add(layerRecordDims);
-              tr.AddNewlyCreatedDBObject(layerRecordDims, true);
-            }
-
             ObjectId zeroLayerId = layerTable["0"];
             ObjectId gmepLayerId = layerTable["0-GMEP"];
-            ObjectId gmepDimsLayerId = layerTable["0-GMEP-DIMS-LEADS"];
 
             BlockTable bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
             BlockTableRecord btr = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
@@ -280,10 +268,6 @@ namespace ElectricalCommands
               if (ent != null && ent.LayerId == zeroLayerId)
               {
                 ent.LayerId = gmepLayerId;
-              }
-              else if (ent != null && (ent is Dimension || ent is RotatedDimension || ent is AlignedDimension || ent is Autodesk.AutoCAD.DatabaseServices.ArcDimension || ent is RadialDimension || ent is DiametricDimension || ent is Leader || ent is MLeader))
-              {
-                ent.LayerId = gmepDimsLayerId;
               }
               SetEntityColorToByLayer(ent, tr, 4);
             }
@@ -313,20 +297,18 @@ namespace ElectricalCommands
       // Get the xref graph of the database
       XrefGraph xrefGraph = db.GetHostDwgXrefGraph(true);
 
+      var ed = Application.DocumentManager.MdiActiveDocument.Editor;
+
       // Traverse the xref graph
       for (int i = 0; i < xrefGraph.NumNodes; i++)
       {
         XrefGraphNode xrefGraphNode = xrefGraph.GetXrefNode(i);
 
-        // Check if the node is an xref (not the main drawing)
-        if (xrefGraphNode.XrefStatus == XrefStatus.Resolved)
-        {
-          // Get the file path of the xref
-          string xrefFileName = xrefGraphNode.Name;
+        // Get the file path of the xref
+        string xrefFileName = xrefGraphNode.Name;
 
-          // Add the file path to xrefFileNames
-          xrefFileNames.Add(xrefFileName);
-        }
+        // Add the file path to xrefFileNames
+        xrefFileNames.Add(xrefFileName);
       }
 
       return xrefFileNames.ToArray();
@@ -381,7 +363,7 @@ namespace ElectricalCommands
           LayerTableRecord layerRecord = (LayerTableRecord)tr.GetObject(layerId, OpenMode.ForWrite);
 
           if (xrefFileNamesWithoutPathAndExtension.Any(xrefFileName => layerRecord.Name.StartsWith(xrefFileName + "|")) &&
-              (layerRecord.Name.Contains("CLG-LITE") || layerRecord.Name.Contains("CLNG-LITE") || layerRecord.Name.Contains("LIGHTING")))
+              (layerRecord.Name.ToUpper().Contains("LITE") || layerRecord.Name.ToUpper().Contains("RECEP") || layerRecord.Name.ToUpper().Contains("POWER")) || layerRecord.Name.ToUpper().Contains("OUTLET"))
           {
             // Set the color of the layer to index 6
             layerRecord.Color = Autodesk.AutoCAD.Colors.Color.FromColorIndex(Autodesk.AutoCAD.Colors.ColorMethod.ByAci, 6);
