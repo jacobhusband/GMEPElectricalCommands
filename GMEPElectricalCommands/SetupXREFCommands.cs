@@ -22,36 +22,107 @@ namespace ElectricalCommands
 
       LocatingAllXrefs(currentDb.Filename);
 
-      //// Prompt user to select DWG files
-      //System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog
-      //{
-      //  Multiselect = true,
-      //  Filter = "DWG files (*.dwg)|*.dwg",
-      //  Title = "Select DWG Files"
-      //};
+      // Prompt user to select DWG files
+      System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog
+      {
+        Multiselect = true,
+        Filter = "DWG files (*.dwg)|*.dwg",
+        Title = "Select DWG Files"
+      };
 
-      //if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-      //{
-      //  // Call the AttachAllXrefsInFile method for each selected file
-      //  foreach (string filePath in ofd.FileNames)
-      //  {
-      //    AttachAllXrefsInFile(filePath);
-      //  }
+      if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+      {
+        // Call the AttachAllXrefsInFile method for each selected file
+        foreach (string filePath in ofd.FileNames)
+        {
+          LocateXrefsForFile(filePath);
+          //AttachAllXrefsInFile(filePath);
+        }
 
-      //  HashSet<string> allXrefFileNames = ModifySelectedDWGFiles(ed, ofd);
+        //HashSet<string> allXrefFileNames = ModifySelectedDWGFiles(ed, ofd);
 
-      //  // Convert allXrefFileNames to an array
-      //  string[] allXrefFileNamesArray = allXrefFileNames.ToArray();
+        //// Convert allXrefFileNames to an array
+        //string[] allXrefFileNamesArray = allXrefFileNames.ToArray();
 
-      //  // Call the AddDwgAsXref method with the selected files, the editor, and the database
-      //  AddDwgAsXref(ofd.FileNames, ed, currentDb);
+        // Call the AddDwgAsXref method with the selected files, the editor, and the database
+        AddDwgAsXref(ofd.FileNames, ed, currentDb);
 
-      //  // Call the GrayXref method with the selected files
-      //  GrayXref(allXrefFileNamesArray);
+        //// Call the GrayXref method with the selected files
+        //GrayXref(allXrefFileNamesArray);
 
-      //  // Call the MagentaElectricalLayers method with the selected files
-      //  MagentaElectricalLayers(allXrefFileNamesArray);
-      //}
+        //// Call the MagentaElectricalLayers method with the selected files
+        //MagentaElectricalLayers(allXrefFileNamesArray);
+      }
+    }
+
+    private void LocateXrefsForFile(string filePath)
+    {
+      Editor editor = Application.DocumentManager.MdiActiveDocument.Editor;
+      Database db = new Database(false, true);
+
+      try
+      {
+        db.ReadDwgFile(filePath, FileShare.ReadWrite, true, "");
+
+        using (Transaction tr = db.TransactionManager.StartTransaction())
+        {
+          XrefGraph xrefGraph = db.GetHostDwgXrefGraph(true);
+          ObjectIdCollection xrefIdsToReload = new ObjectIdCollection();
+
+          string xrefFolderPath = Path.GetDirectoryName(filePath);
+
+          for (int i = 0; i < xrefGraph.NumNodes; i++)
+          {
+            XrefGraphNode xrefGraphNode = xrefGraph.GetXrefNode(i);
+            if (xrefGraphNode.XrefStatus == XrefStatus.Unresolved || xrefGraphNode.XrefStatus == XrefStatus.FileNotFound)
+            {
+              if (!xrefGraphNode.BlockTableRecordId.IsNull)
+              {
+                BlockTableRecord btr = tr.GetObject(xrefGraphNode.BlockTableRecordId, OpenMode.ForRead) as BlockTableRecord;
+                string originalPath = btr.PathName;
+                string xrefFileName = Path.GetFileName(originalPath);
+
+                string[] matchingFiles = Directory.GetFiles(xrefFolderPath, xrefFileName, SearchOption.AllDirectories)
+                    .Where(f => !Directory.GetParent(f).Name.Contains("backup"))
+                    .OrderByDescending(f => Directory.GetCreationTime(Directory.GetParent(f).FullName))
+                    .ToArray();
+
+                if (matchingFiles.Length > 0)
+                {
+                  string newRelativePath = matchingFiles[0];
+
+                  btr.UpgradeOpen();
+                  btr.PathName = newRelativePath;
+                  editor.WriteMessage($"Updated Path: {btr.PathName}\n");
+                  xrefIdsToReload.Add(btr.ObjectId);
+                }
+                else
+                {
+                  editor.WriteMessage($"File not found in the XREF folder or its subdirectories: {xrefFileName}\n");
+                }
+              }
+            }
+          }
+
+          if (xrefIdsToReload.Count > 0)
+          {
+            db.ReloadXrefs(xrefIdsToReload);
+            editor.WriteMessage("External references reloaded.\n");
+          }
+
+          tr.Commit();
+        }
+
+        db.SaveAs(filePath, DwgVersion.Current);
+      }
+      catch (Autodesk.AutoCAD.Runtime.Exception ex)
+      {
+        editor.WriteMessage($"Error processing file {filePath}: {ex.Message}\n");
+      }
+      finally
+      {
+        db.Dispose();
+      }
     }
 
     private void LocatingAllXrefs(string filePath)
