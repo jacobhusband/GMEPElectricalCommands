@@ -71,39 +71,59 @@ namespace ElectricalCommands
           XrefGraph xrefGraph = db.GetHostDwgXrefGraph(true);
           ObjectIdCollection xrefIdsToReload = new ObjectIdCollection();
 
-          string xrefFolderPath = Path.GetDirectoryName(filePath);
+          string currentDirectory = Path.GetDirectoryName(filePath);
+          string xrefFolderPath = null;
 
-          for (int i = 0; i < xrefGraph.NumNodes; i++)
+          // Search for the "XREF" folder starting from the current directory
+          while (currentDirectory != null)
           {
-            XrefGraphNode xrefGraphNode = xrefGraph.GetXrefNode(i);
-            if (xrefGraphNode.XrefStatus == XrefStatus.Unresolved || xrefGraphNode.XrefStatus == XrefStatus.FileNotFound)
+            string potentialXrefFolderPath = Path.Combine(currentDirectory, "XREF");
+            if (Directory.Exists(potentialXrefFolderPath))
             {
-              if (!xrefGraphNode.BlockTableRecordId.IsNull)
+              xrefFolderPath = potentialXrefFolderPath;
+              break;
+            }
+            currentDirectory = Directory.GetParent(currentDirectory)?.FullName;
+          }
+
+          if (xrefFolderPath != null)
+          {
+            for (int i = 0; i < xrefGraph.NumNodes; i++)
+            {
+              XrefGraphNode xrefGraphNode = xrefGraph.GetXrefNode(i);
+              if (xrefGraphNode.XrefStatus == XrefStatus.Unresolved || xrefGraphNode.XrefStatus == XrefStatus.FileNotFound)
               {
-                BlockTableRecord btr = tr.GetObject(xrefGraphNode.BlockTableRecordId, OpenMode.ForRead) as BlockTableRecord;
-                string originalPath = btr.PathName;
-                string xrefFileName = Path.GetFileName(originalPath);
-
-                string[] matchingFiles = Directory.GetFiles(xrefFolderPath, xrefFileName, SearchOption.AllDirectories)
-                    .Where(f => !Directory.GetParent(f).Name.Contains("backup"))
-                    .OrderByDescending(f => Directory.GetCreationTime(Directory.GetParent(f).FullName))
-                    .ToArray();
-
-                if (matchingFiles.Length > 0)
+                if (!xrefGraphNode.BlockTableRecordId.IsNull)
                 {
-                  string newRelativePath = matchingFiles[0];
+                  BlockTableRecord btr = tr.GetObject(xrefGraphNode.BlockTableRecordId, OpenMode.ForRead) as BlockTableRecord;
+                  string originalPath = btr.PathName;
+                  string xrefFileName = Path.GetFileName(originalPath);
 
-                  btr.UpgradeOpen();
-                  btr.PathName = newRelativePath;
-                  editor.WriteMessage($"Updated Path: {btr.PathName}\n");
-                  xrefIdsToReload.Add(btr.ObjectId);
-                }
-                else
-                {
-                  editor.WriteMessage($"File not found in the XREF folder or its subdirectories: {xrefFileName}\n");
+                  string[] matchingFiles = Directory.GetFiles(xrefFolderPath, xrefFileName, SearchOption.AllDirectories)
+                      .Where(f => !Directory.GetParent(f).Name.Contains("backup"))
+                      .OrderByDescending(f => Directory.GetCreationTime(Directory.GetParent(f).FullName))
+                      .ToArray();
+
+                  if (matchingFiles.Length > 0)
+                  {
+                    string newRelativePath = matchingFiles[0];
+
+                    btr.UpgradeOpen();
+                    btr.PathName = newRelativePath;
+                    editor.WriteMessage($"Updated Path: {btr.PathName}\n");
+                    xrefIdsToReload.Add(btr.ObjectId);
+                  }
+                  else
+                  {
+                    editor.WriteMessage($"File not found in the XREF folder or its subdirectories: {xrefFileName}\n");
+                  }
                 }
               }
             }
+          }
+          else
+          {
+            editor.WriteMessage("XREF folder not found in the current directory or its parent directories.\n");
           }
 
           if (xrefIdsToReload.Count > 0)
