@@ -74,7 +74,6 @@ namespace ElectricalCommands
           string currentDirectory = Path.GetDirectoryName(filePath);
           string xrefFolderPath = null;
 
-          // Search for the "XREF" folder starting from the current directory
           while (currentDirectory != null)
           {
             string potentialXrefFolderPath = Path.Combine(currentDirectory, "XREF");
@@ -112,6 +111,8 @@ namespace ElectricalCommands
                     btr.PathName = newRelativePath;
                     editor.WriteMessage($"Updated Path: {btr.PathName}\n");
                     xrefIdsToReload.Add(btr.ObjectId);
+
+                    LocateXrefsForFile(newRelativePath);
                   }
                   else
                   {
