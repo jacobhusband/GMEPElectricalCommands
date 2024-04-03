@@ -39,9 +39,9 @@ namespace ElectricalCommands
           AttachAllXrefsInFile(filePath);
         }
 
-        HashSet<string> allXrefFileNames = ModifySelectedDWGFiles(ed, ofd);
+        HashSet<string> allXrefFileNames = GetAllXrefFileNames(ofd.FileNames);
 
-        ed.WriteMessage($"All Xref File Names: {string.Join(", ", allXrefFileNames)}\n");
+        SaveDataInJsonFileOnDesktop(allXrefFileNames, "allXrefs.json");
 
         // Convert allXrefFileNames to an array
         string[] allXrefFileNamesArray = allXrefFileNames.ToArray();
@@ -54,6 +54,61 @@ namespace ElectricalCommands
 
         // Call the MagentaElectricalLayers method with the selected files
         MagentaElectricalLayers(allXrefFileNamesArray);
+
+        ed.Regen();
+        ed.UpdateScreen();
+      }
+    }
+
+    private void SaveDataInJsonFileOnDesktop(HashSet<string> allXrefFileNames, string v)
+    {
+      string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+      string filePath = Path.Combine(desktopPath, v);
+
+      string json = Newtonsoft.Json.JsonConvert.SerializeObject(allXrefFileNames, Newtonsoft.Json.Formatting.Indented);
+      File.WriteAllText(filePath, json);
+    }
+
+    private HashSet<string> GetAllXrefFileNames(string[] selectedFiles)
+    {
+      HashSet<string> allXrefFileNames = new HashSet<string>();
+
+      foreach (string file in selectedFiles)
+      {
+        GetAllXrefFileNamesRecursive(file, allXrefFileNames);
+      }
+
+      return allXrefFileNames;
+    }
+
+    private void GetAllXrefFileNamesRecursive(string file, HashSet<string> xrefFileNames)
+    {
+      if (xrefFileNames.Contains(file))
+      {
+        return;
+      }
+
+      xrefFileNames.Add(file);
+
+      Database db = new Database(false, true);
+      try
+      {
+        db.ReadDwgFile(file, FileShare.ReadWrite, true, "");
+
+        string[] nestedXrefFileNames = GetXrefsOfXrefFile(db);
+
+        foreach (string nestedXrefFile in nestedXrefFileNames)
+        {
+          GetAllXrefFileNamesRecursive(nestedXrefFile, xrefFileNames);
+        }
+      }
+      catch (Autodesk.AutoCAD.Runtime.Exception ex)
+      {
+        // Handle the exception if needed
+      }
+      finally
+      {
+        db.Dispose();
       }
     }
 
@@ -370,7 +425,7 @@ namespace ElectricalCommands
         // Get the file path of the xref
         string xrefFileName = xrefGraphNode.Name;
 
-        // Add the file path to xrefFileNames
+        // Add the file path to the list
         xrefFileNames.Add(xrefFileName);
       }
 
@@ -426,7 +481,7 @@ namespace ElectricalCommands
           LayerTableRecord layerRecord = (LayerTableRecord)tr.GetObject(layerId, OpenMode.ForWrite);
 
           if (xrefFileNamesWithoutPathAndExtension.Any(xrefFileName => layerRecord.Name.StartsWith(xrefFileName + "|")) &&
-              (layerRecord.Name.ToUpper().Contains("LITE") || layerRecord.Name.ToUpper().Contains("RECEP") || layerRecord.Name.ToUpper().Contains("POWER")) || layerRecord.Name.ToUpper().Contains("OUTLET"))
+              (layerRecord.Name.ToUpper().Contains("LITE") || layerRecord.Name.ToUpper().Contains("RECEP") || layerRecord.Name.ToUpper().Contains("POWER")) || layerRecord.Name.ToUpper().Contains("OUTLET") || layerRecord.Name.ToUpper().Contains("LIGHT"))
           {
             // Set the color of the layer to index 6
             layerRecord.Color = Autodesk.AutoCAD.Colors.Color.FromColorIndex(Autodesk.AutoCAD.Colors.ColorMethod.ByAci, 6);
