@@ -157,39 +157,81 @@ namespace ElectricalCommands
         XrefGraph xrefGraph = db.GetHostDwgXrefGraph(true);
         ObjectIdCollection xrefIdsToReload = new ObjectIdCollection();
 
-        string xrefFolderPath = Path.Combine(Path.GetDirectoryName(filePath), "..", "XREF");
+        string currentDirectory = Path.GetDirectoryName(filePath);
+        string xrefFolderPath = null;
 
-        for (int i = 0; i < xrefGraph.NumNodes; i++)
+        // Search for the "XREF" folder starting from the current directory
+        while (currentDirectory != null)
         {
-          XrefGraphNode xrefGraphNode = xrefGraph.GetXrefNode(i);
-          if (xrefGraphNode.XrefStatus == XrefStatus.Unresolved || xrefGraphNode.XrefStatus == XrefStatus.FileNotFound)
+          string potentialXrefFolderPath = Path.Combine(currentDirectory, "XREF");
+          if (Directory.Exists(potentialXrefFolderPath))
           {
-            if (!xrefGraphNode.BlockTableRecordId.IsNull)
+            xrefFolderPath = potentialXrefFolderPath;
+            break;
+          }
+          currentDirectory = Directory.GetParent(currentDirectory)?.FullName;
+        }
+
+        if (xrefFolderPath != null)
+        {
+          string[] tblkFileNames = { "tblk", "TBLK", "tblk24x36", "TBLK24x36", "tblk30x42", "TBLK30x42", "t-block", "T-BLOCK", "t-blk", "T-BLK", "titleblock", "TITLEBLOCK", "title block", "TITLE BLOCK", "TITLEBLK", "titleblk", "TBLOCK", "tblock", "tblok", "TBLOK" };
+
+          for (int i = 0; i < xrefGraph.NumNodes; i++)
+          {
+            XrefGraphNode xrefGraphNode = xrefGraph.GetXrefNode(i);
+            if (xrefGraphNode.XrefStatus == XrefStatus.Unresolved || xrefGraphNode.XrefStatus == XrefStatus.FileNotFound)
             {
-              BlockTableRecord btr = tr.GetObject(xrefGraphNode.BlockTableRecordId, OpenMode.ForRead) as BlockTableRecord;
-              string originalPath = btr.PathName;
-              string xrefFileName = Path.GetFileName(originalPath);
-
-              string[] matchingFiles = Directory.GetFiles(xrefFolderPath, xrefFileName, SearchOption.AllDirectories)
-                  .Where(f => !Directory.GetParent(f).Name.Contains("backup"))
-                  .OrderByDescending(f => Directory.GetCreationTime(Directory.GetParent(f).FullName))
-                  .ToArray();
-
-              if (matchingFiles.Length > 0)
+              if (!xrefGraphNode.BlockTableRecordId.IsNull)
               {
-                string newRelativePath = Path.Combine("..", "XREF", matchingFiles[0]);
+                BlockTableRecord btr = tr.GetObject(xrefGraphNode.BlockTableRecordId, OpenMode.ForRead) as BlockTableRecord;
+                string originalPath = btr.PathName;
+                string xrefFileName = Path.GetFileName(originalPath);
 
-                btr.UpgradeOpen();
-                btr.PathName = newRelativePath;
-                editor.WriteMessage($"Updated Path: {btr.PathName}\n");
-                xrefIdsToReload.Add(btr.ObjectId);
-              }
-              else
-              {
-                editor.WriteMessage($"File not found in the XREF folder or its subdirectories: {xrefFileName}\n");
+                string[] matchingFiles;
+
+                if (xrefFileName.IndexOf("tblk", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    xrefFileName.IndexOf("TBLK", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                  matchingFiles = tblkFileNames
+                      .SelectMany(tblkFileName => Directory.GetFiles(xrefFolderPath, "*" + tblkFileName + "*", SearchOption.AllDirectories))
+                      .Where(f => !Directory.GetParent(f).Name.Contains("backup"))
+                      .OrderByDescending(f => Directory.GetCreationTime(Directory.GetParent(f).FullName))
+                      .ToArray();
+                }
+                else
+                {
+                  matchingFiles = Directory.GetFiles(xrefFolderPath, xrefFileName, SearchOption.AllDirectories)
+                      .Where(f => !Directory.GetParent(f).Name.Contains("backup"))
+                      .OrderByDescending(f => Directory.GetCreationTime(Directory.GetParent(f).FullName))
+                      .ToArray();
+                }
+
+                if (matchingFiles.Length > 0)
+                {
+                  string newRelativePath = Path.Combine("..", "XREF", matchingFiles[0]);
+
+                  btr.UpgradeOpen();
+                  btr.PathName = newRelativePath;
+                  editor.WriteMessage($"Updated Path: {btr.PathName}\n");
+                  xrefIdsToReload.Add(btr.ObjectId);
+                }
+                else
+                {
+                  editor.WriteMessage($"No matching file found in the XREF folder or its subdirectories for: {xrefFileName}\n");
+                }
               }
             }
           }
+
+          if (xrefIdsToReload.Count > 0)
+          {
+            db.ReloadXrefs(xrefIdsToReload);
+            editor.WriteMessage("External references reloaded.\n");
+          }
+        }
+        else
+        {
+          editor.WriteMessage("XREF folder not found in the current directory or its parent directories.\n");
         }
 
         if (xrefIdsToReload.Count > 0)
