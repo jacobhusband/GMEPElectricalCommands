@@ -988,8 +988,6 @@ namespace ElectricalCommands
         panelDataList = ImportExcelData(); // If not provided, import from Excel
       }
 
-      SaveDataInJsonFileOnDesktop(panelDataList, "panelData.json");
-
       var spaceId =
           (db.TileMode == true)
               ? SymbolUtilityServices.GetBlockModelSpaceId(db)
