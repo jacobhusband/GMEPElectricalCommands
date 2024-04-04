@@ -32,27 +32,28 @@ namespace ElectricalCommands
 
       if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
       {
-        // Call the AttachAllXrefsInFile method for each selected file
+        HashSet<string> allXrefFilePaths = new HashSet<string>();
+
         foreach (string filePath in ofd.FileNames)
         {
-          LocateXrefsForFile(filePath);
-          AttachAllXrefsInFile(filePath);
+          allXrefFilePaths.UnionWith(LocateXrefsForFile(filePath));
         }
 
-        HashSet<string> allXrefFileNames = GetAllXrefFileNames(ofd.FileNames);
+        allXrefFilePaths.UnionWith(ofd.FileNames);
 
-        SaveDataInJsonFileOnDesktop(allXrefFileNames, "allXrefs.json");
+        foreach (string xrefFilePath in allXrefFilePaths)
+        {
+          AttachAllXrefsInFile(xrefFilePath);
+        }
 
-        // Convert allXrefFileNames to an array
-        string[] allXrefFileNamesArray = allXrefFileNames.ToArray();
+        ZeroLayerFixAndObjectColorToByLayer(ed, allXrefFilePaths);
 
-        //Call the AddDwgAsXref method with the selected files, the editor, and the database
+        string[] allXrefFileNamesArray = allXrefFilePaths.ToArray();
+
         AddDwgAsXref(ofd.FileNames, ed, currentDb);
 
-        // Call the GrayXref method with the selected files
         GrayXref(allXrefFileNamesArray);
 
-        // Call the MagentaElectricalLayers method with the selected files
         MagentaElectricalLayers(allXrefFileNamesArray);
 
         ed.Regen();
@@ -69,51 +70,9 @@ namespace ElectricalCommands
       File.WriteAllText(filePath, json);
     }
 
-    private HashSet<string> GetAllXrefFileNames(string[] selectedFiles)
+    private HashSet<string> LocateXrefsForFile(string filePath)
     {
-      HashSet<string> allXrefFileNames = new HashSet<string>();
-
-      foreach (string file in selectedFiles)
-      {
-        GetAllXrefFileNamesRecursive(file, allXrefFileNames);
-      }
-
-      return allXrefFileNames;
-    }
-
-    private void GetAllXrefFileNamesRecursive(string file, HashSet<string> xrefFileNames)
-    {
-      if (xrefFileNames.Contains(file))
-      {
-        return;
-      }
-
-      xrefFileNames.Add(file);
-
-      Database db = new Database(false, true);
-      try
-      {
-        db.ReadDwgFile(file, FileShare.ReadWrite, true, "");
-
-        string[] nestedXrefFileNames = GetXrefsOfXrefFile(db);
-
-        foreach (string nestedXrefFile in nestedXrefFileNames)
-        {
-          GetAllXrefFileNamesRecursive(nestedXrefFile, xrefFileNames);
-        }
-      }
-      catch (Autodesk.AutoCAD.Runtime.Exception ex)
-      {
-        // Handle the exception if needed
-      }
-      finally
-      {
-        db.Dispose();
-      }
-    }
-
-    private void LocateXrefsForFile(string filePath)
-    {
+      HashSet<string> xrefFilePaths = new HashSet<string>();
       Editor editor = Application.DocumentManager.MdiActiveDocument.Editor;
       Database db = new Database(false, true);
 
@@ -145,7 +104,16 @@ namespace ElectricalCommands
             for (int i = 0; i < xrefGraph.NumNodes; i++)
             {
               XrefGraphNode xrefGraphNode = xrefGraph.GetXrefNode(i);
-              if (xrefGraphNode.XrefStatus == XrefStatus.Unresolved || xrefGraphNode.XrefStatus == XrefStatus.FileNotFound)
+              if (xrefGraphNode.XrefStatus == XrefStatus.Resolved)
+              {
+                if (!xrefGraphNode.BlockTableRecordId.IsNull)
+                {
+                  BlockTableRecord btr = tr.GetObject(xrefGraphNode.BlockTableRecordId, OpenMode.ForRead) as BlockTableRecord;
+                  string originalPath = btr.PathName;
+                  xrefFilePaths.Add(originalPath);
+                }
+              }
+              else if (xrefGraphNode.XrefStatus == XrefStatus.Unresolved || xrefGraphNode.XrefStatus == XrefStatus.FileNotFound)
               {
                 if (!xrefGraphNode.BlockTableRecordId.IsNull)
                 {
@@ -161,13 +129,14 @@ namespace ElectricalCommands
                   if (matchingFiles.Length > 0)
                   {
                     string newRelativePath = matchingFiles[0];
+                    xrefFilePaths.Add(newRelativePath);
 
                     btr.UpgradeOpen();
                     btr.PathName = newRelativePath;
                     editor.WriteMessage($"Updated Path: {btr.PathName}\n");
                     xrefIdsToReload.Add(btr.ObjectId);
 
-                    LocateXrefsForFile(newRelativePath);
+                    xrefFilePaths.UnionWith(LocateXrefsForFile(newRelativePath));
                   }
                   else
                   {
@@ -201,6 +170,8 @@ namespace ElectricalCommands
       {
         db.Dispose();
       }
+
+      return xrefFilePaths;
     }
 
     private void LocatingAllXrefs(string filePath)
@@ -335,31 +306,20 @@ namespace ElectricalCommands
       }
     }
 
-    private HashSet<string> ModifySelectedDWGFiles(Editor ed, System.Windows.Forms.OpenFileDialog ofd)
+    private void ZeroLayerFixAndObjectColorToByLayer(Editor ed, HashSet<string> allXrefFilePaths)
     {
-      HashSet<string> allXrefFileNames = new HashSet<string>();
-
-      foreach (string file in ofd.FileNames)
+      foreach (string file in allXrefFilePaths)
       {
-        allXrefFileNames.Add(file);
-
         Database db = new Database(false, true);
         try
         {
           db.ReadDwgFile(file, FileShare.ReadWrite, true, "");
 
-          // Get the xref graph of the database
-          XrefGraph xrefGraph = db.GetHostDwgXrefGraph(true);
-
-          string[] xrefFileNames = GetXrefsOfXrefFile(db);
-
-          foreach (string xrefFile in xrefFileNames)
-          {
-            allXrefFileNames.Add(xrefFile);
-          }
-
           using (Transaction tr = db.TransactionManager.StartTransaction())
           {
+            // Unlock all layers
+            UnlockAllLayers(tr, db);
+
             // Create a new layer named "0-GMEP" and set its color to 8
             LayerTable layerTable = (LayerTable)tr.GetObject(db.LayerTableId, OpenMode.ForRead);
             if (!layerTable.Has("0-GMEP"))
@@ -390,9 +350,13 @@ namespace ElectricalCommands
               SetEntityColorToByLayer(ent, tr, 4);
             }
 
+            // Relock previously locked layers
+            RelockPreviouslyLockedLayers(tr, db);
+
             tr.Commit();
           }
 
+          // Save the changes made to the xref file
           db.SaveAs(file, DwgVersion.Current);
         }
         catch (Autodesk.AutoCAD.Runtime.Exception ex)
@@ -404,32 +368,31 @@ namespace ElectricalCommands
           db.Dispose();
         }
       }
-
-      return allXrefFileNames;
     }
 
-    private string[] GetXrefsOfXrefFile(Database db)
+    private void UnlockAllLayers(Transaction tr, Database db)
     {
-      List<string> xrefFileNames = new List<string>();
-
-      // Get the xref graph of the database
-      XrefGraph xrefGraph = db.GetHostDwgXrefGraph(true);
-
-      var ed = Application.DocumentManager.MdiActiveDocument.Editor;
-
-      // Traverse the xref graph
-      for (int i = 0; i < xrefGraph.NumNodes; i++)
+      LayerTable layerTable = (LayerTable)tr.GetObject(db.LayerTableId, OpenMode.ForRead);
+      foreach (ObjectId layerId in layerTable)
       {
-        XrefGraphNode xrefGraphNode = xrefGraph.GetXrefNode(i);
-
-        // Get the file path of the xref
-        string xrefFileName = xrefGraphNode.Name;
-
-        // Add the file path to the list
-        xrefFileNames.Add(xrefFileName);
+        LayerTableRecord layerRecord = (LayerTableRecord)tr.GetObject(layerId, OpenMode.ForWrite);
+        layerRecord.IsLocked = false;
       }
+    }
 
-      return xrefFileNames.ToArray();
+    private void RelockPreviouslyLockedLayers(Transaction tr, Database db)
+    {
+      LayerTable layerTable = (LayerTable)tr.GetObject(db.LayerTableId, OpenMode.ForRead);
+      foreach (ObjectId layerId in layerTable)
+      {
+        LayerTableRecord layerRecord = (LayerTableRecord)tr.GetObject(layerId, OpenMode.ForRead);
+        if (layerRecord.Name.ToUpper().Contains("_LOCKED"))
+        {
+          layerRecord.UpgradeOpen();
+          layerRecord.IsLocked = true;
+          layerRecord.DowngradeOpen();
+        }
+      }
     }
 
     public void GrayXref(string[] xrefFileNames)
@@ -547,13 +510,6 @@ namespace ElectricalCommands
                 modelSpace.AppendEntity(xrefReference);
                 tr.AddNewlyCreatedDBObject(xrefReference, true);
               }
-            }
-
-            LayerTable layerTableMain = (LayerTable)tr.GetObject(currentDb.LayerTableId, OpenMode.ForRead);
-            if (layerTableMain.Has(Path.GetFileNameWithoutExtension(file) + "|0-GMEP-DIMS-LEADS"))
-            {
-              LayerTableRecord layerRecordMain = (LayerTableRecord)tr.GetObject(layerTableMain[Path.GetFileNameWithoutExtension(file) + "|0-GMEP-DIMS-LEADS"], OpenMode.ForWrite);
-              layerRecordMain.IsFrozen = true;
             }
           }
 
