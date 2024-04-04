@@ -8,8 +8,8 @@ using Newtonsoft.Json;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
-using System.Drawing.Drawing2D;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -988,6 +988,8 @@ namespace ElectricalCommands
         panelDataList = ImportExcelData(); // If not provided, import from Excel
       }
 
+      SaveDataInJsonFileOnDesktop(panelDataList, "panelData.json");
+
       var spaceId =
           (db.TileMode == true)
               ? SymbolUtilityServices.GetBlockModelSpaceId(db)
@@ -1124,6 +1126,15 @@ namespace ElectricalCommands
           );
         }
       }
+    }
+
+    private void SaveDataInJsonFileOnDesktop(object allXrefFileNames, string v)
+    {
+      string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+      string filePath = Path.Combine(desktopPath, v);
+
+      string json = Newtonsoft.Json.JsonConvert.SerializeObject(allXrefFileNames, Newtonsoft.Json.Formatting.Indented);
+      File.WriteAllText(filePath, json);
     }
 
     private static List<Dictionary<string, object>> ImportExcelData()
@@ -1425,7 +1436,7 @@ namespace ElectricalCommands
         }
         string descriptionR = "";
         if (
-            selectedWorksheet.Cells[i, col + 12].Value == null
+            selectedWorksheet.Cells[i, col + 11].Value == null
             && selectedWorksheet.Cells[i, col + 8].Value != null
         )
         {
@@ -1434,7 +1445,7 @@ namespace ElectricalCommands
         else
         {
           descriptionR =
-              selectedWorksheet.Cells[i, col + 12].Value?.ToString().ToUpper() ?? "SPACE";
+              selectedWorksheet.Cells[i, col + 11].Value?.ToString().ToUpper() ?? "SPACE";
         }
         string phaseA = selectedWorksheet.Cells[i, col + 3].Value?.ToString() ?? "0";
         string phaseB = selectedWorksheet.Cells[i, col + 4].Value?.ToString() ?? "0";
