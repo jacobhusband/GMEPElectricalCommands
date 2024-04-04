@@ -61,7 +61,7 @@ namespace ElectricalCommands
       }
     }
 
-    private void SaveDataInJsonFileOnDesktop(HashSet<string> allXrefFileNames, string v)
+    private void SaveDataInJsonFileOnDesktop(object allXrefFileNames, string v)
     {
       string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
       string filePath = Path.Combine(desktopPath, v);
@@ -84,6 +84,7 @@ namespace ElectricalCommands
         {
           XrefGraph xrefGraph = db.GetHostDwgXrefGraph(true);
           ObjectIdCollection xrefIdsToReload = new ObjectIdCollection();
+          List<ObjectId> xrefIdsToDetach = new List<ObjectId>();
 
           string currentDirectory = Path.GetDirectoryName(filePath);
           string xrefFolderPath = null;
@@ -141,6 +142,7 @@ namespace ElectricalCommands
                   else
                   {
                     editor.WriteMessage($"File not found in the XREF folder or its subdirectories: {xrefFileName}\n");
+                    xrefIdsToDetach.Add(btr.ObjectId);
                   }
                 }
               }
@@ -155,6 +157,15 @@ namespace ElectricalCommands
           {
             db.ReloadXrefs(xrefIdsToReload);
             editor.WriteMessage("External references reloaded.\n");
+          }
+
+          if (xrefIdsToDetach.Count > 0)
+          {
+            foreach (ObjectId xrefId in xrefIdsToDetach)
+            {
+              db.DetachXref(xrefId);
+            }
+            editor.WriteMessage("External references detached.\n");
           }
 
           tr.Commit();
