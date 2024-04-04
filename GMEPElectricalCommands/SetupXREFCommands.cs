@@ -44,6 +44,7 @@ namespace ElectricalCommands
         foreach (string xrefFilePath in allXrefFilePaths)
         {
           AttachAllXrefsInFile(xrefFilePath);
+          //RemoveNotLocatedRasterImages(xrefFilePath);
         }
 
         ZeroLayerFixAndObjectColorToByLayer(ed, allXrefFilePaths);
@@ -58,6 +59,58 @@ namespace ElectricalCommands
 
         ed.Regen();
         ed.UpdateScreen();
+      }
+    }
+
+    private void RemoveNotLocatedRasterImages(string filePath)
+    {
+      using (Database db = new Database(false, true))
+      {
+        db.ReadDwgFile(filePath, FileShare.ReadWrite, true, "");
+
+        using (Transaction trans = db.TransactionManager.StartTransaction())
+        {
+          // Open the block table for read
+          BlockTable blockTable = trans.GetObject(db.BlockTableId, OpenMode.ForRead) as BlockTable;
+
+          // Open the block table record for read
+          BlockTableRecord blockTableRecord = trans.GetObject(blockTable[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
+
+          List<ObjectId> rasterImagesToRemove = new List<ObjectId>();
+
+          // Iterate over the entities in the block table record
+          foreach (ObjectId entityId in blockTableRecord)
+          {
+            // Check if the entity is a RasterImage
+            RasterImage rasterImage = trans.GetObject(entityId, OpenMode.ForRead) as RasterImage;
+
+            if (rasterImage != null)
+            {
+              // Get the associated RasterImageDef
+              RasterImageDef rasterImageDef = trans.GetObject(rasterImage.ImageDefId, OpenMode.ForRead) as RasterImageDef;
+
+              if (rasterImageDef != null)
+              {
+                // Check if the image file exists
+                if (!File.Exists(rasterImageDef.SourceFileName))
+                {
+                  rasterImagesToRemove.Add(entityId);
+                }
+              }
+            }
+          }
+
+          // Remove the not located raster images
+          foreach (ObjectId rasterImageId in rasterImagesToRemove)
+          {
+            RasterImage rasterImage = trans.GetObject(rasterImageId, OpenMode.ForWrite) as RasterImage;
+            rasterImage.Erase(true);
+          }
+
+          trans.Commit();
+        }
+
+        db.SaveAs(filePath, DwgVersion.Current);
       }
     }
 
