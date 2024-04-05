@@ -2,6 +2,7 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
+using Autodesk.AutoCAD.GraphicsSystem;
 using Autodesk.AutoCAD.Runtime;
 using System;
 using System.Collections.Generic;
@@ -44,7 +45,7 @@ namespace ElectricalCommands
         foreach (string xrefFilePath in allXrefFilePaths)
         {
           AttachAllXrefsInFile(xrefFilePath);
-          //RemoveNotLocatedRasterImages(xrefFilePath);
+          DetachInvalidRasterImages(xrefFilePath);
         }
 
         ZeroLayerFixAndObjectColorToByLayer(ed, allXrefFilePaths);
@@ -62,55 +63,58 @@ namespace ElectricalCommands
       }
     }
 
-    private void RemoveNotLocatedRasterImages(string filePath)
+    private void DetachInvalidRasterImages(string filePath)
     {
+      var ed = Application.DocumentManager.MdiActiveDocument.Editor;
+
       using (Database db = new Database(false, true))
       {
         db.ReadDwgFile(filePath, FileShare.ReadWrite, true, "");
 
         using (Transaction trans = db.TransactionManager.StartTransaction())
         {
-          // Open the block table for read
+          ed.WriteMessage("Transaction started.\n");
+
+          // Iterate over the block table records
           BlockTable blockTable = trans.GetObject(db.BlockTableId, OpenMode.ForRead) as BlockTable;
-
-          // Open the block table record for read
-          BlockTableRecord blockTableRecord = trans.GetObject(blockTable[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
-
-          List<ObjectId> rasterImagesToRemove = new List<ObjectId>();
-
-          // Iterate over the entities in the block table record
-          foreach (ObjectId entityId in blockTableRecord)
+          foreach (ObjectId btrId in blockTable)
           {
-            // Check if the entity is a RasterImage
-            RasterImage rasterImage = trans.GetObject(entityId, OpenMode.ForRead) as RasterImage;
+            BlockTableRecord btr = trans.GetObject(btrId, OpenMode.ForWrite) as BlockTableRecord;
 
-            if (rasterImage != null)
+            // Skip dimension blocks and xrefs/dependent blocks
+            if (!btr.Name.StartsWith("*D") && !btr.IsFromExternalReference)
             {
-              // Get the associated RasterImageDef
-              RasterImageDef rasterImageDef = trans.GetObject(rasterImage.ImageDefId, OpenMode.ForRead) as RasterImageDef;
-
-              if (rasterImageDef != null)
+              // Iterate over the entities in the block table record
+              foreach (ObjectId entityId in btr)
               {
-                // Check if the image file exists
-                if (!File.Exists(rasterImageDef.SourceFileName))
+                // Check if the entity is a RasterImage
+                RasterImage rasterImage = trans.GetObject(entityId, OpenMode.ForWrite) as RasterImage;
+                if (rasterImage != null)
                 {
-                  rasterImagesToRemove.Add(entityId);
+                  RasterImageDef imageDef = trans.GetObject(rasterImage.ImageDefId, OpenMode.ForRead) as RasterImageDef;
+                  if (imageDef != null)
+                  {
+                    if (!File.Exists(imageDef.SourceFileName))
+                    {
+                      // Detach the raster image from the entity
+                      rasterImage.ImageDefId = ObjectId.Null;
+                      rasterImage.Erase(true);
+                      ed.WriteMessage($"Raster image detached: {imageDef.SourceFileName}\n");
+                    }
+                  }
                 }
               }
             }
           }
 
-          // Remove the not located raster images
-          foreach (ObjectId rasterImageId in rasterImagesToRemove)
-          {
-            RasterImage rasterImage = trans.GetObject(rasterImageId, OpenMode.ForWrite) as RasterImage;
-            rasterImage.Erase(true);
-          }
-
           trans.Commit();
+
+          ed.WriteMessage("Transaction committed.\n");
         }
 
         db.SaveAs(filePath, DwgVersion.Current);
+
+        ed.WriteMessage("Database saved.\n");
       }
     }
 
