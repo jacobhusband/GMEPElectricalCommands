@@ -75,6 +75,13 @@ namespace ElectricalCommands
         {
           ed.WriteMessage("Transaction started.\n");
 
+          // Get the named object dictionary
+          DBDictionary nod = trans.GetObject(db.NamedObjectsDictionaryId, OpenMode.ForRead) as DBDictionary;
+
+          // Get the "ACAD_IMAGE_DICT" dictionary
+          ObjectId imageDictId = nod.GetAt("ACAD_IMAGE_DICT");
+          DBDictionary imageDict = trans.GetObject(imageDictId, OpenMode.ForWrite) as DBDictionary;
+
           // Iterate over the block table records
           BlockTable blockTable = trans.GetObject(db.BlockTableId, OpenMode.ForRead) as BlockTable;
           foreach (ObjectId btrId in blockTable)
@@ -84,11 +91,14 @@ namespace ElectricalCommands
             // Skip dimension blocks and xrefs/dependent blocks
             if (!btr.Name.StartsWith("*D") && !btr.IsFromExternalReference)
             {
+              List<ObjectId> invalidRasterImageIds = new List<ObjectId>();
+              List<ObjectId> invalidRasterImageDefIds = new List<ObjectId>();
+
               // Iterate over the entities in the block table record
               foreach (ObjectId entityId in btr)
               {
                 // Check if the entity is a RasterImage
-                RasterImage rasterImage = trans.GetObject(entityId, OpenMode.ForWrite) as RasterImage;
+                RasterImage rasterImage = trans.GetObject(entityId, OpenMode.ForRead) as RasterImage;
                 if (rasterImage != null)
                 {
                   RasterImageDef imageDef = trans.GetObject(rasterImage.ImageDefId, OpenMode.ForRead) as RasterImageDef;
@@ -96,13 +106,30 @@ namespace ElectricalCommands
                   {
                     if (!File.Exists(imageDef.SourceFileName))
                     {
-                      // Detach the raster image from the entity
-                      rasterImage.ImageDefId = ObjectId.Null;
-                      rasterImage.Erase(true);
-                      ed.WriteMessage($"Raster image detached: {imageDef.SourceFileName}\n");
+                      invalidRasterImageIds.Add(entityId);
+                      invalidRasterImageDefIds.Add(imageDef.ObjectId);
+                      ed.WriteMessage($"Invalid raster image found: {imageDef.SourceFileName}\n");
                     }
                   }
                 }
+              }
+
+              // Erase the invalid raster images
+              foreach (ObjectId invalidRasterImageId in invalidRasterImageIds)
+              {
+                RasterImage invalidRasterImage = trans.GetObject(invalidRasterImageId, OpenMode.ForWrite) as RasterImage;
+                if (invalidRasterImage != null)
+                {
+                  invalidRasterImage.Erase(true);
+                  ed.WriteMessage($"Raster image erased: {invalidRasterImage.ImageDefId}\n");
+                }
+              }
+
+              // Remove the invalid raster image definitions from the dictionary
+              foreach (ObjectId invalidRasterImageDefId in invalidRasterImageDefIds)
+              {
+                imageDict.Remove(invalidRasterImageDefId);
+                ed.WriteMessage($"Raster image definition removed: {invalidRasterImageDefId}\n");
               }
             }
           }
