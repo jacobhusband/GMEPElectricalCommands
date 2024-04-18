@@ -854,47 +854,59 @@ namespace ElectricalCommands
     {
       int[] columnIndex = { 1, 8, 2, 9, 3, 10 };
       double largestLoad = 0.0;
-      int numberOfBreakersWithKitchenDemand =
-          count_number_of_breakers_with_kitchen_demand_tag();
+      int numberOfBreakersWithKitchenDemand = count_number_of_breakers_with_kitchen_demand_tag();
       double demandFactor = determine_demand_factor(numberOfBreakersWithKitchenDemand);
+      double[] sums = new double[3];
 
-      for (int i = 0; i < columnIndex.Length; i += 2)
+      foreach (DataGridViewRow row in PANEL_GRID.Rows)
       {
-        double sum = 0;
-        foreach (DataGridViewRow row in PANEL_GRID.Rows)
+        for (int i = 0; i < columnIndex.Length; i += 2)
         {
-          for (int j = 0; j < 2; j++)
+          bool hasKitchemDemandApplied = false;
+          bool has08LCLApplied = false;
+          bool has125LCLApplied = false;
+
+          if (row.Cells[columnIndex[i]].Value != null)
           {
-            if (row.Cells[columnIndex[i + j]].Value != null)
-            {
-              bool has08LCLApplied = verify_LCL_from_phase_cell(
-                  row.Index,
-                  columnIndex[i + j]
-              );
-              bool has125LCLApplied = verify_125LCL_from_phase_cell(
-                  row.Index,
-                  columnIndex[i + j]
-              );
-              bool hasKitchemDemandApplied = verify_kitchen_demand_from_phase_cell(
-                  row.Index,
-                  columnIndex[i + j]
-              );
-              sum += ParseAndSumCell(
-                  row.Cells[columnIndex[i + j]].Value.ToString(),
-                  has08LCLApplied,
-                  has125LCLApplied,
-                  hasKitchemDemandApplied ? demandFactor : 1.0
-              );
-            }
+            has08LCLApplied = verify_LCL_from_phase_cell(row.Index, columnIndex[i]);
+            has125LCLApplied = verify_125LCL_from_phase_cell(row.Index, columnIndex[i]);
+            hasKitchemDemandApplied = verify_kitchen_demand_from_phase_cell(row.Index, columnIndex[i]);
+
+            sums[i / 2] += ParseAndSumCell(
+                row.Cells[columnIndex[i]].Value.ToString(),
+                has08LCLApplied,
+                has125LCLApplied,
+                hasKitchemDemandApplied ? demandFactor : 1.0
+            );
           }
+
+          if (row.Cells[columnIndex[i + 1]].Value != null)
+          {
+            has08LCLApplied = verify_LCL_from_phase_cell(row.Index, columnIndex[i + 1]);
+            has125LCLApplied = verify_125LCL_from_phase_cell(row.Index, columnIndex[i + 1]);
+            hasKitchemDemandApplied = verify_kitchen_demand_from_phase_cell(row.Index, columnIndex[i + 1]);
+
+            sums[i / 2] += ParseAndSumCell(
+                row.Cells[columnIndex[i + 1]].Value.ToString(),
+                has08LCLApplied,
+                has125LCLApplied,
+                hasKitchemDemandApplied ? demandFactor : 1.0
+            );
+          }
+
           var equipment_load = get_equipment_load(row.Index);
           if (equipment_load > largestLoad)
           {
             largestLoad = equipment_load;
           }
         }
-        PHASE_SUM_GRID.Rows[0].Cells[i / 2].Value = sum;
       }
+
+      for (int i = 0; i < 3; i++)
+      {
+        PHASE_SUM_GRID.Rows[0].Cells[i].Value = sums[i];
+      }
+
       if (AUTO_CHECKBOX.Checked)
       {
         LARGEST_LCL_INPUT.Text = largestLoad.ToString();
@@ -1051,47 +1063,59 @@ namespace ElectricalCommands
     {
       int[] columnIndex = { 1, 7, 2, 8 };
       double largestLoad = 0.0;
-      int numberOfBreakersWithKitchenDemand =
-          count_number_of_breakers_with_kitchen_demand_tag();
+      int numberOfBreakersWithKitchenDemand = count_number_of_breakers_with_kitchen_demand_tag();
       double demandFactor = determine_demand_factor(numberOfBreakersWithKitchenDemand);
+      double[] sums = new double[2];
 
-      for (int i = 0; i < columnIndex.Length; i += 2)
+      foreach (DataGridViewRow row in PANEL_GRID.Rows)
       {
-        double sum = 0;
-        foreach (DataGridViewRow row in PANEL_GRID.Rows)
+        for (int i = 0; i < columnIndex.Length; i += 2)
         {
-          for (int j = 0; j < 2; j++)
+          bool hasKitchemDemandApplied = false;
+          bool has08LCLApplied = false;
+          bool has125LCLApplied = false;
+
+          if (row.Cells[columnIndex[i]].Value != null)
           {
-            if (row.Cells[columnIndex[i + j]].Value != null)
-            {
-              var has08LCLApplied = verify_LCL_from_phase_cell(
-                  row.Index,
-                  columnIndex[i + j]
-              );
-              var has125LCLApplied = verify_125LCL_from_phase_cell(
-                  row.Index,
-                  columnIndex[i + j]
-              );
-              bool hasKitchemDemandApplied = verify_kitchen_demand_from_phase_cell(
-                  row.Index,
-                  columnIndex[i + j]
-              );
-              sum += ParseAndSumCell(
-                  row.Cells[columnIndex[i + j]].Value.ToString(),
-                  has08LCLApplied,
-                  has125LCLApplied,
-                  hasKitchemDemandApplied ? demandFactor : 1.0
-              );
-            }
+            has08LCLApplied = verify_LCL_from_phase_cell(row.Index, columnIndex[i]);
+            has125LCLApplied = verify_125LCL_from_phase_cell(row.Index, columnIndex[i]);
+            hasKitchemDemandApplied = verify_kitchen_demand_from_phase_cell(row.Index, columnIndex[i]);
+
+            sums[i / 2] += ParseAndSumCell(
+                row.Cells[columnIndex[i]].Value.ToString(),
+                has08LCLApplied,
+                has125LCLApplied,
+                hasKitchemDemandApplied ? demandFactor : 1.0
+            );
           }
+
+          if (row.Cells[columnIndex[i + 1]].Value != null)
+          {
+            has08LCLApplied = verify_LCL_from_phase_cell(row.Index, columnIndex[i + 1]);
+            has125LCLApplied = verify_125LCL_from_phase_cell(row.Index, columnIndex[i + 1]);
+            hasKitchemDemandApplied = verify_kitchen_demand_from_phase_cell(row.Index, columnIndex[i + 1]);
+
+            sums[i / 2] += ParseAndSumCell(
+                row.Cells[columnIndex[i + 1]].Value.ToString(),
+                has08LCLApplied,
+                has125LCLApplied,
+                hasKitchemDemandApplied ? demandFactor : 1.0
+            );
+          }
+
           var equipment_load = get_equipment_load(row.Index);
           if (equipment_load > largestLoad)
           {
             largestLoad = equipment_load;
           }
         }
-        PHASE_SUM_GRID.Rows[0].Cells[i / 2].Value = sum;
       }
+
+      for (int i = 0; i < 2; i++)
+      {
+        PHASE_SUM_GRID.Rows[0].Cells[i].Value = sums[i];
+      }
+
       if (AUTO_CHECKBOX.Checked)
       {
         LARGEST_LCL_INPUT.Text = largestLoad.ToString();
