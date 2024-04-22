@@ -27,17 +27,15 @@ namespace ElectricalCommands
     private List<string> notesStorage = new List<string>();
     private List<DataGridViewCell> selectedCells;
     private List<string> defaultNotes;
-
-    private bool initialization;
     private object oldValue;
+    private UndoRedoManager undoRedoManager = new UndoRedoManager();
 
-    public PanelUserControl(PanelCommands myCommands, MainForm mainForm, NewPanelForm newPanelForm, string tabName, bool is3PH = false)
+    public PanelUserControl(PanelCommands myCommands, MainForm mainForm, NewPanelForm newPanelForm, string tabName, bool is3PH = false, bool isLoadingData = false)
     {
       InitializeComponent();
       myCommandsInstance = myCommands;
       this.mainForm = mainForm;
       this.newPanelForm = newPanelForm;
-      this.initialization = false;
       this.Name = tabName;
       this.notesStorage = new List<string>();
       this.defaultNotes =
@@ -60,44 +58,38 @@ namespace ElectricalCommands
       PANEL_GRID.Rows.AddCopies(0, 21);
       PANEL_GRID.AllowUserToAddRows = false;
       PANEL_GRID.KeyDown += new KeyEventHandler(this.PANEL_GRID_KeyDown);
-      PANEL_GRID.CellBeginEdit += new DataGridViewCellCancelEventHandler(
-          this.PANEL_GRID_CellBeginEdit
-      );
-      PANEL_GRID.CellValueChanged += new DataGridViewCellEventHandler(
-          this.PANEL_GRID_CellValueChanged
-      );
-      PHASE_SUM_GRID.CellValueChanged += new DataGridViewCellEventHandler(
-          this.PHASE_SUM_GRID_CellValueChanged
-      );
+      PANEL_GRID.CellBeginEdit += new DataGridViewCellCancelEventHandler(this.PANEL_GRID_CellBeginEdit);
+      PANEL_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PANEL_GRID_CellValueChanged);
+      PHASE_SUM_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PHASE_SUM_GRID_CellValueChanged);
       PANEL_NAME_INPUT.TextChanged += new EventHandler(this.PANEL_NAME_INPUT_TextChanged);
       PANEL_GRID.CellFormatting += PANEL_GRID_CellFormatting;
       PANEL_GRID.CellClick += new DataGridViewCellEventHandler(this.PANEL_GRID_CellClick);
-      PANEL_NAME_INPUT.Click += (sender, e) =>
-      {
-        PANEL_NAME_INPUT.SelectAll();
-      };
-      PANEL_LOCATION_INPUT.Click += (sender, e) =>
-      {
-        PANEL_LOCATION_INPUT.SelectAll();
-      };
-      PANEL_GRID.CellPainting += new DataGridViewCellPaintingEventHandler(
-          PANEL_GRID_CellPainting
-      );
+      PANEL_NAME_INPUT.Click += (sender, e) => { PANEL_NAME_INPUT.SelectAll(); };
+      PANEL_LOCATION_INPUT.Click += (sender, e) => { PANEL_LOCATION_INPUT.SelectAll(); };
+      PANEL_GRID.CellPainting += new DataGridViewCellPaintingEventHandler(PANEL_GRID_CellPainting);
       PANEL_GRID.CellEndEdit += new DataGridViewCellEventHandler(this.PANEL_GRID_CellEndEdit);
-      MAIN_INPUT.Click += (sender, e) =>
-      {
-        MAIN_INPUT.SelectAll();
-      };
-      BUS_RATING_INPUT.Click += (sender, e) =>
-      {
-        BUS_RATING_INPUT.SelectAll();
-      };
+      MAIN_INPUT.Click += (sender, e) => { MAIN_INPUT.SelectAll(); };
+      BUS_RATING_INPUT.Click += (sender, e) => { BUS_RATING_INPUT.SelectAll(); };
 
       add_rows_to_datagrid();
       set_default_form_values(tabName);
       deselect_cells();
+    }
 
-      this.initialization = true;
+    protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+    {
+      if (keyData == (Keys.Control | Keys.Z))
+      {
+        undoRedoManager.Undo();
+        return true;
+      }
+      else if (keyData == (Keys.Control | Keys.Y) || keyData == (Keys.Control | Keys.Shift | Keys.Z))
+      {
+        undoRedoManager.Redo();
+        return true;
+      }
+
+      return base.ProcessCmdKey(ref msg, keyData);
     }
 
     public List<string> getNotesStorage()
@@ -2296,22 +2288,15 @@ namespace ElectricalCommands
 
     private void PANEL_GRID_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
     {
-      //// Check if the current cell is the one being formatted and the DataGridView doesn't have focus
-      //if (this.PANEL_GRID.CurrentCell != null
-      //    && e.RowIndex == this.PANEL_GRID.CurrentCell.RowIndex
-      //    && e.ColumnIndex == this.PANEL_GRID.CurrentCell.ColumnIndex
-      //    && !this.PANEL_GRID.Focused)
-      //{
-      //  // Change the back color and fore color to make the current cell less noticeable
-      //  e.CellStyle.SelectionBackColor = e.CellStyle.BackColor;
-      //  e.CellStyle.SelectionForeColor = e.CellStyle.ForeColor;
-      //}
       e.CellStyle.SelectionBackColor = e.CellStyle.BackColor;
       e.CellStyle.SelectionForeColor = e.CellStyle.ForeColor;
     }
 
     private void PANEL_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
     {
+      if (undoRedoManager.IsUndoing)
+        return;
+
       remove_existing_from_description(PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex]);
       remove_existing_breaker_note(PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex]);
 
@@ -2330,6 +2315,12 @@ namespace ElectricalCommands
 
       recalculate_breakers();
       calculate_lcl_otherload_panelload_feederamps();
+
+      if (this.mainForm.initialized)
+      {
+        var command = new CellValueChangeCommand(PANEL_GRID, e.RowIndex, e.ColumnIndex, oldValue, cellValue);
+        undoRedoManager.Execute(command);
+      }
     }
 
     private void PANEL_GRID_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
@@ -2810,6 +2801,95 @@ namespace ElectricalCommands
     public bool Is3PH()
     {
       return PHASE_COMBOBOX.SelectedItem.ToString().ToUpper() == "3";
+    }
+  }
+
+  public interface ICommand
+  {
+    void Execute();
+
+    void Undo();
+
+    void Redo();
+  }
+
+  public class UndoRedoManager
+  {
+    private Stack<ICommand> undoStack = new Stack<ICommand>();
+    private Stack<ICommand> redoStack = new Stack<ICommand>();
+    public bool IsUndoing { get; private set; }
+
+    public void Execute(ICommand command)
+    {
+      command.Execute();
+      undoStack.Push(command);
+    }
+
+    public void Undo()
+    {
+      if (undoStack.Count > 0)
+      {
+        IsUndoing = true;
+        ICommand command = undoStack.Pop();
+        command.Undo();
+        redoStack.Push(command);
+        IsUndoing = false;
+      }
+    }
+
+    public void Redo()
+    {
+      if (redoStack.Count > 0)
+      {
+        IsUndoing = true;
+        ICommand command = redoStack.Pop();
+        command.Redo();
+        undoStack.Push(command);
+        IsUndoing = false;
+      }
+    }
+
+    public string GetStackState()
+    {
+      return string.Join("\n", undoStack.Select(cmd => cmd.ToString()).Reverse());
+    }
+  }
+
+  public class CellValueChangeCommand : ICommand
+  {
+    private DataGridView dataGridView;
+    private int rowIndex;
+    private int columnIndex;
+    private object oldValue;
+    private object newValue;
+
+    public CellValueChangeCommand(DataGridView dataGridView, int rowIndex, int columnIndex, object oldValue, object newValue)
+    {
+      this.dataGridView = dataGridView;
+      this.rowIndex = rowIndex;
+      this.columnIndex = columnIndex;
+      this.oldValue = oldValue;
+      this.newValue = newValue;
+    }
+
+    public void Execute()
+    {
+      dataGridView[columnIndex, rowIndex].Value = newValue;
+    }
+
+    public void Undo()
+    {
+      dataGridView[columnIndex, rowIndex].Value = oldValue;
+    }
+
+    public void Redo()
+    {
+      dataGridView[columnIndex, rowIndex].Value = newValue;
+    }
+
+    public override string ToString()
+    {
+      return $"Cell at ({rowIndex}, {columnIndex}): '{oldValue}' -> '{newValue}'";
     }
   }
 }

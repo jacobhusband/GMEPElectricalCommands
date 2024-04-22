@@ -16,6 +16,7 @@ namespace ElectricalCommands
     private NewPanelForm newPanelForm;
     private List<PanelUserControl> userControls;
     private Document acDoc;
+    public bool initialized = false;
 
     public MainForm(PanelCommands myCommands)
     {
@@ -86,6 +87,7 @@ namespace ElectricalCommands
       else
       {
         MakeTabsAndPopulate(panelStorage);
+        this.initialized = true;
       }
     }
 
@@ -201,7 +203,7 @@ namespace ElectricalCommands
       {
         string panelName = panel["panel"].ToString();
         bool is3PH = panel.ContainsKey("phase_c_left");
-        PanelUserControl userControl1 = create_new_panel_tab(panelName, is3PH);
+        PanelUserControl userControl1 = create_new_panel_tab(panelName, is3PH, true);
         userControl1.clear_modal_and_remove_rows(panel);
         userControl1.populate_modal_with_panel_data(panel);
         var notes = JsonConvert.DeserializeObject<List<string>>(panel["notes"].ToString());
@@ -344,7 +346,7 @@ namespace ElectricalCommands
       tabPage.Controls.Add(control);
     }
 
-    public PanelUserControl create_new_panel_tab(string tabName, bool is3PH)
+    public PanelUserControl create_new_panel_tab(string tabName, bool is3PH, bool isLoadingData = false)
     {
       // if tabname has "PANEL" in it replace it with "Panel"
       if (tabName.Contains("PANEL") || tabName.Contains("Panel"))
@@ -363,13 +365,7 @@ namespace ElectricalCommands
       PANEL_TABS.SelectedTab = newTabPage;
 
       // Create a new UserControl
-      PanelUserControl userControl1 = new PanelUserControl(
-          this.myCommandsInstance,
-          this,
-          this.newPanelForm,
-          tabName,
-          is3PH
-      );
+      PanelUserControl userControl1 = new PanelUserControl(this.myCommandsInstance, this, this.newPanelForm, tabName, is3PH, isLoadingData);
 
       // Add the UserControl to the list of UserControls
       this.userControls.Add(userControl1);
