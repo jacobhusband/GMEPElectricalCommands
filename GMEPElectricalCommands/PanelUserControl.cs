@@ -1122,12 +1122,12 @@ namespace ElectricalCommands
         int rowIndex = e.RowIndex + i;
 
         // Set common column values
-        PANEL_GRID.Rows[rowIndex].Cells[0].Value = "SPARE";
-        PANEL_GRID.Rows[rowIndex].Cells[4].Value = "20";
-        PANEL_GRID.Rows[rowIndex].Cells[5].Value = ((rowIndex + 1) * 2) - 1;
-        PANEL_GRID.Rows[rowIndex].Cells[6].Value = (rowIndex + 1) * 2;
-        PANEL_GRID.Rows[rowIndex].Cells[7].Value = "20";
-        PANEL_GRID.Rows[rowIndex].Cells[11].Value = "SPARE";
+        PANEL_GRID.Rows[rowIndex].Cells["description_left"].Value = "SPARE";
+        PANEL_GRID.Rows[rowIndex].Cells["breaker_left"].Value = "20";
+        PANEL_GRID.Rows[rowIndex].Cells["circuit_left"].Value = ((rowIndex + 1) * 2) - 1;
+        PANEL_GRID.Rows[rowIndex].Cells["circuit_right"].Value = (rowIndex + 1) * 2;
+        PANEL_GRID.Rows[rowIndex].Cells["breaker_right"].Value = "20";
+        PANEL_GRID.Rows[rowIndex].Cells["description_right"].Value = "SPARE";
 
         // Determine the row pattern (zig-zag) for gray background
         int pattern = rowIndex % 3;
@@ -1135,18 +1135,18 @@ namespace ElectricalCommands
         // Apply pattern for two sets of columns based on the row pattern
         if (pattern == 0)
         {
-          PANEL_GRID.Rows[rowIndex].Cells[1].Style.BackColor = grayColor;
-          PANEL_GRID.Rows[rowIndex].Cells[8].Style.BackColor = grayColor;
+          PANEL_GRID.Rows[rowIndex].Cells["phase_a_left"].Style.BackColor = grayColor;
+          PANEL_GRID.Rows[rowIndex].Cells["phase_a_right"].Style.BackColor = grayColor;
         }
         else if (pattern == 1)
         {
-          PANEL_GRID.Rows[rowIndex].Cells[2].Style.BackColor = grayColor;
-          PANEL_GRID.Rows[rowIndex].Cells[9].Style.BackColor = grayColor;
+          PANEL_GRID.Rows[rowIndex].Cells["phase_b_left"].Style.BackColor = grayColor;
+          PANEL_GRID.Rows[rowIndex].Cells["phase_b_right"].Style.BackColor = grayColor;
         }
         else
         {
-          PANEL_GRID.Rows[rowIndex].Cells[3].Style.BackColor = grayColor;
-          PANEL_GRID.Rows[rowIndex].Cells[10].Style.BackColor = grayColor;
+          PANEL_GRID.Rows[rowIndex].Cells["phase_c_left"].Style.BackColor = grayColor;
+          PANEL_GRID.Rows[rowIndex].Cells["phase_c_right"].Style.BackColor = grayColor;
         }
       }
     }
@@ -1158,23 +1158,23 @@ namespace ElectricalCommands
         int rowIndex = e.RowIndex + i;
 
         // Set common column values
-        PANEL_GRID.Rows[rowIndex].Cells[0].Value = "SPARE";
-        PANEL_GRID.Rows[rowIndex].Cells[3].Value = "20";
-        PANEL_GRID.Rows[rowIndex].Cells[4].Value = ((rowIndex + 1) * 2) - 1;
-        PANEL_GRID.Rows[rowIndex].Cells[5].Value = (rowIndex + 1) * 2;
-        PANEL_GRID.Rows[rowIndex].Cells[6].Value = "20";
-        PANEL_GRID.Rows[rowIndex].Cells[9].Value = "SPARE";
+        PANEL_GRID.Rows[rowIndex].Cells["description_left"].Value = "SPARE";
+        PANEL_GRID.Rows[rowIndex].Cells["breaker_left"].Value = "20";
+        PANEL_GRID.Rows[rowIndex].Cells["circuit_left"].Value = ((rowIndex + 1) * 2) - 1;
+        PANEL_GRID.Rows[rowIndex].Cells["circuit_right"].Value = (rowIndex + 1) * 2;
+        PANEL_GRID.Rows[rowIndex].Cells["breaker_right"].Value = "20";
+        PANEL_GRID.Rows[rowIndex].Cells["description_right"].Value = "SPARE";
 
         // Zig-zag pattern for columns 2, 3, 8, and 9
         if ((rowIndex + 1) % 2 == 1) // Odd rows
         {
-          PANEL_GRID.Rows[rowIndex].Cells[1].Style.BackColor = Color.LightGray; // Column 2
-          PANEL_GRID.Rows[rowIndex].Cells[7].Style.BackColor = Color.LightGray; // Column 8
+          PANEL_GRID.Rows[rowIndex].Cells["phase_a_left"].Style.BackColor = Color.LightGray; // Column 2
+          PANEL_GRID.Rows[rowIndex].Cells["phase_a_right"].Style.BackColor = Color.LightGray; // Column 8
         }
         else // Even rows
         {
-          PANEL_GRID.Rows[rowIndex].Cells[2].Style.BackColor = Color.LightGray; // Column 3
-          PANEL_GRID.Rows[rowIndex].Cells[8].Style.BackColor = Color.LightGray; // Column 9
+          PANEL_GRID.Rows[rowIndex].Cells["phase_b_left"].Style.BackColor = Color.LightGray; // Column 3
+          PANEL_GRID.Rows[rowIndex].Cells["phase_b_right"].Style.BackColor = Color.LightGray; // Column 9
         }
       }
     }
@@ -1252,11 +1252,7 @@ namespace ElectricalCommands
       clear_current_modal_data();
       remove_rows();
 
-      // add the number of rows based on the number of rows in the selected panel data
-      int numberOfRows =
-          ((Newtonsoft.Json.Linq.JArray)selectedPanelData["description_left"])
-              .ToObject<List<string>>()
-              .Count / 2;
+      int numberOfRows = ((Newtonsoft.Json.Linq.JArray)selectedPanelData["description_left"]).ToObject<List<string>>().Count / 2;
       PANEL_GRID.Rows.Add(numberOfRows);
     }
 
@@ -1277,18 +1273,10 @@ namespace ElectricalCommands
     public void populate_modal_with_panel_data(Dictionary<string, object> selectedPanelData)
     {
       // Set TextBoxes
-      MAIN_INPUT.Text = selectedPanelData["main"]
-          .ToString()
-          .Replace("AMP", "")
-          .Replace("A", "")
-          .Replace(" ", "");
+      MAIN_INPUT.Text = selectedPanelData["main"].ToString().Replace("AMP", "").Replace("A", "").Replace(" ", "");
       PANEL_NAME_INPUT.Text = selectedPanelData["panel"].ToString().Replace("'", "");
       PANEL_LOCATION_INPUT.Text = selectedPanelData["location"].ToString();
-      BUS_RATING_INPUT.Text = selectedPanelData["bus_rating"]
-          .ToString()
-          .Replace("AMP", "")
-          .Replace("A", "")
-          .Replace(" ", "");
+      BUS_RATING_INPUT.Text = selectedPanelData["bus_rating"].ToString().Replace("AMP", "").Replace("A", "").Replace(" ", "");
 
       // Set ComboBoxes
       STATUS_COMBOBOX.SelectedItem = selectedPanelData["existing"].ToString();
@@ -1527,10 +1515,7 @@ namespace ElectricalCommands
         phaseSumGrid_col = 2;
       }
 
-      var newCellValue = panelControl_phaseSumGrid
-          .Rows[phaseSumGrid_row]
-          .Cells[phaseSumGrid_col]
-          .Value.ToString();
+      var newCellValue = panelControl_phaseSumGrid.Rows[phaseSumGrid_row].Cells[phaseSumGrid_col].Value.ToString();
       panelGrid.Rows[row.Index].Cells[col.Index].Value = newCellValue;
       panelGrid.Rows[row.Index].Cells[col.Index].Style.BackColor = Color.LightGreen;
 
@@ -1538,10 +1523,7 @@ namespace ElectricalCommands
       {
         if (e.RowIndex == phaseSumGrid_row && e.ColumnIndex == phaseSumGrid_col)
         {
-          var newCellValue = panelControl_phaseSumGrid
-                    .Rows[e.RowIndex]
-                    .Cells[e.ColumnIndex]
-                    .Value.ToString();
+          var newCellValue = panelControl_phaseSumGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
           panelGrid.Rows[row.Index].Cells[col.Index].Value = newCellValue;
           panelGrid.Rows[row.Index].Cells[col.Index].Style.BackColor = Color.LightGreen;
         }
@@ -1553,20 +1535,13 @@ namespace ElectricalCommands
       {
         if (e.RowIndex == row.Index && e.ColumnIndex == col.Index)
         {
-          var newCellValue = panelGrid
-                    .Rows[e.RowIndex]
-                    .Cells[e.ColumnIndex]
-                    .Value?.ToString();
-          var phaseSumGridValue = panelControl_phaseSumGrid
-                    .Rows[phaseSumGrid_row]
-                    .Cells[phaseSumGrid_col]
-                    .Value?.ToString();
+          var newCellValue = panelGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value?.ToString();
+          var phaseSumGridValue = panelControl_phaseSumGrid.Rows[phaseSumGrid_row].Cells[phaseSumGrid_col].Value?.ToString();
           if (newCellValue != phaseSumGridValue)
           {
             panelControl_phaseSumGrid.CellValueChanged -= eventHandler;
             panelGrid.CellValueChanged -= panelGrid_eventHandler;
-            panelGrid.Rows[row.Index].Cells[col.Index].Style.BackColor =
-                      Color.LightGray;
+            panelGrid.Rows[row.Index].Cells[col.Index].Style.BackColor = Color.LightGray;
             if (panelGrid.Rows[row.Index].Cells[col.Index].Tag != null)
             {
               panelGrid.Rows[row.Index].Cells[col.Index].Tag = null;
@@ -1596,7 +1571,6 @@ namespace ElectricalCommands
 
     private void change_size_of_phase_columns(bool is3PH)
     {
-      // when phase c is added, reduce the size of phase a and phase b, and increase the size of phase c until the 3 columns are equal in size and match the width of phase a and phase b combined
       if (is3PH)
       {
         // Left Side
@@ -1890,9 +1864,9 @@ namespace ElectricalCommands
         int rowCount = phaseSumGridColumnCount == 3 ? 3 : 2;
         if (PANEL_GRID.Rows.Count > rowIndex + rowCount - 1)
         {
-          var cellValueA = "=" + panelName + "-A";
-          var cellValueB = "=" + panelName + "-B";
-          var cellValueC = phaseSumGridColumnCount == 3 ? "=" + panelName + "-C" : null;
+          var cellValueA = "=" + panelName.ToUpper() + "-A";
+          var cellValueB = "=" + panelName.ToUpper() + "-B";
+          var cellValueC = phaseSumGridColumnCount == 3 ? "=" + panelName.ToUpper() + "-C" : null;
 
           string side = col.Name.Contains("left") ? "left" : "right";
           List<DataGridViewRow> rows = new List<DataGridViewRow>();
@@ -2052,27 +2026,10 @@ namespace ElectricalCommands
         {
           cellValue = cellValue.Replace(" ", "");
         }
-        if (
-            cellValue.All(c =>
-                char.IsDigit(c)
-                || c == '.'
-                || c == '='
-                || c == '-'
-                || c == '*'
-                || c == '+'
-                || c == '/'
-                || c == '('
-                || c == ')'
-            )
-        )
+        if (cellValue.All(c => char.IsDigit(c) || c == '.' || c == '=' || c == '-' || c == '*' || c == '+' || c == '/' || c == '(' || c == ')'))
         {
-          var result = new System.Data.DataTable().Compute(
-              cellValue.Replace("=", ""),
-              null
-          );
-          PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = Convert.ToDouble(
-              result
-          );
+          var result = new System.Data.DataTable().Compute(cellValue.Replace("=", ""), null);
+          PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = Convert.ToDouble(result);
         }
         else
         {
@@ -2100,18 +2057,11 @@ namespace ElectricalCommands
           if (isPanelReal)
           {
             UserControl panelControl = mainForm.findUserControl(panelName);
-            DataGridView panelControl_phaseSumGrid =
-                panelControl.Controls.Find("PHASE_SUM_GRID", true).FirstOrDefault()
-                as DataGridView;
+            DataGridView panelControl_phaseSumGrid = panelControl.Controls.Find("PHASE_SUM_GRID", true).FirstOrDefault() as DataGridView;
             var phaseSumGridColumnCount = panelControl_phaseSumGrid.ColumnCount;
             var panelPhaseSumGridColumnCount = PHASE_SUM_GRID.ColumnCount;
-            update_panel_grid(
-                phaseSumGridColumnCount,
-                panelPhaseSumGridColumnCount,
-                row.Index,
-                col,
-                panelName
-            );
+
+            update_panel_grid(phaseSumGridColumnCount, panelPhaseSumGridColumnCount, row.Index, col, panelName);
           }
         }
       }
@@ -2229,17 +2179,15 @@ namespace ElectricalCommands
 
     private void PANEL_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e)
     {
-      if (undoRedoManager.IsUndoing)
-        return;
+      if (undoRedoManager.IsUndoing) return;
 
       remove_existing_from_description(PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex]);
       remove_existing_breaker_note(PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex]);
 
-      if (
-          PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value == null
-          || PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString() == ""
-      )
+      if (PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value == null || PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString() == "")
+      {
         return;
+      }
 
       var cellValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
       var row = PANEL_GRID.Rows[e.RowIndex];
@@ -2251,11 +2199,11 @@ namespace ElectricalCommands
       recalculate_breakers();
       calculate_lcl_otherload_panelload_feederamps();
 
-      if (this.mainForm.initialized)
-      {
-        var command = new CellValueChangeCommand(PANEL_GRID, e.RowIndex, e.ColumnIndex, oldValue, cellValue);
-        undoRedoManager.Execute(command);
-      }
+      //if (this.mainForm.initialized)
+      //{
+      //  var command = new CellValueChangeCommand(PANEL_GRID, e.RowIndex, e.ColumnIndex, oldValue, cellValue);
+      //  undoRedoManager.Execute(command);
+      //}
     }
 
     private void PANEL_GRID_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
