@@ -1498,19 +1498,10 @@ namespace ElectricalCommands
 
         if (panelControl != null)
         {
-          DataGridView panelControl_phaseSumGrid =
-              panelControl.Controls.Find("PHASE_SUM_GRID", true).FirstOrDefault()
-              as DataGridView;
-          DataGridView this_panelGrid =
-              this.Controls.Find("PANEL_GRID", true).FirstOrDefault() as DataGridView;
+          DataGridView panelControl_phaseSumGrid = panelControl.Controls.Find("PHASE_SUM_GRID", true).FirstOrDefault() as DataGridView;
+          DataGridView this_panelGrid = this.Controls.Find("PANEL_GRID", true).FirstOrDefault() as DataGridView;
           this_panelGrid.Rows[row.Index].Cells[col.Index].Tag = cellValue;
-          listenForPhaseChanges(
-              panelControl_phaseSumGrid,
-              phase,
-              row,
-              col,
-              this_panelGrid
-          );
+          listenForPhaseChanges(panelControl_phaseSumGrid, phase, row, col, this_panelGrid);
         }
       }
     }
