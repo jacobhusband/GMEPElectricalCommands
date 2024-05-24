@@ -978,8 +978,9 @@ namespace ElectricalCommands
 
     private bool verify_kitchen_demand_from_description_cell(int rowIndex, string columnName)
     {
-      var note =
-          "THE KITCHEN DEMAND FACTOR IS BEING APPLIED TO THE KITCHEN EQUIPMENT (NEC 220.56).";
+      var editor = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor;
+
+      var note = "KITCHEN DEMAND";
       var cellValue = PANEL_GRID.Rows[rowIndex].Cells[columnName].Value;
       var cellTag = PANEL_GRID.Rows[rowIndex].Cells[columnName].Tag;
 
@@ -991,12 +992,6 @@ namespace ElectricalCommands
 
       string cellTagString = cellTag?.ToString() ?? "";
 
-      var regex = new Regex(@"^[a-zA-Z0-9\s,]*$");
-      if (!regex.IsMatch(cellValueString))
-      {
-        return false;
-      }
-
       if (cellTagString.Contains(note))
       {
         return true;
@@ -1007,7 +1002,7 @@ namespace ElectricalCommands
 
     private bool verify_kitchen_demand_from_phase_cell(int rowIndex, string columnName)
     {
-      var note = "THE KITCHEN DEMAND FACTOR IS BEING APPLIED TO THE KITCHEN EQUIPMENT (NEC 220.56).";
+      var note = "KITCHEN DEMAND";
       return does_breaker_have_note(rowIndex, columnName, note);
     }
 
