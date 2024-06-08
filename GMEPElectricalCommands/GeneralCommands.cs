@@ -146,22 +146,9 @@ namespace ElectricalCommands
     [CommandMethod("T24")]
     public void T24()
     {
-      // Get the current database and start a transaction
       Database acCurDb;
-      acCurDb = Autodesk
-          .AutoCAD
-          .ApplicationServices
-          .Application
-          .DocumentManager
-          .MdiActiveDocument
-          .Database;
-      Editor ed = Autodesk
-          .AutoCAD
-          .ApplicationServices
-          .Application
-          .DocumentManager
-          .MdiActiveDocument
-          .Editor;
+      acCurDb = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Database;
+      Editor ed = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor;
 
       using (Transaction acTrans = acCurDb.TransactionManager.StartTransaction())
       {

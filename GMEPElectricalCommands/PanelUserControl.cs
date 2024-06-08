@@ -70,6 +70,8 @@ namespace ElectricalCommands
       PANEL_GRID.CellEndEdit += new DataGridViewCellEventHandler(this.PANEL_GRID_CellEndEdit);
       MAIN_INPUT.Click += (sender, e) => { MAIN_INPUT.SelectAll(); };
       BUS_RATING_INPUT.Click += (sender, e) => { BUS_RATING_INPUT.SelectAll(); };
+      EXISTING_BUTTON.Click += new System.EventHandler(this.EXISTING_BUTTON_Click);
+      RELOCATE_BUTTON.Click += new System.EventHandler(this.RELOCATE_BUTTON_Click);
 
       add_rows_to_datagrid();
       set_default_form_values(tabName);
@@ -90,6 +92,59 @@ namespace ElectricalCommands
       }
 
       return base.ProcessCmdKey(ref msg, keyData);
+    }
+
+    // Shared method to handle prefix addition/removal
+    private void TogglePrefixInSelectedCells(string prefix)
+    {
+      bool allCellsHavePrefix = true;
+      List<DataGridViewCell> cellsToUpdate = new List<DataGridViewCell>();
+
+      // First pass: Check if all selected cells have the prefix
+      foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells)
+      {
+        if (cell.Value != null && PANEL_GRID.Columns[cell.ColumnIndex].Name.ToLower().Contains("description"))
+        {
+          if (!cell.Value.ToString().StartsWith(prefix))
+          {
+            allCellsHavePrefix = false;
+          }
+          cellsToUpdate.Add(cell);
+        }
+      }
+
+      // Second pass: Update cell values based on the check
+      foreach (DataGridViewCell cell in cellsToUpdate)
+      {
+        if (allCellsHavePrefix)
+        {
+          // Remove the prefix
+          if (cell.Value.ToString().StartsWith(prefix))
+          {
+            cell.Value = cell.Value.ToString().Substring(prefix.Length);
+          }
+        }
+        else
+        {
+          // Add the prefix
+          if (!cell.Value.ToString().StartsWith(prefix))
+          {
+            cell.Value = prefix + cell.Value.ToString();
+          }
+        }
+      }
+    }
+
+    // Event handler method for EXISTING_BUTTON
+    private void EXISTING_BUTTON_Click(object sender, EventArgs e)
+    {
+      TogglePrefixInSelectedCells("(E)");
+    }
+
+    // Event handler method for RELOCATE_BUTTON
+    private void RELOCATE_BUTTON_Click(object sender, EventArgs e)
+    {
+      TogglePrefixInSelectedCells("(R)");
     }
 
     public List<string> getNotesStorage()

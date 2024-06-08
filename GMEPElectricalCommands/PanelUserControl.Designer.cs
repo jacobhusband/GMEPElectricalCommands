@@ -88,6 +88,8 @@
       this.REMOVE_NOTE_BUTTON = new System.Windows.Forms.Button();
       this.AUTO_CHECKBOX = new System.Windows.Forms.CheckBox();
       this.LARGEST_LCL_INPUT = new System.Windows.Forms.TextBox();
+      this.RELOCATE_BUTTON = new System.Windows.Forms.Button();
+      this.EXISTING_BUTTON = new System.Windows.Forms.Button();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -658,11 +660,31 @@
       this.LARGEST_LCL_INPUT.Size = new System.Drawing.Size(142, 20);
       this.LARGEST_LCL_INPUT.TabIndex = 192;
       // 
+      // RELOCATE_BUTTON
+      // 
+      this.RELOCATE_BUTTON.Location = new System.Drawing.Point(558, 538);
+      this.RELOCATE_BUTTON.Name = "RELOCATE_BUTTON";
+      this.RELOCATE_BUTTON.Size = new System.Drawing.Size(47, 23);
+      this.RELOCATE_BUTTON.TabIndex = 193;
+      this.RELOCATE_BUTTON.Text = "(R)";
+      this.RELOCATE_BUTTON.UseVisualStyleBackColor = true;
+      // 
+      // EXISTING_BUTTON
+      // 
+      this.EXISTING_BUTTON.Location = new System.Drawing.Point(505, 538);
+      this.EXISTING_BUTTON.Name = "EXISTING_BUTTON";
+      this.EXISTING_BUTTON.Size = new System.Drawing.Size(47, 23);
+      this.EXISTING_BUTTON.TabIndex = 194;
+      this.EXISTING_BUTTON.Text = "(E)";
+      this.EXISTING_BUTTON.UseVisualStyleBackColor = true;
+      // 
       // PanelUserControl
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
+      this.Controls.Add(this.EXISTING_BUTTON);
+      this.Controls.Add(this.RELOCATE_BUTTON);
       this.Controls.Add(this.LARGEST_LCL_INPUT);
       this.Controls.Add(this.AUTO_CHECKBOX);
       this.Controls.Add(this.REMOVE_NOTE_BUTTON);
@@ -781,5 +803,7 @@
     private System.Windows.Forms.Button REMOVE_NOTE_BUTTON;
     private System.Windows.Forms.CheckBox AUTO_CHECKBOX;
     private System.Windows.Forms.TextBox LARGEST_LCL_INPUT;
+    private System.Windows.Forms.Button RELOCATE_BUTTON;
+    private System.Windows.Forms.Button EXISTING_BUTTON;
   }
 }
