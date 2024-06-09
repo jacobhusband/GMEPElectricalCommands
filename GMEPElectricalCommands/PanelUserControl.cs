@@ -1417,11 +1417,11 @@ namespace ElectricalCommands
               {
                 if (key.Contains("phase") && nextValue != "0")
                 {
-                  currentValue = $"{currentValue},{nextValue}";
+                  currentValue = $"{currentValue};{nextValue}";
                 }
                 else if (key.Contains("description") && nextValue != "SPACE")
                 {
-                  currentValue = $"{currentValue},{nextValue}";
+                  currentValue = $"{currentValue};{nextValue}";
                 }
                 else if (key.Contains("circuit"))
                 {
@@ -1429,7 +1429,7 @@ namespace ElectricalCommands
                 }
                 else if (key.Contains("breaker") && nextValue != "")
                 {
-                  currentValue = $"{currentValue},{nextValue}";
+                  currentValue = $"{currentValue};{nextValue}";
                 }
               }
 
