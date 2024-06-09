@@ -135,10 +135,16 @@ Saving Panel Data
 - If the document closes or AutoCAD exits while the panel schedule form is still open, the panels will attempt to save
 
 Spaces
-- Empty description cells with no breaker value results in a space
+- Empty description cells with no breaker value results in a space.
 
 Spares
-- Empty description cells with a breaker value &gt; 3 results in spare
+- Empty description cells with a breaker value &gt; 3 results in spare.
+
+Half Pole Breakers
+- A semi colon in the description, phase, and breaker creates a half breaker.
+- Description example: "Lighting;Existing Load".
+- Phase example: "600;450".
+- Breaker example: "15;15".
 
 Single Pole Breakers
 - Description name, phase wattage, and a breaker value.

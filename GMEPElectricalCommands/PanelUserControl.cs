@@ -86,7 +86,6 @@ namespace ElectricalCommands
         PANEL_LOCATION_INPUT.SelectAll();
       };
       PANEL_GRID.CellPainting += new DataGridViewCellPaintingEventHandler(PANEL_GRID_CellPainting);
-      PANEL_GRID.CellEndEdit += new DataGridViewCellEventHandler(this.PANEL_GRID_CellEndEdit);
       MAIN_INPUT.Click += (sender, e) =>
       {
         MAIN_INPUT.SelectAll();
@@ -495,6 +494,7 @@ namespace ElectricalCommands
         string phaseBLeftTag = PANEL_GRID.Rows[i].Cells["phase_b_left"].Tag?.ToString() ?? "";
         string phaseARightTag = PANEL_GRID.Rows[i].Cells["phase_a_right"].Tag?.ToString() ?? "";
         string phaseBRightTag = PANEL_GRID.Rows[i].Cells["phase_b_right"].Tag?.ToString() ?? "";
+
         string phaseALeftValue = (
           PANEL_GRID
             .Rows[i]
@@ -504,7 +504,7 @@ namespace ElectricalCommands
             .Replace(" ", "") ?? "0"
         );
         phaseALeftValue =
-          phaseALeftValue.Contains(",") || !Regex.IsMatch(phaseALeftValue, @"^\d+$")
+          phaseALeftValue.Contains(";") || !Regex.IsMatch(phaseALeftValue, @"^\d+$")
             ? phaseALeftValue
             : Math.Round(Convert.ToDouble(phaseALeftValue)).ToString();
 
@@ -517,7 +517,7 @@ namespace ElectricalCommands
             .Replace(" ", "") ?? "0"
         );
         phaseBLeftValue =
-          phaseBLeftValue.Contains(",") || !Regex.IsMatch(phaseBLeftValue, @"^\d+$")
+          phaseBLeftValue.Contains(";") || !Regex.IsMatch(phaseBLeftValue, @"^\d+$")
             ? phaseBLeftValue
             : Math.Round(Convert.ToDouble(phaseBLeftValue)).ToString();
 
@@ -530,7 +530,7 @@ namespace ElectricalCommands
             .Replace(" ", "") ?? "0"
         );
         phaseARightValue =
-          phaseARightValue.Contains(",") || !Regex.IsMatch(phaseARightValue, @"^\d+$")
+          phaseARightValue.Contains(";") || !Regex.IsMatch(phaseARightValue, @"^\d+$")
             ? phaseARightValue
             : Math.Round(Convert.ToDouble(phaseARightValue)).ToString();
 
@@ -543,7 +543,7 @@ namespace ElectricalCommands
             .Replace(" ", "") ?? "0"
         );
         phaseBRightValue =
-          phaseBRightValue.Contains(",") || !Regex.IsMatch(phaseBRightValue, @"^\d+$")
+          phaseBRightValue.Contains(";") || !Regex.IsMatch(phaseBRightValue, @"^\d+$")
             ? phaseBRightValue
             : Math.Round(Convert.ToDouble(phaseBRightValue)).ToString();
 
@@ -570,7 +570,7 @@ namespace ElectricalCommands
               .Replace(" ", "") ?? "0"
           );
           phaseCLeftValue =
-            phaseCLeftValue.Contains(",") || !Regex.IsMatch(phaseCLeftValue, @"^\d+$")
+            phaseCLeftValue.Contains(";") || !Regex.IsMatch(phaseCLeftValue, @"^\d+$")
               ? phaseCLeftValue
               : Math.Round(Convert.ToDouble(phaseCLeftValue)).ToString();
           phaseCRightValue = (
@@ -582,7 +582,7 @@ namespace ElectricalCommands
               .Replace(" ", "") ?? "0"
           );
           phaseCRightValue =
-            phaseCRightValue.Contains(",") || !Regex.IsMatch(phaseCRightValue, @"^\d+$")
+            phaseCRightValue.Contains(";") || !Regex.IsMatch(phaseCRightValue, @"^\d+$")
               ? phaseCRightValue
               : Math.Round(Convert.ToDouble(phaseCRightValue)).ToString();
         }
@@ -599,22 +599,22 @@ namespace ElectricalCommands
 
         // Checks for Left Side
         bool hasCommaInPhaseLeft =
-          phaseALeftValue.Contains(",")
-          || phaseBLeftValue.Contains(",")
-          || phaseCLeftValue.Contains(",");
+          phaseALeftValue.Contains(";")
+          || phaseBLeftValue.Contains(";")
+          || phaseCLeftValue.Contains(";");
         bool shouldDuplicateLeft = hasCommaInPhaseLeft;
 
         // Checks for Right Side
         bool hasCommaInPhaseRight =
-          phaseARightValue.Contains(",")
-          || phaseBRightValue.Contains(",")
-          || phaseCRightValue.Contains(",");
+          phaseARightValue.Contains(";")
+          || phaseBRightValue.Contains(";")
+          || phaseCRightValue.Contains(";");
         bool shouldDuplicateRight = hasCommaInPhaseRight;
 
         // Handling Phase A Left
-        if (phaseALeftValue.Contains(","))
+        if (phaseALeftValue.Contains(";"))
         {
-          var splitValues = phaseALeftValue.Split(',').Select(str => str.Trim()).ToArray();
+          var splitValues = phaseALeftValue.Split(';').Select(str => str.Trim()).ToArray();
           phase_a_left.AddRange(splitValues);
         }
         else
@@ -624,9 +624,9 @@ namespace ElectricalCommands
         }
 
         // Handling Phase B Left
-        if (phaseBLeftValue.Contains(","))
+        if (phaseBLeftValue.Contains(";"))
         {
-          var splitValues = phaseBLeftValue.Split(',').Select(str => str.Trim()).ToArray();
+          var splitValues = phaseBLeftValue.Split(';').Select(str => str.Trim()).ToArray();
           phase_b_left.AddRange(splitValues);
         }
         else
@@ -636,9 +636,9 @@ namespace ElectricalCommands
         }
 
         // Handling Phase A Right
-        if (phaseARightValue.Contains(","))
+        if (phaseARightValue.Contains(";"))
         {
-          var splitValues = phaseARightValue.Split(',').Select(str => str.Trim()).ToArray();
+          var splitValues = phaseARightValue.Split(';').Select(str => str.Trim()).ToArray();
           phase_a_right.AddRange(splitValues);
         }
         else
@@ -648,9 +648,9 @@ namespace ElectricalCommands
         }
 
         // Handling Phase B Right
-        if (phaseBRightValue.Contains(","))
+        if (phaseBRightValue.Contains(";"))
         {
-          var splitValues = phaseBRightValue.Split(',').Select(str => str.Trim()).ToArray();
+          var splitValues = phaseBRightValue.Split(';').Select(str => str.Trim()).ToArray();
           phase_b_right.AddRange(splitValues);
         }
         else
@@ -662,9 +662,9 @@ namespace ElectricalCommands
         if (PHASE_SUM_GRID.Columns.Count > 2)
         {
           // Handling Phase C Left
-          if (phaseCLeftValue.Contains(","))
+          if (phaseCLeftValue.Contains(";"))
           {
-            var splitValues = phaseCLeftValue.Split(',').Select(str => str.Trim()).ToArray();
+            var splitValues = phaseCLeftValue.Split(';').Select(str => str.Trim()).ToArray();
             phase_c_left.AddRange(splitValues);
           }
           else
@@ -674,9 +674,9 @@ namespace ElectricalCommands
           }
 
           // Handling Phase C Right
-          if (phaseCRightValue.Contains(","))
+          if (phaseCRightValue.Contains(";"))
           {
-            var splitValues = phaseCRightValue.Split(',').Select(str => str.Trim()).ToArray();
+            var splitValues = phaseCRightValue.Split(';').Select(str => str.Trim()).ToArray();
             phase_c_right.AddRange(splitValues);
           }
           else
@@ -686,10 +686,10 @@ namespace ElectricalCommands
           }
         }
 
-        if (descriptionLeftValue.Contains(","))
+        if (descriptionLeftValue.Contains(";"))
         {
           // If it contains a comma, split and add both values
-          var splitValues = descriptionLeftValue.Split(',').Select(str => str.Trim()).ToArray();
+          var splitValues = descriptionLeftValue.Split(';').Select(str => str.Trim()).ToArray();
           description_left.AddRange(splitValues);
           circuit_left.Add(circuitLeftValue + "A");
           circuit_left.Add(circuitLeftValue + "B");
@@ -711,10 +711,10 @@ namespace ElectricalCommands
           }
         }
 
-        if (breakerLeftValue.Contains(","))
+        if (breakerLeftValue.Contains(";"))
         {
           // If it contains a comma, split and add both values
-          var splitValues = breakerLeftValue.Split(',').Select(str => str.Trim()).ToArray();
+          var splitValues = breakerLeftValue.Split(';').Select(str => str.Trim()).ToArray();
           breaker_left.AddRange(splitValues);
         }
         else
@@ -723,10 +723,10 @@ namespace ElectricalCommands
           breaker_left.Add(shouldDuplicateLeft ? breakerLeftValue : "");
         }
 
-        if (descriptionRightValue.Contains(","))
+        if (descriptionRightValue.Contains(";"))
         {
           // If it contains a comma, split and add both values
-          var splitValues = descriptionRightValue.Split(',').Select(str => str.Trim()).ToArray();
+          var splitValues = descriptionRightValue.Split(';').Select(str => str.Trim()).ToArray();
           description_right.AddRange(splitValues);
           circuit_right.Add(circuitRightValue + "A");
           circuit_right.Add(circuitRightValue + "B");
@@ -748,10 +748,10 @@ namespace ElectricalCommands
           }
         }
 
-        if (breakerRightValue.Contains(","))
+        if (breakerRightValue.Contains(";"))
         {
           // If it contains a comma, split and add both values
-          var splitValues = breakerRightValue.Split(',').Select(str => str.Trim()).ToArray();
+          var splitValues = breakerRightValue.Split(';').Select(str => str.Trim()).ToArray();
           breaker_right.AddRange(splitValues);
         }
         else
@@ -1056,7 +1056,7 @@ namespace ElectricalCommands
       double sum = 0;
       if (!string.IsNullOrEmpty(cellValue))
       {
-        var parts = cellValue.Split(',');
+        var parts = cellValue.Split(';');
         foreach (var part in parts)
         {
           if (double.TryParse(part, out double value))
@@ -2253,22 +2253,6 @@ namespace ElectricalCommands
     private void PANEL_NAME_INPUT_TextChanged(object sender, EventArgs e)
     {
       this.mainForm.PANEL_NAME_INPUT_TextChanged(sender, e, PANEL_NAME_INPUT.Text.ToUpper());
-    }
-
-    private void PANEL_GRID_CellEndEdit(object sender, DataGridViewCellEventArgs e)
-    {
-      // Get the new value of the cell that was just edited
-      var newValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
-
-      // Iterate over the stored selected cells
-      foreach (DataGridViewCell cell in selectedCells)
-      {
-        // Set the new value to the selected cell
-        cell.Value = newValue;
-      }
-
-      // Clear the list of selected cells
-      selectedCells.Clear();
     }
 
     private void PANEL_GRID_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
