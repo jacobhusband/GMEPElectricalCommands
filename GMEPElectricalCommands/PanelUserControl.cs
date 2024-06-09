@@ -47,8 +47,6 @@ namespace ElectricalCommands
       this.notesStorage = new List<string>();
       this.defaultNotes =
       [
-        "ADD SUFFIX (E). *NOT ADDED AS NOTE*",
-        "ADD SUFFIX (R). *NOT ADDED AS NOTE*",
         "APPLY LCL LOAD REDUCTION (USE 80% OF THE LOAD). *NOT ADDED AS NOTE*",
         "APPLY LCL LOAD ADDITION (USE 125% OF THE LOAD). *NOT ADDED AS NOTE*",
       ];
@@ -2767,6 +2765,20 @@ namespace ElectricalCommands
     public bool Is3PH()
     {
       return PHASE_COMBOBOX.SelectedItem.ToString().ToUpper() == "3";
+    }
+
+    private void COMMA_TO_SEMI_CLICK(object sender, EventArgs e)
+    {
+      foreach (DataGridViewRow row in PANEL_GRID.Rows)
+      {
+        foreach (DataGridViewCell cell in row.Cells)
+        {
+          if (cell.Value != null)
+          {
+            cell.Value = cell.Value.ToString().Replace(',', ';');
+          }
+        }
+      }
     }
   }
 
