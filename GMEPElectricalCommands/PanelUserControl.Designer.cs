@@ -91,6 +91,8 @@
       this.RELOCATE_BUTTON = new System.Windows.Forms.Button();
       this.EXISTING_BUTTON = new System.Windows.Forms.Button();
       this.COMMA_TO_SEMI = new System.Windows.Forms.Button();
+      this.LCL80 = new System.Windows.Forms.Button();
+      this.LCL125 = new System.Windows.Forms.Button();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -689,11 +691,33 @@
       this.COMMA_TO_SEMI.UseVisualStyleBackColor = true;
       this.COMMA_TO_SEMI.Click += new System.EventHandler(this.COMMA_TO_SEMI_CLICK);
       // 
+      // LCL80
+      // 
+      this.LCL80.BackColor = System.Drawing.Color.Orange;
+      this.LCL80.Location = new System.Drawing.Point(768, 538);
+      this.LCL80.Name = "LCL80";
+      this.LCL80.Size = new System.Drawing.Size(89, 23);
+      this.LCL80.TabIndex = 196;
+      this.LCL80.Text = "LCL @ 80%";
+      this.LCL80.UseVisualStyleBackColor = false;
+      // 
+      // LCL125
+      // 
+      this.LCL125.BackColor = System.Drawing.Color.Red;
+      this.LCL125.Location = new System.Drawing.Point(863, 538);
+      this.LCL125.Name = "LCL125";
+      this.LCL125.Size = new System.Drawing.Size(89, 23);
+      this.LCL125.TabIndex = 197;
+      this.LCL125.Text = "LCL @ 125%";
+      this.LCL125.UseVisualStyleBackColor = false;
+      // 
       // PanelUserControl
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
+      this.Controls.Add(this.LCL125);
+      this.Controls.Add(this.LCL80);
       this.Controls.Add(this.COMMA_TO_SEMI);
       this.Controls.Add(this.EXISTING_BUTTON);
       this.Controls.Add(this.RELOCATE_BUTTON);
@@ -818,5 +842,7 @@
     private System.Windows.Forms.Button RELOCATE_BUTTON;
     private System.Windows.Forms.Button EXISTING_BUTTON;
     private System.Windows.Forms.Button COMMA_TO_SEMI;
+    private System.Windows.Forms.Button LCL80;
+    private System.Windows.Forms.Button LCL125;
   }
 }
