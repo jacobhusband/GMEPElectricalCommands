@@ -1230,7 +1230,7 @@ namespace ElectricalCommands {
       }
 
       List<string> multi_row_datagrid_keys = new List<string>
-      {
+    {
         "description_left",
         "description_right",
         "phase_a_left",
@@ -1241,23 +1241,19 @@ namespace ElectricalCommands {
         "breaker_right",
         "circuit_left",
         "circuit_right"
-      };
+    };
 
-      // check if the panel is three phase and if so add the third phase to the list of keys
+      // Check if the panel is three phase and if so add the third phase to the list of keys
       if (selectedPanelData["phase"].ToString() == "3") {
         multi_row_datagrid_keys.AddRange(new List<string> { "phase_c_left", "phase_c_right" });
       }
 
-      int length = ((Newtonsoft.Json.Linq.JArray)selectedPanelData["description_left"])
-        .ToObject<List<string>>()
-        .Count;
+      int length = ((Newtonsoft.Json.Linq.JArray)selectedPanelData["description_left"]).ToObject<List<string>>().Count;
 
       for (int i = 0; i < length * 2; i += 2) {
         foreach (string key in multi_row_datagrid_keys) {
           if (selectedPanelData[key] is Newtonsoft.Json.Linq.JArray) {
-            List<string> values = ((Newtonsoft.Json.Linq.JArray)selectedPanelData[key]).ToObject<
-              List<string>
-            >();
+            List<string> values = ((Newtonsoft.Json.Linq.JArray)selectedPanelData[key]).ToObject<List<string>>();
 
             if (i < values.Count) {
               string currentValue = values[i];
@@ -1268,7 +1264,7 @@ namespace ElectricalCommands {
               }
 
               if (key.Contains("phase") && currentValue == "0") {
-                continue; // skip this iteration if the value is "0" for phases
+                continue; // Skip this iteration if the value is "0" for phases
               }
 
               if (nextValue != null) {
@@ -1286,7 +1282,33 @@ namespace ElectricalCommands {
                 }
               }
 
-              PANEL_GRID.Rows[i / 2].Cells[key].Value = currentValue;
+              // Check if PANEL_GRID has enough rows
+              if (PANEL_GRID.Rows.Count <= i / 2) {
+                Console.WriteLine($"Warning: PANEL_GRID does not have enough rows. Expected row: {i / 2}");
+                continue;
+              }
+
+              // Check if PANEL_GRID has the specified column
+              if (!PANEL_GRID.Columns.Contains(key)) {
+                Console.WriteLine($"Warning: PANEL_GRID does not contain column: {key}");
+                continue;
+              }
+
+              // Log values before assignment
+              Console.WriteLine($"Setting PANEL_GRID.Rows[{i / 2}].Cells[{key}].Value = {currentValue}");
+
+              // Check if the column index for the key is valid
+              int columnIndex = PANEL_GRID.Columns[key].Index;
+              if (columnIndex < 0 || columnIndex >= PANEL_GRID.ColumnCount) {
+                Console.WriteLine($"Warning: Column index for {key} is out of range.");
+                continue;
+              }
+
+              // Set the cell value
+              PANEL_GRID.Rows[i / 2].Cells[columnIndex].Value = currentValue;
+            }
+            else {
+              Console.WriteLine($"Warning: Index {i} is out of range for values in key {key}");
             }
           }
           else {

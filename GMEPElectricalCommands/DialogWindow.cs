@@ -260,13 +260,16 @@ namespace ElectricalCommands {
     private void set_cell_value(Dictionary<string, object> panel, string key, int rowIndex, int cellIndex, DataGridViewRow row) {
       string tag = panel[key].ToString();
       List<string> tagList = JsonConvert.DeserializeObject<List<string>>(tag);
-      string tagValue = tagList[rowIndex];
-      if (tagValue != "") {
-        if (key.Contains("phase")) {
-          row.Cells[cellIndex].Value = tagValue;
-        }
-        else if (key.Contains("description")) {
-          row.Cells[cellIndex].Tag = tagValue;
+
+      if (rowIndex < tagList.Count) {
+        string tagValue = tagList[rowIndex];
+        if (!string.IsNullOrEmpty(tagValue)) {
+          if (key.Contains("phase")) {
+            row.Cells[cellIndex].Value = tagValue;
+          }
+          else if (key.Contains("description")) {
+            row.Cells[cellIndex].Tag = tagValue;
+          }
         }
       }
     }
