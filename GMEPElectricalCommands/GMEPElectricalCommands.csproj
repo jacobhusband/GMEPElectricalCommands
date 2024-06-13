@@ -169,6 +169,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"C:\Users\Public\Desktop\AutoCAD 2023 - English.lnk"</PostBuildEvent>
+    <PostBuildEvent>"C:\Users\JacobH\OneDrive - GMEPE\Documents\Template Files - Electrical\Template_Electrical_CA_Lite.dwg"</PostBuildEvent>
   </PropertyGroup>
 </Project>
