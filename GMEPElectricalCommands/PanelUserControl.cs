@@ -2461,6 +2461,22 @@ namespace ElectricalCommands {
         }
       }
     }
+
+    private void REPLACE_BUTTON_Click(object sender, EventArgs e) {
+      string findText = FIND_BOX.Text;
+      string replaceText = REPLACE_BOX.Text;
+
+      if (string.IsNullOrEmpty(findText)) {
+        MessageBox.Show("Please enter a text to find.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        return;
+      }
+
+      foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells) {
+        if (cell.Value != null && cell.Value.ToString().Contains(findText)) {
+          cell.Value = cell.Value.ToString().Replace(findText, replaceText);
+        }
+      }
+    }
   }
 
   public interface ICommand {

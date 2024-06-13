@@ -93,6 +93,11 @@
       this.COMMA_TO_SEMI = new System.Windows.Forms.Button();
       this.LCL80 = new System.Windows.Forms.Button();
       this.LCL125 = new System.Windows.Forms.Button();
+      this.REPLACE_BUTTON = new System.Windows.Forms.Button();
+      this.FIND_BOX = new System.Windows.Forms.TextBox();
+      this.FIND_LABEL = new System.Windows.Forms.Label();
+      this.REPLACE_LABEL = new System.Windows.Forms.Label();
+      this.REPLACE_BOX = new System.Windows.Forms.TextBox();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -711,11 +716,60 @@
       this.LCL125.Text = "LCL @ 125%";
       this.LCL125.UseVisualStyleBackColor = false;
       // 
+      // REPLACE_BUTTON
+      // 
+      this.REPLACE_BUTTON.Location = new System.Drawing.Point(534, 588);
+      this.REPLACE_BUTTON.Name = "REPLACE_BUTTON";
+      this.REPLACE_BUTTON.Size = new System.Drawing.Size(75, 20);
+      this.REPLACE_BUTTON.TabIndex = 198;
+      this.REPLACE_BUTTON.Text = "REPLACE";
+      this.REPLACE_BUTTON.UseVisualStyleBackColor = true;
+      this.REPLACE_BUTTON.Click += new System.EventHandler(this.REPLACE_BUTTON_Click);
+      // 
+      // FIND_BOX
+      // 
+      this.FIND_BOX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+      this.FIND_BOX.Location = new System.Drawing.Point(316, 588);
+      this.FIND_BOX.Name = "FIND_BOX";
+      this.FIND_BOX.Size = new System.Drawing.Size(103, 20);
+      this.FIND_BOX.TabIndex = 199;
+      // 
+      // FIND_LABEL
+      // 
+      this.FIND_LABEL.AutoSize = true;
+      this.FIND_LABEL.Location = new System.Drawing.Point(313, 572);
+      this.FIND_LABEL.Name = "FIND_LABEL";
+      this.FIND_LABEL.Size = new System.Drawing.Size(32, 13);
+      this.FIND_LABEL.TabIndex = 200;
+      this.FIND_LABEL.Text = "FIND";
+      // 
+      // REPLACE_LABEL
+      // 
+      this.REPLACE_LABEL.AutoSize = true;
+      this.REPLACE_LABEL.Location = new System.Drawing.Point(422, 572);
+      this.REPLACE_LABEL.Name = "REPLACE_LABEL";
+      this.REPLACE_LABEL.Size = new System.Drawing.Size(56, 13);
+      this.REPLACE_LABEL.TabIndex = 202;
+      this.REPLACE_LABEL.Text = "REPLACE";
+      // 
+      // REPLACE_BOX
+      // 
+      this.REPLACE_BOX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+      this.REPLACE_BOX.Location = new System.Drawing.Point(425, 588);
+      this.REPLACE_BOX.Name = "REPLACE_BOX";
+      this.REPLACE_BOX.Size = new System.Drawing.Size(103, 20);
+      this.REPLACE_BOX.TabIndex = 201;
+      // 
       // PanelUserControl
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
+      this.Controls.Add(this.REPLACE_LABEL);
+      this.Controls.Add(this.REPLACE_BOX);
+      this.Controls.Add(this.FIND_LABEL);
+      this.Controls.Add(this.FIND_BOX);
+      this.Controls.Add(this.REPLACE_BUTTON);
       this.Controls.Add(this.LCL125);
       this.Controls.Add(this.LCL80);
       this.Controls.Add(this.COMMA_TO_SEMI);
@@ -844,5 +898,10 @@
     private System.Windows.Forms.Button COMMA_TO_SEMI;
     private System.Windows.Forms.Button LCL80;
     private System.Windows.Forms.Button LCL125;
+    private System.Windows.Forms.Button REPLACE_BUTTON;
+    private System.Windows.Forms.TextBox FIND_BOX;
+    private System.Windows.Forms.Label FIND_LABEL;
+    private System.Windows.Forms.Label REPLACE_LABEL;
+    private System.Windows.Forms.TextBox REPLACE_BOX;
   }
 }
