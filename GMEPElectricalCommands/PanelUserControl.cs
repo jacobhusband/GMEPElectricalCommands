@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ElectricalCommands {
+
   public partial class PanelUserControl : UserControl {
     private PanelCommands myCommandsInstance;
     private MainForm mainForm;
@@ -116,11 +117,11 @@ namespace ElectricalCommands {
 
       // First pass: Check if all selected cells have the prefix
       foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells) {
-        if (
-          cell.Value != null
-          && PANEL_GRID.Columns[cell.ColumnIndex].Name.ToLower().Contains("description")
-        ) {
-          if (!cell.Value.ToString().StartsWith(prefix)) {
+        if (cell.Value != null && PANEL_GRID.Columns[cell.ColumnIndex].Name.ToLower().Contains("description")) {
+          string cellValue = cell.Value.ToString();
+          bool hasPrefixAtStart = cellValue.StartsWith(prefix);
+          bool hasPrefixAfterSemicolon = cellValue.Contains(";" + prefix);
+          if (!hasPrefixAtStart || (cellValue.Contains(";") && !hasPrefixAfterSemicolon)) {
             allCellsHavePrefix = false;
           }
           cellsToUpdate.Add(cell);
@@ -129,17 +130,29 @@ namespace ElectricalCommands {
 
       // Second pass: Update cell values based on the check
       foreach (DataGridViewCell cell in cellsToUpdate) {
+        string cellValue = cell.Value.ToString();
         if (allCellsHavePrefix) {
-          // Remove the prefix
-          if (cell.Value.ToString().StartsWith(prefix)) {
-            cell.Value = cell.Value.ToString().Substring(prefix.Length);
+          // Remove the prefix at the beginning
+          if (cellValue.StartsWith(prefix)) {
+            cellValue = cellValue.Substring(prefix.Length);
           }
+          // Remove the prefix after the semicolon if it exists
+          if (cellValue.Contains(";" + prefix)) {
+            cellValue = cellValue.Replace(";" + prefix, ";");
+          }
+          cell.Value = cellValue;
         }
         else {
-          // Add the prefix
-          if (!cell.Value.ToString().StartsWith(prefix)) {
-            cell.Value = prefix + cell.Value.ToString();
+          // Add the prefix at the beginning if not present
+          if (!cellValue.StartsWith(prefix)) {
+            cellValue = prefix + cellValue;
           }
+          // Add the prefix after the semicolon if it exists and not already present
+          if (cellValue.Contains(";") && !cellValue.Contains(";" + prefix)) {
+            int semicolonIndex = cellValue.IndexOf(";");
+            cellValue = cellValue.Insert(semicolonIndex + 1, prefix);
+          }
+          cell.Value = cellValue;
         }
       }
     }
@@ -2288,7 +2301,8 @@ namespace ElectricalCommands {
       this.mainForm.delete_panel(this);
     }
 
-    private void INFO_LABEL_CLICK(object sender, EventArgs e) { }
+    private void INFO_LABEL_CLICK(object sender, EventArgs e) {
+    }
 
     private void NOTES_BUTTON_Click(object sender, EventArgs e) {
       if (this.notesForm == null || this.notesForm.IsDisposed) {
@@ -2422,6 +2436,7 @@ namespace ElectricalCommands {
   }
 
   public interface ICommand {
+
     void Execute();
 
     void Undo();
