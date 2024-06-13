@@ -112,17 +112,21 @@ namespace ElectricalCommands {
 
     // Shared method to handle prefix addition/removal
     private void TogglePrefixInSelectedCells(string prefix) {
-      bool allCellsHavePrefix = true;
+      bool allCellsEmptyOrWithPrefix = true;
       List<DataGridViewCell> cellsToUpdate = new List<DataGridViewCell>();
 
-      // First pass: Check if all selected cells have the prefix
+      // First pass: Check if all selected cells are empty or have the prefix
       foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells) {
         if (cell.Value != null && PANEL_GRID.Columns[cell.ColumnIndex].Name.ToLower().Contains("description")) {
           string cellValue = cell.Value.ToString();
           bool hasPrefixAtStart = cellValue.StartsWith(prefix);
           bool hasPrefixAfterSemicolon = cellValue.Contains(";" + prefix);
-          if (!hasPrefixAtStart || (cellValue.Contains(";") && !hasPrefixAfterSemicolon)) {
-            allCellsHavePrefix = false;
+
+          if (string.IsNullOrEmpty(cellValue) || hasPrefixAtStart || (cellValue.Contains(";") && hasPrefixAfterSemicolon)) {
+            // Cell is empty or has the prefix, do nothing
+          }
+          else {
+            allCellsEmptyOrWithPrefix = false;
           }
           cellsToUpdate.Add(cell);
         }
@@ -130,29 +134,31 @@ namespace ElectricalCommands {
 
       // Second pass: Update cell values based on the check
       foreach (DataGridViewCell cell in cellsToUpdate) {
-        string cellValue = cell.Value.ToString();
-        if (allCellsHavePrefix) {
-          // Remove the prefix at the beginning
-          if (cellValue.StartsWith(prefix)) {
-            cellValue = cellValue.Substring(prefix.Length);
+        if (cell.Value != null) {
+          string cellValue = cell.Value.ToString();
+          if (allCellsEmptyOrWithPrefix) {
+            // Remove the prefix at the beginning
+            if (cellValue.StartsWith(prefix)) {
+              cellValue = cellValue.Substring(prefix.Length);
+            }
+            // Remove the prefix after the semicolon if it exists
+            if (cellValue.Contains(";" + prefix)) {
+              cellValue = cellValue.Replace(";" + prefix, ";");
+            }
+            cell.Value = cellValue;
           }
-          // Remove the prefix after the semicolon if it exists
-          if (cellValue.Contains(";" + prefix)) {
-            cellValue = cellValue.Replace(";" + prefix, ";");
+          else {
+            // Add the prefix at the beginning if not present and cell is not empty
+            if (!cellValue.StartsWith(prefix) && !string.IsNullOrEmpty(cellValue)) {
+              cellValue = prefix + cellValue;
+            }
+            // Add the prefix after the semicolon if it exists and not already present
+            if (cellValue.Contains(";") && !cellValue.Contains(";" + prefix) && !string.IsNullOrEmpty(cellValue)) {
+              int semicolonIndex = cellValue.IndexOf(";");
+              cellValue = cellValue.Insert(semicolonIndex + 1, prefix);
+            }
+            cell.Value = cellValue;
           }
-          cell.Value = cellValue;
-        }
-        else {
-          // Add the prefix at the beginning if not present
-          if (!cellValue.StartsWith(prefix)) {
-            cellValue = prefix + cellValue;
-          }
-          // Add the prefix after the semicolon if it exists and not already present
-          if (cellValue.Contains(";") && !cellValue.Contains(";" + prefix)) {
-            int semicolonIndex = cellValue.IndexOf(";");
-            cellValue = cellValue.Insert(semicolonIndex + 1, prefix);
-          }
-          cell.Value = cellValue;
         }
       }
     }
