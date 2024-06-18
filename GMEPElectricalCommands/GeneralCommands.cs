@@ -10,13 +10,12 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace ElectricalCommands
-{
-  public class GeneralCommands
-  {
+namespace ElectricalCommands {
+
+  public class GeneralCommands {
+
     [CommandMethod("KEYEDPLAN")]
-    public static void KEYEDPLAN()
-    {
+    public static void KEYEDPLAN() {
       Document doc = Autodesk
           .AutoCAD
           .ApplicationServices
@@ -29,52 +28,43 @@ namespace ElectricalCommands
       Entity imageEntity = null; // This will store RasterImage, Image, or OLE2Frame
 
       PromptSelectionResult selectionResult = ed.GetSelection();
-      if (selectionResult.Status == PromptStatus.OK)
-      {
+      if (selectionResult.Status == PromptStatus.OK) {
         SelectionSet selectionSet = selectionResult.Value;
-        using (Transaction trans = db.TransactionManager.StartTransaction())
-        {
+        using (Transaction trans = db.TransactionManager.StartTransaction()) {
           // First, let's find the RasterImage, Image, or OLE object and get its extents
-          foreach (SelectedObject selObj in selectionSet)
-          {
+          foreach (SelectedObject selObj in selectionSet) {
             Entity ent = trans.GetObject(selObj.ObjectId, OpenMode.ForRead) as Entity;
-            if (ent is RasterImage || ent is Image || ent is Ole2Frame)
-            {
+            if (ent is RasterImage || ent is Image || ent is Ole2Frame) {
               imageEntity = ent;
               break; // Once found, break out of the loop
             }
           }
 
           // If imageEntity is null, it means no appropriate image entity was found in the selection
-          if (imageEntity == null)
-          {
+          if (imageEntity == null) {
             ed.WriteMessage(
                 "\nNote: No appropriate image entity was found in the selection. Leaders for 'AREA OF WORK' will not be created."
             );
           }
 
           // Now, let's handle the other entities
-          foreach (SelectedObject selObj in selectionSet)
-          {
+          foreach (SelectedObject selObj in selectionSet) {
             Entity ent = trans.GetObject(selObj.ObjectId, OpenMode.ForRead) as Entity;
-            if (ent != null)
-            {
+            if (ent != null) {
               string objectType = ent.GetType().Name;
               string handle = ent.Handle.ToString();
               ed.WriteMessage(
                   $"\nSelected Object: Handle = {handle}, Type = {objectType}"
               );
 
-              if (ent is DBText || ent is MText)
-              {
+              if (ent is DBText || ent is MText) {
                 WipeoutAroundText(selObj.ObjectId);
                 if (imageEntity != null) // Only proceed if imageEntity is not null
                 {
                   if (
                       ent is DBText dbTextEnt
                       && dbTextEnt.TextString == "AREA OF WORK"
-                  )
-                  {
+                  ) {
                     CreateLeaderFromTextToPoint(
                         dbTextEnt,
                         trans,
@@ -84,8 +74,7 @@ namespace ElectricalCommands
                   else if (
                       ent is MText mTextEnt
                       && mTextEnt.Contents == "AREA OF WORK"
-                  )
-                  {
+                  ) {
                     CreateLeaderFromTextToPoint(
                         mTextEnt,
                         trans,
@@ -94,8 +83,7 @@ namespace ElectricalCommands
                   }
                 }
               }
-              else if (ent is Autodesk.AutoCAD.DatabaseServices.Polyline)
-              {
+              else if (ent is Autodesk.AutoCAD.DatabaseServices.Polyline) {
                 // Your existing code to handle polylines...
                 HatchSelectedPolyline(selObj.ObjectId);
               }
@@ -104,20 +92,16 @@ namespace ElectricalCommands
                 Extents3d extents;
                 Point3d endPoint;
 
-                if (ent is RasterImage rasterImg)
-                {
+                if (ent is RasterImage rasterImg) {
                   extents = rasterImg.GeometricExtents;
                 }
-                else if (ent is Image image)
-                {
+                else if (ent is Image image) {
                   extents = image.GeometricExtents;
                 }
-                else if (ent is Ole2Frame oleFrame)
-                {
+                else if (ent is Ole2Frame oleFrame) {
                   extents = oleFrame.GeometricExtents;
                 }
-                else
-                {
+                else {
                   // If none match, continue to the next iteration
                   continue;
                 }
@@ -137,21 +121,18 @@ namespace ElectricalCommands
           trans.Commit();
         }
       }
-      else
-      {
+      else {
         ed.WriteMessage("\nNo objects were selected.");
       }
     }
 
     [CommandMethod("T24")]
-    public void T24()
-    {
+    public void T24() {
       Database acCurDb;
       acCurDb = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Database;
       Editor ed = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor;
 
-      using (Transaction acTrans = acCurDb.TransactionManager.StartTransaction())
-      {
+      using (Transaction acTrans = acCurDb.TransactionManager.StartTransaction()) {
         // Get the user to select a PNG file
         OpenFileDialog ofd = new OpenFileDialog();
         ofd.Filter = "PNG Files (*.png)|*.png";
@@ -166,17 +147,14 @@ namespace ElectricalCommands
         // Fetch all relevant files in the folder
         string[] allFiles = Directory
             .GetFiles(parentFolder, "*.png")
-            .OrderBy(f =>
-            {
+            .OrderBy(f => {
               var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(f);
-              if (fileNameWithoutExtension.Contains("Page"))
-              {
+              if (fileNameWithoutExtension.Contains("Page")) {
                 // If the filename contains "Page", we extract the number after it.
                 var lastPart = fileNameWithoutExtension.Split(' ').Last();
                 return int.Parse(lastPart);
               }
-              else
-              {
+              else {
                 // If the filename does not contain "Page", we extract the last number after the hyphen.
                 var lastPart = fileNameWithoutExtension.Split('-').Last();
                 return int.Parse(lastPart);
@@ -191,8 +169,7 @@ namespace ElectricalCommands
         Vector3d width = new Vector3d(0, 0, 0);
         Vector3d height = new Vector3d(0, 0, 0);
 
-        foreach (string file in allFiles)
-        {
+        foreach (string file in allFiles) {
           string imageName = Path.GetFileNameWithoutExtension(file);
 
           RasterImageDef acRasterDef;
@@ -203,8 +180,7 @@ namespace ElectricalCommands
           ObjectId acImgDctID = RasterImageDef.GetImageDictionary(acCurDb);
 
           // Check to see if the dictionary does not exist, it not then create it
-          if (acImgDctID.IsNull)
-          {
+          if (acImgDctID.IsNull) {
             acImgDctID = RasterImageDef.CreateImageDictionary(acCurDb);
           }
 
@@ -213,15 +189,13 @@ namespace ElectricalCommands
               acTrans.GetObject(acImgDctID, OpenMode.ForRead) as DBDictionary;
 
           // Check to see if the image definition already exists
-          if (acImgDict.Contains(imageName))
-          {
+          if (acImgDict.Contains(imageName)) {
             acImgDefId = acImgDict.GetAt(imageName);
 
             acRasterDef =
                 acTrans.GetObject(acImgDefId, OpenMode.ForWrite) as RasterImageDef;
           }
-          else
-          {
+          else {
             // Create a raster image definition
             RasterImageDef acRasterDefNew = new RasterImageDef();
 
@@ -254,16 +228,13 @@ namespace ElectricalCommands
               as BlockTableRecord;
 
           // Create the new image and assign it the image definition
-          using (RasterImage acRaster = new RasterImage())
-          {
+          using (RasterImage acRaster = new RasterImage()) {
             acRaster.ImageDefId = acImgDefId;
 
             // Define the width and height of the image
-            if (selectedPoint == Point3d.Origin)
-            {
+            if (selectedPoint == Point3d.Origin) {
               // Check to see if the measurement is set to English (Imperial) or Metric units
-              if (acCurDb.Measurement == MeasurementValue.English)
-              {
+              if (acCurDb.Measurement == MeasurementValue.English) {
                 width = new Vector3d(
                     (acRasterDef.ResolutionMMPerPixel.X * acRaster.ImageWidth * 0.8)
                         / 25.4,
@@ -280,8 +251,7 @@ namespace ElectricalCommands
                     0
                 );
               }
-              else
-              {
+              else {
                 width = new Vector3d(
                     acRasterDef.ResolutionMMPerPixel.X * acRaster.ImageWidth * 0.8,
                     0,
@@ -297,8 +267,7 @@ namespace ElectricalCommands
 
             // Prompt the user to select a point
             // Only for the first image
-            if (selectedPoint == Point3d.Origin)
-            {
+            if (selectedPoint == Point3d.Origin) {
               PromptPointResult ppr = ed.GetPoint(
                   "\nSelect a point to insert images:"
               );
@@ -334,8 +303,7 @@ namespace ElectricalCommands
             RasterImage.EnableReactors(true);
             acRaster.AssociateRasterDef(acRasterDef);
 
-            if (bRasterDefCreated)
-            {
+            if (bRasterDefCreated) {
               acRasterDef.Dispose();
             }
           }
@@ -344,8 +312,7 @@ namespace ElectricalCommands
           currentColumn++;
 
           // Start a new row every 3 images
-          if (currentColumn % 3 == 0)
-          {
+          if (currentColumn % 3 == 0) {
             currentRow++;
             currentColumn = 0;
           }
@@ -357,14 +324,12 @@ namespace ElectricalCommands
     }
 
     [CommandMethod("SUMTEXT")]
-    public void SUMTEXT()
-    {
+    public void SUMTEXT() {
       var (doc, db, ed) = GeneralCommands.GetGlobals();
 
       PromptSelectionResult selection = ed.SelectImplied();
 
-      if (selection.Status != PromptStatus.OK)
-      {
+      if (selection.Status != PromptStatus.OK) {
         PromptSelectionOptions opts = new PromptSelectionOptions();
         opts.MessageForAdding = "Select text objects to sum: ";
         opts.AllowDuplicates = false;
@@ -376,22 +341,18 @@ namespace ElectricalCommands
       }
 
       double sum = 0.0;
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
-        foreach (SelectedObject so in selection.Value)
-        {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
+        foreach (SelectedObject so in selection.Value) {
           DBText text = tr.GetObject(so.ObjectId, OpenMode.ForRead) as DBText;
           MText mtext = tr.GetObject(so.ObjectId, OpenMode.ForRead) as MText;
 
-          if (text != null)
-          {
+          if (text != null) {
             double value;
             string textString = text.TextString.Replace("sq ft", "").Trim();
             if (Double.TryParse(textString, out value))
               sum += value;
           }
-          else if (mtext != null)
-          {
+          else if (mtext != null) {
             double value;
             string mTextContents = mtext.Contents.Replace("sq ft", "").Trim();
             if (Double.TryParse(mTextContents, out value))
@@ -404,14 +365,12 @@ namespace ElectricalCommands
     }
 
     [CommandMethod("SUMRESTEXT")]
-    public void SUMRESTEXT()
-    {
+    public void SUMRESTEXT() {
       var (doc, db, ed) = GeneralCommands.GetGlobals();
 
       PromptSelectionResult selection = ed.SelectImplied();
 
-      if (selection.Status != PromptStatus.OK)
-      {
+      if (selection.Status != PromptStatus.OK) {
         PromptSelectionOptions opts = new PromptSelectionOptions();
         opts.MessageForAdding = "Select text objects to sum: ";
         opts.AllowDuplicates = false;
@@ -424,15 +383,12 @@ namespace ElectricalCommands
 
       double sum = 0.0;
 
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
-        foreach (SelectedObject so in selection.Value)
-        {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
+        foreach (SelectedObject so in selection.Value) {
           DBText text = tr.GetObject(so.ObjectId, OpenMode.ForRead) as DBText;
           MText mtext = tr.GetObject(so.ObjectId, OpenMode.ForRead) as MText;
 
-          if (text != null)
-          {
+          if (text != null) {
             double value;
             string textString = text
                 .TextString.Replace("\\FArial;", "")
@@ -447,17 +403,14 @@ namespace ElectricalCommands
                 textString.Where(c => char.IsDigit(c) || c == '.').ToArray()
             );
 
-            if (textString.Contains("VA"))
-            {
+            if (textString.Contains("VA")) {
               string[] sections = textString.Split(
                   new string[] { "VA" },
                   StringSplitOptions.None
               );
-              foreach (string section in sections)
-              {
+              foreach (string section in sections) {
                 double num = 0;
-                if (double.TryParse(section, out num))
-                {
+                if (double.TryParse(section, out num)) {
                   sum += num;
                 }
               }
@@ -465,8 +418,7 @@ namespace ElectricalCommands
             if (Double.TryParse(textString, out value))
               sum += value;
           }
-          else if (mtext != null)
-          {
+          else if (mtext != null) {
             double value;
             string mTextContents = mtext
                 .Contents.Replace("\\FArial;", "")
@@ -477,30 +429,25 @@ namespace ElectricalCommands
                 .Replace("\\I", "")
                 .Trim();
 
-            if (mTextContents.Contains("VA"))
-            {
+            if (mTextContents.Contains("VA")) {
               string[] sections = mTextContents.Split(
                   new string[] { "VA" },
                   StringSplitOptions.None
               );
-              foreach (string section in sections)
-              {
+              foreach (string section in sections) {
                 double num = 0;
                 var newSection = new string(
                     section.Where(c => char.IsDigit(c) || c == '.').ToArray()
                 );
-                if (double.TryParse(newSection, out num))
-                {
+                if (double.TryParse(newSection, out num)) {
                   sum += num;
                 }
               }
             }
-            else if (Double.TryParse(mTextContents, out value))
-            {
+            else if (Double.TryParse(mTextContents, out value)) {
               sum += value;
             }
-            else
-            {
+            else {
               mTextContents = new string(
                   mTextContents.Where(c => char.IsDigit(c) || c == '.').ToArray()
               );
@@ -515,8 +462,7 @@ namespace ElectricalCommands
     }
 
     [CommandMethod("AREACALCULATOR")]
-    public void AREACALCULATOR()
-    {
+    public void AREACALCULATOR() {
       var (doc, _, ed) = GeneralCommands.GetGlobals();
 
       PromptSelectionOptions opts = new PromptSelectionOptions();
@@ -528,21 +474,17 @@ namespace ElectricalCommands
       if (selection.Status != PromptStatus.OK)
         return;
 
-      using (Transaction tr = doc.TransactionManager.StartTransaction())
-      {
-        foreach (ObjectId objId in selection.Value.GetObjectIds())
-        {
+      using (Transaction tr = doc.TransactionManager.StartTransaction()) {
+        foreach (ObjectId objId in selection.Value.GetObjectIds()) {
           var obj = tr.GetObject(objId, OpenMode.ForWrite) as Entity;
-          if (obj == null)
-          {
+          if (obj == null) {
             ed.WriteMessage("\nSelected object is not a valid entity.");
             continue;
           }
 
           Autodesk.AutoCAD.DatabaseServices.Polyline polyline =
               obj as Autodesk.AutoCAD.DatabaseServices.Polyline;
-          if (polyline != null)
-          {
+          if (polyline != null) {
             double area = polyline.Area;
             area /= 144; // Converting from square inches to square feet
             ed.WriteMessage(
@@ -560,13 +502,11 @@ namespace ElectricalCommands
             );
 
             // Check if the center of the bounding box lies within the polyline. If not, use the first vertex.
-            if (!IsPointInside(polyline, center))
-            {
+            if (!IsPointInside(polyline, center)) {
               center = polyline.GetPoint3dAt(0);
             }
 
-            DBText text = new DBText
-            {
+            DBText text = new DBText {
               Height = 9,
               TextString = Math.Ceiling(area) + " sq ft",
               Rotation = 0,
@@ -583,8 +523,7 @@ namespace ElectricalCommands
             currentSpace.AppendEntity(text);
             tr.AddNewlyCreatedDBObject(text, true);
           }
-          else
-          {
+          else {
             ed.WriteMessage("\nSelected object is not a polyline.");
             continue;
           }
@@ -595,27 +534,23 @@ namespace ElectricalCommands
     }
 
     [CommandMethod("GETTEXTATTRIBUTES")]
-    public void GETTEXTATTRIBUTES()
-    {
+    public void GETTEXTATTRIBUTES() {
       var (doc, db, ed) = GeneralCommands.GetGlobals();
 
       var textId = SelectTextObject();
-      if (textId.IsNull)
-      {
+      if (textId.IsNull) {
         ed.WriteMessage("\nNo text object selected.");
         return;
       }
 
       var textObject = GetTextObject(textId);
-      if (textObject == null)
-      {
+      if (textObject == null) {
         ed.WriteMessage("\nFailed to get text object.");
         return;
       }
 
       var coordinate = GetCoordinate();
-      if (coordinate == null)
-      {
+      if (coordinate == null) {
         ed.WriteMessage("\nInvalid coordinate selected.");
         return;
       }
@@ -646,8 +581,7 @@ namespace ElectricalCommands
     }
 
     [CommandMethod("GETLINEATTRIBUTES")]
-    public void GETLINEATTRIBUTES()
-    {
+    public void GETLINEATTRIBUTES() {
       var (doc, db, ed) = GeneralCommands.GetGlobals();
 
       PromptEntityOptions linePromptOptions = new PromptEntityOptions("\nSelect a line: ");
@@ -655,17 +589,14 @@ namespace ElectricalCommands
       linePromptOptions.AddAllowedClass(typeof(Line), true);
 
       PromptEntityResult lineResult = ed.GetEntity(linePromptOptions);
-      if (lineResult.Status != PromptStatus.OK)
-      {
+      if (lineResult.Status != PromptStatus.OK) {
         ed.WriteMessage("\nNo line selected.");
         return;
       }
 
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
         Line line = tr.GetObject(lineResult.ObjectId, OpenMode.ForRead) as Line;
-        if (line == null)
-        {
+        if (line == null) {
           ed.WriteMessage("\nSelected object is not a line.");
           return;
         }
@@ -674,8 +605,7 @@ namespace ElectricalCommands
             "\nSelect the reference point: "
         );
         PromptPointResult startPointResult = ed.GetPoint(startPointOptions);
-        if (startPointResult.Status != PromptStatus.OK)
-        {
+        if (startPointResult.Status != PromptStatus.OK) {
           ed.WriteMessage("\nNo reference point selected.");
           return;
         }
@@ -693,8 +623,7 @@ namespace ElectricalCommands
     }
 
     [CommandMethod("VP")]
-    public void CREATEVIEWPORTFROMREGION()
-    {
+    public void CREATEVIEWPORTFROMREGION() {
       Document doc = Autodesk
           .AutoCAD
           .ApplicationServices
@@ -755,13 +684,11 @@ namespace ElectricalCommands
       double viewportWidth = 0.0;
       double viewportHeight = 0.0;
 
-      foreach (var scaleEntry in scales.OrderByDescending(e => e.Key))
-      {
+      foreach (var scaleEntry in scales.OrderByDescending(e => e.Key)) {
         viewportWidth = rectWidth / scaleEntry.Value;
         viewportHeight = rectHeight / scaleEntry.Value;
 
-        if (viewportWidth <= 30 && viewportHeight <= 22)
-        {
+        if (viewportWidth <= 30 && viewportHeight <= 22) {
           scaleToFit = scaleEntry.Key;
           break;
         }
@@ -771,36 +698,30 @@ namespace ElectricalCommands
         );
       }
 
-      if (scaleToFit == 0.0)
-      {
+      if (scaleToFit == 0.0) {
         ed.WriteMessage("Couldn't fit the rectangle in the specified scales");
         return;
       }
 
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
         // Get the layout dictionary
         DBDictionary layoutDict =
             tr.GetObject(db.LayoutDictionaryId, OpenMode.ForRead) as DBDictionary;
 
-        foreach (var layoutEntry in layoutDict)
-        {
+        foreach (var layoutEntry in layoutDict) {
           string layoutName = layoutEntry.Key;
-          if (layoutName.StartsWith("E-") && layoutName.Contains(inputSheetName))
-          {
+          if (layoutName.StartsWith("E-") && layoutName.Contains(inputSheetName)) {
             matchedLayoutName = layoutName;
             break;
           }
         }
 
-        if (string.IsNullOrEmpty(matchedLayoutName))
-        {
+        if (string.IsNullOrEmpty(matchedLayoutName)) {
           ed.WriteMessage($"No matching layout found for '{inputSheetName}'.");
           return;
         }
 
-        if (!layoutDict.Contains(matchedLayoutName))
-        {
+        if (!layoutDict.Contains(matchedLayoutName)) {
           ed.WriteMessage(
               $"Sheet (Layout) named '{matchedLayoutName}' not found in the drawing."
           );
@@ -817,10 +738,8 @@ namespace ElectricalCommands
         LayerTable layerTable =
             tr.GetObject(db.LayerTableId, OpenMode.ForRead) as LayerTable;
 
-        if (!layerTable.Has("DEFPOINTS"))
-        {
-          LayerTableRecord layerRecord = new LayerTableRecord
-          {
+        if (!layerTable.Has("DEFPOINTS")) {
+          LayerTableRecord layerRecord = new LayerTableRecord {
             Name = "DEFPOINTS",
             Color = Color.FromColorIndex(ColorMethod.ByAci, 7) // White color
           };
@@ -869,13 +788,13 @@ namespace ElectricalCommands
         );
 
         viewport.On = true; // Now turn the viewport on
+        viewport.Locked = true;
 
         // Prompt user for the type of viewport
         PromptResult viewportTypeResult = ed.GetString(
             "\nPlease enter the type of viewport (e.g., lighting, power, roof): "
         );
-        if (viewportTypeResult.Status == PromptStatus.OK)
-        {
+        if (viewportTypeResult.Status == PromptStatus.OK) {
           string viewportTypeUpperCase = viewportTypeResult.StringResult.ToUpper();
           string finalViewportText = "ELECTRICAL " + viewportTypeUpperCase + " PLAN";
 
@@ -913,8 +832,7 @@ namespace ElectricalCommands
     }
 
     [CommandMethod("WOT")]
-    public static void WipeoutAroundText(ObjectId? textObjectId = null)
-    {
+    public static void WipeoutAroundText(ObjectId? textObjectId = null) {
       Document doc = Autodesk
           .AutoCAD
           .ApplicationServices
@@ -924,8 +842,7 @@ namespace ElectricalCommands
       Database db = doc.Database;
       Editor ed = doc.Editor;
 
-      if (!textObjectId.HasValue)
-      {
+      if (!textObjectId.HasValue) {
         // Prompt the user to select a text object
         PromptEntityOptions opts = new PromptEntityOptions("\nSelect a text object: ");
         opts.SetRejectMessage("\nOnly text objects are allowed.");
@@ -941,21 +858,18 @@ namespace ElectricalCommands
 
       double margin = 0.05;
 
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
         Entity ent = (Entity)tr.GetObject(textObjectId.Value, OpenMode.ForRead);
         double rotation = 0;
         Point3d basePoint = Point3d.Origin; // default to origin
 
-        if (ent is DBText text)
-        {
+        if (ent is DBText text) {
           rotation = text.Rotation;
           basePoint = text.Position;
           text.UpgradeOpen();
           text.Rotation = 0;
         }
-        else if (ent is MText mtext)
-        {
+        else if (ent is MText mtext) {
           rotation = mtext.Rotation;
           basePoint = mtext.Location;
           mtext.UpgradeOpen();
@@ -991,12 +905,10 @@ namespace ElectricalCommands
 
         // Rotate wipeout and text back to their original rotation using common base point
         wo.TransformBy(Matrix3d.Rotation(rotation, new Vector3d(0, 0, 1), basePoint));
-        if (ent is DBText)
-        {
+        if (ent is DBText) {
           ((DBText)ent).Rotation = rotation;
         }
-        else if (ent is MText)
-        {
+        else if (ent is MText) {
           ((MText)ent).Rotation = rotation;
         }
 
@@ -1013,29 +925,24 @@ namespace ElectricalCommands
       }
     }
 
-    public void CreateBlock()
-    {
+    public void CreateBlock() {
       var (doc, db, _) = GeneralCommands.GetGlobals();
 
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
         BlockTable bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
 
         BlockTableRecord existingBtr = null;
         ObjectId existingBtrId = ObjectId.Null;
 
         // Check if block already exists
-        if (bt.Has("CIRCLEI"))
-        {
+        if (bt.Has("CIRCLEI")) {
           existingBtrId = bt["CIRCLEI"];
 
-          if (existingBtrId != ObjectId.Null)
-          {
+          if (existingBtrId != ObjectId.Null) {
             existingBtr = (BlockTableRecord)
                 tr.GetObject(existingBtrId, OpenMode.ForWrite);
 
-            if (existingBtr != null && existingBtr.Name == "CIRCLEI")
-            {
+            if (existingBtr != null && existingBtr.Name == "CIRCLEI") {
               doc.Editor.WriteMessage(
                   "\nBlock 'CIRCLEI' already exists and matches the new block. Exiting the function."
               );
@@ -1045,10 +952,8 @@ namespace ElectricalCommands
         }
 
         // Delete existing block and its contents
-        if (existingBtr != null)
-        {
-          foreach (ObjectId id in existingBtr.GetBlockReferenceIds(true, true))
-          {
+        if (existingBtr != null) {
+          foreach (ObjectId id in existingBtr.GetBlockReferenceIds(true, true)) {
             DBObject obj = tr.GetObject(id, OpenMode.ForWrite);
             obj.Erase(true);
           }
@@ -1084,15 +989,13 @@ namespace ElectricalCommands
         // Check if the text style "ROMANS" exists
         TextStyleTable textStyleTable = (TextStyleTable)
             tr.GetObject(db.TextStyleTableId, OpenMode.ForRead);
-        if (textStyleTable.Has("ROMANS"))
-        {
+        if (textStyleTable.Has("ROMANS")) {
           text.TextStyleId = textStyleTable["ROMANS"]; // apply the "ROMANS" text style to the text entity
         }
 
         // Check if the layer "E-TEXT" exists
         LayerTable lt = (LayerTable)tr.GetObject(db.LayerTableId, OpenMode.ForRead);
-        if (lt.Has("E-TEXT"))
-        {
+        if (lt.Has("E-TEXT")) {
           circle.Layer = "E-TEXT"; // Set the layer of the circle to "E-TEXT"
           text.Layer = "E-TEXT"; // Set the layer of the text to "E-TEXT"
         }
@@ -1104,8 +1007,7 @@ namespace ElectricalCommands
       }
     }
 
-    public static void HatchSelectedPolyline(ObjectId? polyId = null)
-    {
+    public static void HatchSelectedPolyline(ObjectId? polyId = null) {
       Document acDoc = Autodesk
           .AutoCAD
           .ApplicationServices
@@ -1114,8 +1016,7 @@ namespace ElectricalCommands
           .MdiActiveDocument;
       Database acCurDb = acDoc.Database;
 
-      if (!polyId.HasValue)
-      {
+      if (!polyId.HasValue) {
         // Prompt the user to select a polyline
         PromptEntityOptions opts = new PromptEntityOptions("\nSelect a polyline: ");
         opts.SetRejectMessage("\nThat is not a polyline. Please select a polyline.");
@@ -1128,30 +1029,25 @@ namespace ElectricalCommands
         polyId = per.ObjectId;
       }
 
-      using (Transaction acTrans = acCurDb.TransactionManager.StartTransaction())
-      {
+      using (Transaction acTrans = acCurDb.TransactionManager.StartTransaction()) {
         BlockTable acBt =
             acTrans.GetObject(acCurDb.BlockTableId, OpenMode.ForRead) as BlockTable;
 
         // Check if the user is in paper space or model space and then use that space for the operations
         BlockTableRecord acBtr;
-        if (acCurDb.TileMode)
-        {
-          if (acCurDb.PaperSpaceVportId == acDoc.Editor.CurrentViewportObjectId)
-          {
+        if (acCurDb.TileMode) {
+          if (acCurDb.PaperSpaceVportId == acDoc.Editor.CurrentViewportObjectId) {
             acBtr =
                 acTrans.GetObject(acBt[BlockTableRecord.PaperSpace], OpenMode.ForWrite)
                 as BlockTableRecord;
           }
-          else
-          {
+          else {
             acBtr =
                 acTrans.GetObject(acBt[BlockTableRecord.ModelSpace], OpenMode.ForWrite)
                 as BlockTableRecord;
           }
         }
-        else
-        {
+        else {
           acBtr =
               acTrans.GetObject(acCurDb.CurrentSpaceId, OpenMode.ForWrite)
               as BlockTableRecord;
@@ -1160,16 +1056,14 @@ namespace ElectricalCommands
         Polyline acPoly = acTrans.GetObject(polyId.Value, OpenMode.ForWrite) as Polyline;
 
         // If the polyline is not closed, close it
-        if (!acPoly.Closed)
-        {
+        if (!acPoly.Closed) {
           acPoly.Closed = true;
         }
 
         ObjectIdCollection oidCol = new ObjectIdCollection();
         oidCol.Add(polyId.Value);
 
-        using (Hatch acHatch = new Hatch())
-        {
+        using (Hatch acHatch = new Hatch()) {
           acBtr.AppendEntity(acHatch);
           acTrans.AddNewlyCreatedDBObject(acHatch, true);
 
@@ -1183,8 +1077,7 @@ namespace ElectricalCommands
       }
     }
 
-    public static (Document doc, Database db, Editor ed) GetGlobals()
-    {
+    public static (Document doc, Database db, Editor ed) GetGlobals() {
       var doc = Autodesk
           .AutoCAD
           .ApplicationServices
@@ -1197,11 +1090,9 @@ namespace ElectricalCommands
       return (doc, db, ed);
     }
 
-    public static bool IsPointInside(Polyline polyline, Point3d point)
-    {
+    public static bool IsPointInside(Polyline polyline, Point3d point) {
       int numIntersections = 0;
-      for (int i = 0; i < polyline.NumberOfVertices; i++)
-      {
+      for (int i = 0; i < polyline.NumberOfVertices; i++) {
         Point3d point1 = polyline.GetPoint3dAt(i);
         Point3d point2 = polyline.GetPoint3dAt((i + 1) % polyline.NumberOfVertices); // Get next point, or first point if we're at the end
 
@@ -1211,8 +1102,7 @@ namespace ElectricalCommands
             && point1.Y == point.Y
             && point.X > Math.Min(point1.X, point2.X)
             && point.X < Math.Max(point1.X, point2.X)
-        )
-        {
+        ) {
           return true;
         }
 
@@ -1221,21 +1111,18 @@ namespace ElectricalCommands
             && point.Y <= Math.Max(point1.Y, point2.Y)
             && point.X <= Math.Max(point1.X, point2.X)
             && point1.Y != point2.Y
-        )
-        {
+        ) {
           double xinters =
               (point.Y - point1.Y) * (point2.X - point1.X) / (point2.Y - point1.Y)
               + point1.X;
 
           // Check if point is on the polygon boundary (other than horizontal)
-          if (Math.Abs(point.X - xinters) < Double.Epsilon)
-          {
+          if (Math.Abs(point.X - xinters) < Double.Epsilon) {
             return true;
           }
 
           // Count intersections
-          if (point.X < xinters)
-          {
+          if (point.X < xinters) {
             numIntersections++;
           }
         }
@@ -1244,8 +1131,7 @@ namespace ElectricalCommands
       return numIntersections % 2 != 0;
     }
 
-    public static void CreateEntitiesAtEndPoint(Transaction trans, Extents3d extents, Point3d endPoint, string text1, string text2)
-    {
+    public static void CreateEntitiesAtEndPoint(Transaction trans, Extents3d extents, Point3d endPoint, string text1, string text2) {
       // First Text - "KEYED PLAN"
       CreateAndPositionText(
           trans,
@@ -1284,8 +1170,7 @@ namespace ElectricalCommands
       );
     }
 
-    private static string ScaleToFraction(double scale)
-    {
+    private static string ScaleToFraction(double scale) {
       var knownScales = new Dictionary<double, string>
             {
                 { 0.25, "1/4" },
@@ -1298,8 +1183,7 @@ namespace ElectricalCommands
       return knownScales.ContainsKey(scale) ? knownScales[scale] : scale.ToString();
     }
 
-    private (Point3d Min, Point3d Max) GetCorrectedPoints(Point3d p1, Point3d p2)
-    {
+    private (Point3d Min, Point3d Max) GetCorrectedPoints(Point3d p1, Point3d p2) {
       Point3d minPoint = new Point3d(Math.Min(p1.X, p2.X), Math.Min(p1.Y, p2.Y), 0);
 
       Point3d maxPoint = new Point3d(Math.Max(p1.X, p2.X), Math.Max(p1.Y, p2.Y), 0);
@@ -1307,8 +1191,7 @@ namespace ElectricalCommands
       return (minPoint, maxPoint);
     }
 
-    public string CreateOrGetLayer(string layerName, Database db, Transaction tr)
-    {
+    public string CreateOrGetLayer(string layerName, Database db, Transaction tr) {
       var lt = (LayerTable)tr.GetObject(db.LayerTableId, OpenMode.ForRead);
 
       if (!lt.Has(layerName)) // check if layer exists
@@ -1323,18 +1206,14 @@ namespace ElectricalCommands
       return layerName;
     }
 
-    private void SaveTextToFile(string text, string filePath)
-    {
-      using (StreamWriter writer = new StreamWriter(filePath, true))
-      {
+    private void SaveTextToFile(string text, string filePath) {
+      using (StreamWriter writer = new StreamWriter(filePath, true)) {
         writer.WriteLine(text);
       }
     }
 
-    private void SaveLineAttributesToFile(Line line, Point3d startPoint, Vector3d vector, string filePath)
-    {
-      using (StreamWriter writer = new StreamWriter(filePath, true))
-      {
+    private void SaveLineAttributesToFile(Line line, Point3d startPoint, Vector3d vector, string filePath) {
+      using (StreamWriter writer = new StreamWriter(filePath, true)) {
         double startX = line.StartPoint.X - startPoint.X;
         double startY = line.StartPoint.Y - startPoint.Y;
         double endX = line.EndPoint.X - startPoint.X;
@@ -1353,17 +1232,14 @@ namespace ElectricalCommands
       }
     }
 
-    private static ObjectId CreateText(string content, string style, TextHorizontalMode horizontalMode, TextVerticalMode verticalMode, double height, double widthFactor, Autodesk.AutoCAD.Colors.Color color, string layer)
-    {
+    private static ObjectId CreateText(string content, string style, TextHorizontalMode horizontalMode, TextVerticalMode verticalMode, double height, double widthFactor, Autodesk.AutoCAD.Colors.Color color, string layer) {
       var (doc, db, _) = GeneralCommands.GetGlobals();
 
       // Check if the layer exists
-      using (var tr = db.TransactionManager.StartTransaction())
-      {
+      using (var tr = db.TransactionManager.StartTransaction()) {
         var layerTable = (LayerTable)tr.GetObject(db.LayerTableId, OpenMode.ForRead);
 
-        if (!layerTable.Has(layer))
-        {
+        if (!layerTable.Has(layer)) {
           // Layer doesn't exist, create it
           var newLayer = new LayerTableRecord();
           newLayer.Name = layer;
@@ -1376,13 +1252,11 @@ namespace ElectricalCommands
         tr.Commit();
       }
 
-      using (var tr = doc.TransactionManager.StartTransaction())
-      {
+      using (var tr = doc.TransactionManager.StartTransaction()) {
         var textStyleId = GetTextStyleId(style);
         var textStyle = (TextStyleTableRecord)tr.GetObject(textStyleId, OpenMode.ForRead);
 
-        var text = new DBText
-        {
+        var text = new DBText {
           TextString = content,
           Height = height,
           WidthFactor = widthFactor,
@@ -1405,8 +1279,7 @@ namespace ElectricalCommands
       }
     }
 
-    private static void CreateAndPositionText(Transaction tr, string content, string style, double height, double widthFactor, int colorIndex, string layerName, Point3d position, TextHorizontalMode horizontalMode = TextHorizontalMode.TextLeft, TextVerticalMode verticalMode = TextVerticalMode.TextBase)
-    {
+    private static void CreateAndPositionText(Transaction tr, string content, string style, double height, double widthFactor, int colorIndex, string layerName, Point3d position, TextHorizontalMode horizontalMode = TextHorizontalMode.TextLeft, TextVerticalMode verticalMode = TextVerticalMode.TextBase) {
       var color = Autodesk.AutoCAD.Colors.Color.FromColorIndex(
           Autodesk.AutoCAD.Colors.ColorMethod.ByLayer,
           (short)colorIndex
@@ -1425,24 +1298,20 @@ namespace ElectricalCommands
       text.Position = position;
     }
 
-    private static ObjectId GetTextStyleId(string styleName)
-    {
+    private static ObjectId GetTextStyleId(string styleName) {
       var (doc, db, _) = GeneralCommands.GetGlobals();
       var textStyleTable = (TextStyleTable)db.TextStyleTableId.GetObject(OpenMode.ForRead);
 
-      if (textStyleTable.Has(styleName))
-      {
+      if (textStyleTable.Has(styleName)) {
         return textStyleTable[styleName];
       }
-      else
-      {
+      else {
         // Return the ObjectId of the "Standard" style
         return textStyleTable["Standard"];
       }
     }
 
-    private ObjectId SelectTextObject()
-    {
+    private ObjectId SelectTextObject() {
       var (doc, _, ed) = GeneralCommands.GetGlobals();
 
       var promptOptions = new PromptEntityOptions("\nSelect a text object: ");
@@ -1456,10 +1325,8 @@ namespace ElectricalCommands
       return ObjectId.Null;
     }
 
-    private DBText GetTextObject(ObjectId objectId)
-    {
-      using (var tr = objectId.Database.TransactionManager.StartTransaction())
-      {
+    private DBText GetTextObject(ObjectId objectId) {
+      using (var tr = objectId.Database.TransactionManager.StartTransaction()) {
         var textObject = tr.GetObject(objectId, OpenMode.ForRead) as DBText;
         if (textObject != null)
           return textObject;
@@ -1468,8 +1335,7 @@ namespace ElectricalCommands
       }
     }
 
-    private Point3d GetCoordinate()
-    {
+    private Point3d GetCoordinate() {
       var (doc, _, ed) = GeneralCommands.GetGlobals();
 
       var promptOptions = new PromptPointOptions("\nSelect a coordinate: ");
@@ -1481,8 +1347,7 @@ namespace ElectricalCommands
       return new Point3d(0, 0, 0);
     }
 
-    public static void CreatePolyline(Color color, string layer, Point2d[] vertices, double startWidth, double endWidth)
-    {
+    public static void CreatePolyline(Color color, string layer, Point2d[] vertices, double startWidth, double endWidth) {
       Document acDoc = Autodesk
           .AutoCAD
           .ApplicationServices
@@ -1492,8 +1357,7 @@ namespace ElectricalCommands
       Database acCurDb = acDoc.Database;
       Editor ed = acDoc.Editor;
 
-      using (Transaction acTrans = acCurDb.TransactionManager.StartTransaction())
-      {
+      using (Transaction acTrans = acCurDb.TransactionManager.StartTransaction()) {
         BlockTable acBlkTbl;
         acBlkTbl = acTrans.GetObject(acCurDb.BlockTableId, OpenMode.ForRead) as BlockTable;
 
@@ -1503,15 +1367,13 @@ namespace ElectricalCommands
             acTrans.GetObject(acCurDb.CurrentSpaceId, OpenMode.ForWrite)
             as BlockTableRecord;
 
-        if (acBlkTblRec == null)
-        {
+        if (acBlkTblRec == null) {
           ed.WriteMessage("\nFailed to retrieve the current space block record.");
           return;
         }
 
         Polyline acPoly = new Polyline();
-        for (int i = 0; i < vertices.Length; i++)
-        {
+        for (int i = 0; i < vertices.Length; i++) {
           acPoly.AddVertexAt(i, vertices[i], 0, startWidth, endWidth);
         }
 
@@ -1530,8 +1392,7 @@ namespace ElectricalCommands
       }
     }
 
-    private static void CreateLeaderFromTextToPoint(Entity textEnt, Transaction trans, Extents3d imageExtents)
-    {
+    private static void CreateLeaderFromTextToPoint(Entity textEnt, Transaction trans, Extents3d imageExtents) {
       Extents3d textExtents = textEnt.GeometricExtents;
       Point3d leftMid = new Point3d(
           textExtents.MinPoint.X,
@@ -1552,13 +1413,11 @@ namespace ElectricalCommands
       // Determine the closest side to the polyline and create the leader accordingly
       Point3d closestPointOnPoly = closestPoly.GetClosestPointTo(leftMid, false);
       Point3d secondPoint;
-      if (leftMid.DistanceTo(closestPointOnPoly) <= rightMid.DistanceTo(closestPointOnPoly))
-      {
+      if (leftMid.DistanceTo(closestPointOnPoly) <= rightMid.DistanceTo(closestPointOnPoly)) {
         // Left side is closer
         secondPoint = new Point3d(leftMid.X - 0.25, leftMid.Y, 0);
       }
-      else
-      {
+      else {
         // Right side is closer
         secondPoint = new Point3d(rightMid.X + 0.25, rightMid.Y, 0);
         closestPointOnPoly = closestPoly.GetClosestPointTo(rightMid, false);
@@ -1588,20 +1447,16 @@ namespace ElectricalCommands
       trans.AddNewlyCreatedDBObject(acLdr, true);
     }
 
-    private static Polyline FindClosestPolyline(Database db, Extents3d imageExtents)
-    {
+    private static Polyline FindClosestPolyline(Database db, Extents3d imageExtents) {
       Polyline closestPoly = null;
       double closestDist = double.MaxValue;
 
-      using (Transaction trans = db.TransactionManager.StartTransaction())
-      {
+      using (Transaction trans = db.TransactionManager.StartTransaction()) {
         BlockTableRecord btr = (BlockTableRecord)
             trans.GetObject(db.CurrentSpaceId, OpenMode.ForRead);
-        foreach (ObjectId entId in btr)
-        {
+        foreach (ObjectId entId in btr) {
           Entity ent = trans.GetObject(entId, OpenMode.ForRead) as Entity;
-          if (ent is Polyline)
-          {
+          if (ent is Polyline) {
             Polyline poly = ent as Polyline;
             Point3d closestPoint = poly.GetClosestPointTo(imageExtents.MinPoint, false);
             double currentDist = closestPoint.DistanceTo(imageExtents.MinPoint);
@@ -1609,8 +1464,7 @@ namespace ElectricalCommands
             if (
                 currentDist < closestDist
                 && IsPointInsideExtents(closestPoint, imageExtents)
-            )
-            {
+            ) {
               closestDist = currentDist;
               closestPoly = poly;
             }
@@ -1621,8 +1475,7 @@ namespace ElectricalCommands
       return closestPoly;
     }
 
-    private static bool IsPointInsideExtents(Point3d pt, Extents3d extents)
-    {
+    private static bool IsPointInsideExtents(Point3d pt, Extents3d extents) {
       return pt.X >= extents.MinPoint.X
           && pt.X <= extents.MaxPoint.X
           && pt.Y >= extents.MinPoint.Y
