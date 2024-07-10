@@ -1,0 +1,96 @@
+{
+  "Polylines": [
+    {
+      "Vectors": [
+        {
+          "X": -2.598076211354055,
+          "Y": 4.6600812351025525,
+          "Z": 0.0
+        },
+        {
+          "X": -5.19615242270811,
+          "Y": 0.16008123510255245,
+          "Z": 0.0
+        },
+        {
+          "X": -2.598076211354055,
+          "Y": -4.3399187648974475,
+          "Z": 0.0
+        },
+        {
+          "X": 2.598076211352236,
+          "Y": -4.3399187648974475,
+          "Z": 0.0
+        },
+        {
+          "X": 5.196152422704472,
+          "Y": 0.16008123510255245,
+          "Z": 0.0
+        },
+        {
+          "X": 2.598076211352236,
+          "Y": 4.6600812351025525,
+          "Z": 0.0
+        }
+      ],
+      "Bulges": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "LineType": "ByLayer",
+      "Closed": true,
+      "StartWidth": 0.0,
+      "EndWidth": 0.0,
+      "GlobalWidth": 0.0,
+      "Layer": "E-TXT3"
+    }
+  ],
+  "Polylines2d": [],
+  "Lines": [],
+  "Arcs": [],
+  "Circles": [],
+  "Ellipses": [],
+  "MTexts": [
+    {
+      "Style": "rpm",
+      "Justification": "TopRight",
+      "Contents": "\\A1;\\pxqc;3",
+      "Direction": {
+        "LargestElement": 0,
+        "LengthSqrd": 1.0,
+        "Length": 1.0,
+        "Z": 0.0,
+        "Y": 0.0,
+        "X": 1.0
+      },
+      "Location": {
+        "X": -0.13151036770068458,
+        "Y": 2.7155809135620075,
+        "Z": -2.4623092239193251E-12
+      },
+      "LineSpaceDistance": 6.288386715168599,
+      "LineSpaceFactor": 0.83845156202247983,
+      "LineSpacingStyle": 1,
+      "TextHeight": 4.5,
+      "Width": 0.0,
+      "Rotation": 0.0,
+      "StyleAttributes": {
+        "Height": 4.5,
+        "WidthFactor": 0.0,
+        "FontName": "rpm"
+      },
+      "Layer": "E-TXT3"
+    }
+  ],
+  "Texts": [],
+  "Solids": [],
+  "Hatches": [],
+  "Splines": [],
+  "AttributeDefinitions": [],
+  "NumberOfRows": 0,
+  "Scale": 0.25
+}

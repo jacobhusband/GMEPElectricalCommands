@@ -1,0 +1,79 @@
+{
+  "Polylines": [],
+  "Polylines2d": [],
+  "Lines": [],
+  "Arcs": [],
+  "Circles": [
+    {
+      "Center": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "Radius": 1.4999990399999998,
+      "Layer": "E-SYM1"
+    }
+  ],
+  "Ellipses": [],
+  "MTexts": [],
+  "Texts": [
+    {
+      "Style": "rpm",
+      "Justification": 10,
+      "Contents": "DN",
+      "Tag": null,
+      "Location": {
+        "X": 3.1082495740593004,
+        "Y": -1.6602647093141059,
+        "Z": 0.0
+      },
+      "LineSpaceDistance": 0.85,
+      "Height": 4.5,
+      "Rotation": 0.0,
+      "AlignmentPoint": {
+        "X": -12205.490935758095,
+        "Y": 1532.8893281848459,
+        "Z": 0.0
+      },
+      "HorizontalMode": 0,
+      "IsMirroredInX": false,
+      "IsMirroredInY": false,
+      "StyleAttributes": {
+        "Height": 4.5,
+        "WidthFactor": 0.85,
+        "FontName": "rpm"
+      },
+      "Layer": "E-TXT1"
+    }
+  ],
+  "Solids": [],
+  "Hatches": [
+    {
+      "Layer": "E-SYM1",
+      "PatternName": "SOLID",
+      "PatternScale": 1.0,
+      "PatternType": 1,
+      "Angle": 0.0,
+      "Polylines": [],
+      "Lines": [],
+      "Arcs": [],
+      "Circles": [
+        {
+          "Center": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+          },
+          "Radius": 1.4999990399999998,
+          "Layer": "E-SYM1"
+        }
+      ],
+      "Ellipses": [],
+      "Splines": []
+    }
+  ],
+  "Splines": [],
+  "AttributeDefinitions": [],
+  "NumberOfRows": 0,
+  "Scale": 0.25
+}

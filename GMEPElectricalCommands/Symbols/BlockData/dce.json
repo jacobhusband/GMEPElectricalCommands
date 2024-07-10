@@ -1,0 +1,80 @@
+{
+  "Polylines": [
+    {
+      "Vectors": [
+        {
+          "X": 0.0,
+          "Y": 2.4928594305874867,
+          "Z": 0.0
+        },
+        {
+          "X": 4.9857188611749734,
+          "Y": 2.4928594305874867,
+          "Z": 0.0
+        },
+        {
+          "X": 4.9857188611749734,
+          "Y": -2.4928594305874867,
+          "Z": 0.0
+        },
+        {
+          "X": 0.0,
+          "Y": -2.4928594305874867,
+          "Z": 0.0
+        }
+      ],
+      "Bulges": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "LineType": "ByLayer",
+      "Closed": true,
+      "StartWidth": 0.0,
+      "EndWidth": 0.0,
+      "GlobalWidth": 0.0,
+      "Layer": "E-SYM1"
+    }
+  ],
+  "Polylines2d": [],
+  "Lines": [
+    {
+      "StartPoint": {
+        "X": 7.4857188611749734,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "EndPoint": {
+        "X": 7.4857188611749734,
+        "Y": 2.5,
+        "Z": 0.0
+      },
+      "Layer": "E-SYM1"
+    },
+    {
+      "StartPoint": {
+        "X": 4.9857188611749734,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "EndPoint": {
+        "X": 7.4857188611749734,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "Layer": "E-SYM1"
+    }
+  ],
+  "Arcs": [],
+  "Circles": [],
+  "Ellipses": [],
+  "MTexts": [],
+  "Texts": [],
+  "Solids": [],
+  "Hatches": [],
+  "Splines": [],
+  "AttributeDefinitions": [],
+  "NumberOfRows": 0,
+  "Scale": 0.25
+}

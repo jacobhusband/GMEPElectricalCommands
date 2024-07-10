@@ -1,0 +1,70 @@
+{
+  "Polylines": [],
+  "Polylines2d": [],
+  "Lines": [],
+  "Arcs": [],
+  "Circles": [],
+  "Ellipses": [
+    {
+      "UnitNormal": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 1.0
+      },
+      "Center": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "MajorAxis": {
+        "X": -7.22750487511432,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "MajorRadius": 7.22750487511432,
+      "MinorRadius": 3.1953479052101272,
+      "StartAngle": 0.0,
+      "EndAngle": 6.2831853071795862,
+      "Layer": "E-TXT1"
+    }
+  ],
+  "MTexts": [
+    {
+      "Style": "rpm",
+      "Justification": "TopRight",
+      "Contents": "\\A1;\\pxqc;LA",
+      "Direction": {
+        "LargestElement": 0,
+        "LengthSqrd": 1.0,
+        "Length": 1.0,
+        "Z": 0.0,
+        "Y": 0.0,
+        "X": 1.0
+      },
+      "Location": {
+        "X": 0.15697577253558848,
+        "Y": 2.3009035191662406,
+        "Z": -2.4623092239193251E-12
+      },
+      "LineSpaceDistance": 6.288386715168599,
+      "LineSpaceFactor": 0.83845156202247983,
+      "LineSpacingStyle": 1,
+      "TextHeight": 4.5,
+      "Width": 0.0,
+      "Rotation": 0.0,
+      "StyleAttributes": {
+        "Height": 4.5,
+        "WidthFactor": 0.0,
+        "FontName": "rpm"
+      },
+      "Layer": "E-TXT1"
+    }
+  ],
+  "Texts": [],
+  "Solids": [],
+  "Hatches": [],
+  "Splines": [],
+  "AttributeDefinitions": [],
+  "NumberOfRows": 0,
+  "Scale": 0.25
+}

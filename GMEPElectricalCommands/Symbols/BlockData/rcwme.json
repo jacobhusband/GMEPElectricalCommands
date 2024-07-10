@@ -1,0 +1,84 @@
+{
+  "Polylines": [],
+  "Polylines2d": [],
+  "Lines": [
+    {
+      "StartPoint": {
+        "X": 0.0,
+        "Y": 1.875,
+        "Z": 0.0
+      },
+      "EndPoint": {
+        "X": 0.0,
+        "Y": -1.875,
+        "Z": 0.0
+      },
+      "Layer": "E-SYM1"
+    },
+    {
+      "StartPoint": {
+        "X": 0.0,
+        "Y": -4.5474735088646412E-13,
+        "Z": 0.0
+      },
+      "EndPoint": {
+        "X": 3.2216552549780317,
+        "Y": -4.5474735088646412E-13,
+        "Z": 0.0
+      },
+      "Layer": "E-SYM1"
+    }
+  ],
+  "Arcs": [],
+  "Circles": [
+    {
+      "Center": {
+        "X": 5.9716552549780317,
+        "Y": -4.5474735088646412E-13,
+        "Z": 0.0
+      },
+      "Radius": 2.7499999999999964,
+      "Layer": "E-SYM1"
+    }
+  ],
+  "Ellipses": [],
+  "MTexts": [
+    {
+      "Style": "rpm",
+      "Justification": "TopRight",
+      "Contents": "\\A1;C",
+      "Direction": {
+        "LargestElement": 0,
+        "LengthSqrd": 1.0,
+        "Length": 1.0,
+        "Z": 0.0,
+        "Y": 0.0,
+        "X": 1.0
+      },
+      "Location": {
+        "X": 6.9765261735828972,
+        "Y": 1.8503786669807596,
+        "Z": -2.4623092239193251E-12
+      },
+      "LineSpaceDistance": 6.25,
+      "LineSpaceFactor": 1.0,
+      "LineSpacingStyle": 1,
+      "TextHeight": 3.75,
+      "Width": 8.2499027858163316,
+      "Rotation": 0.0,
+      "StyleAttributes": {
+        "Height": 3.75,
+        "WidthFactor": 0.0,
+        "FontName": "rpm"
+      },
+      "Layer": "E-TXT3"
+    }
+  ],
+  "Texts": [],
+  "Solids": [],
+  "Hatches": [],
+  "Splines": [],
+  "AttributeDefinitions": [],
+  "NumberOfRows": 0,
+  "Scale": 0.25
+}

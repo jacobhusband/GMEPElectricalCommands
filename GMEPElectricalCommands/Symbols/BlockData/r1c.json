@@ -1,0 +1,52 @@
+{
+  "Polylines": [],
+  "Lines": [
+    {
+      "StartPoint": {
+        "X": -2.6963374031620333,
+        "Y": 3.7569968961186078,
+        "Z": 0.0
+      },
+      "EndPoint": {
+        "X": 3.7569968961179256,
+        "Y": -2.6963374031613512,
+        "Z": 0.0
+      },
+      "Layer": "E-SYM1"
+    },
+    {
+      "StartPoint": {
+        "X": -3.7569968961179256,
+        "Y": 2.6963374031611238,
+        "Z": 0.0
+      },
+      "EndPoint": {
+        "X": 2.6963374031620333,
+        "Y": -3.7569968961186078,
+        "Z": 0.0
+      },
+      "Layer": "E-SYM1"
+    }
+  ],
+  "Arcs": [],
+  "Circles": [
+    {
+      "Center": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "Radius": 2.75,
+      "Layer": "E-SYM1"
+    }
+  ],
+  "Ellipses": [],
+  "MTexts": [],
+  "Texts": [],
+  "Solids": [],
+  "Hatches": [],
+  "Splines": [],
+  "AttributeDefinitions": [],
+  "NumberOfRows": 0,
+  "Scale": 0.25
+}

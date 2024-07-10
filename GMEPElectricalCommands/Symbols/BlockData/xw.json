@@ -1,0 +1,105 @@
+{
+  "Polylines": [],
+  "Lines": [
+    {
+      "StartPoint": {
+        "X": -1.9350679795934411,
+        "Y": 1.9350679795934411,
+        "Z": 0.0
+      },
+      "EndPoint": {
+        "X": 1.9350679795934411,
+        "Y": -1.9350679795934411,
+        "Z": 0.0
+      },
+      "Layer": "E-SYM1"
+    },
+    {
+      "StartPoint": {
+        "X": 1.9350679795934411,
+        "Y": 1.9350679795934411,
+        "Z": 0.0
+      },
+      "EndPoint": {
+        "X": -1.9350679795934411,
+        "Y": -1.9350679795934411,
+        "Z": 0.0
+      },
+      "Layer": "E-SYM1"
+    }
+  ],
+  "Arcs": [],
+  "Circles": [
+    {
+      "Center": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "Radius": 2.7365993808543867,
+      "Layer": "E-SYM1"
+    }
+  ],
+  "Ellipses": [],
+  "MTexts": [],
+  "Texts": [],
+  "Solids": [],
+  "Hatches": [
+    {
+      "Layer": "E-SYM1",
+      "PatternName": "SOLID",
+      "PatternScale": 1.0,
+      "PatternType": 1,
+      "Angle": 0.0,
+      "Polylines": [],
+      "Lines": [
+        {
+          "StartPoint": {
+            "X": -1.9362649279773905,
+            "Y": -1.9350679795934411,
+            "Z": 0.0
+          },
+          "EndPoint": {
+            "X": 1.8189894035458565E-12,
+            "Y": 0.0,
+            "Z": 0.0
+          },
+          "Layer": "E-SYM1"
+        },
+        {
+          "StartPoint": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+          },
+          "EndPoint": {
+            "X": -1.9362649279810284,
+            "Y": 1.9350679795916221,
+            "Z": 0.0
+          },
+          "Layer": "E-SYM1"
+        }
+      ],
+      "Arcs": [
+        {
+          "Center": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+          },
+          "Radius": 2.7374458820159475,
+          "StartAngle": 2.3565036726822028,
+          "EndAngle": 3.9266816344973838,
+          "Layer": "E-SYM1"
+        }
+      ],
+      "Circles": [],
+      "Ellipses": [],
+      "Splines": []
+    }
+  ],
+  "Splines": [],
+  "AttributeDefinitions": [],
+  "NumberOfRows": 0,
+  "Scale": 0.25
+}
