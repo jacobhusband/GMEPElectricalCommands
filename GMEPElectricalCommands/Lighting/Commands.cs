@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Windows.Forms;
-using Accord.MachineLearning;
+﻿using Accord.MachineLearning;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
@@ -18,17 +10,24 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 using TriangleNet.Meshing.Algorithm;
 using Application = Autodesk.AutoCAD.ApplicationServices.Application;
 
-namespace ElectricalCommands
-{
-  public class Commands
-  {
+namespace ElectricalCommands.Lighting {
+
+  public class Commands {
+
     // update captureclickarea to use the blockdata objects to make a block and create a block reference that sticks to the nearest gray line
     [CommandMethod("StickySymbol")]
-    public void StickySymbol()
-    {
+    public void StickySymbol() {
       int WIDTH = 200;
       int HEIGHT = 200;
 
@@ -54,21 +53,17 @@ namespace ElectricalCommands
         HEIGHT
       );
 
-      using (Bitmap bitmap = new Bitmap(captureRectangle.Width, captureRectangle.Height))
-      {
-        using (Graphics g = Graphics.FromImage(bitmap))
-        {
+      using (Bitmap bitmap = new Bitmap(captureRectangle.Width, captureRectangle.Height)) {
+        using (Graphics g = Graphics.FromImage(bitmap)) {
           g.CopyFromScreen(captureRectangle.Location, Point.Empty, captureRectangle.Size);
         }
 
         // Create a new bitmap to hold the circular image
         Bitmap circularBitmap = new Bitmap(bitmap.Width, bitmap.Height, bitmap.PixelFormat);
 
-        using (Graphics g = Graphics.FromImage(circularBitmap))
-        {
+        using (Graphics g = Graphics.FromImage(circularBitmap)) {
           // Create a circular path that fits within the bounds of the bitmap
-          using (GraphicsPath path = new GraphicsPath())
-          {
+          using (GraphicsPath path = new GraphicsPath()) {
             path.AddEllipse(0, 0, bitmap.Width, bitmap.Height);
             g.SetClip(path);
 
@@ -79,13 +74,10 @@ namespace ElectricalCommands
 
         // Step 1: Get a list of every gray pixel
         List<System.Drawing.Point> grayPixels = new List<System.Drawing.Point>();
-        for (int x = 0; x < bitmap.Width; x++)
-        {
-          for (int y = 0; y < bitmap.Height; y++)
-          {
+        for (int x = 0; x < bitmap.Width; x++) {
+          for (int y = 0; y < bitmap.Height; y++) {
             Color pixelColor = bitmap.GetPixel(x, y);
-            if (pixelColor.R == pixelColor.G && pixelColor.G == pixelColor.B && pixelColor.R != 0)
-            {
+            if (pixelColor.R == pixelColor.G && pixelColor.G == pixelColor.B && pixelColor.R != 0) {
               grayPixels.Add(new System.Drawing.Point(x, y));
             }
           }
@@ -160,8 +152,7 @@ namespace ElectricalCommands
     }
 
     [CommandMethod("ImageAroundClick")]
-    public void ImageAroundClick()
-    {
+    public void ImageAroundClick() {
       int WIDTH = 500;
       int HEIGHT = 500;
       int hue = 150;
@@ -189,10 +180,8 @@ namespace ElectricalCommands
         HEIGHT
       );
 
-      using (Bitmap bitmap = new Bitmap(captureRectangle.Width, captureRectangle.Height))
-      {
-        using (Graphics g = Graphics.FromImage(bitmap))
-        {
+      using (Bitmap bitmap = new Bitmap(captureRectangle.Width, captureRectangle.Height)) {
+        using (Graphics g = Graphics.FromImage(bitmap)) {
           g.CopyFromScreen(captureRectangle.Location, Point.Empty, captureRectangle.Size);
         }
 
@@ -236,8 +225,7 @@ namespace ElectricalCommands
         );
 
         // Iterate through the contours and draw boxes around them
-        for (int i = 0; i < contours.Size; i++)
-        {
+        for (int i = 0; i < contours.Size; i++) {
           Rectangle rect = CvInvoke.BoundingRectangle(contours[i]);
           CvInvoke.Rectangle(image, rect, new Bgr(0, 255, 0).MCvScalar, 2);
         }
@@ -252,15 +240,13 @@ namespace ElectricalCommands
     }
 
     [CommandMethod("Lighting")]
-    public static void Lighting()
-    {
+    public static void Lighting() {
       var lightingForm = new INITIALIZE_LIGHTING_FORM();
       lightingForm.Show();
     }
 
     [CommandMethod("KMeans")]
-    public void KMeans()
-    {
+    public void KMeans() {
       Document doc = Application.DocumentManager.MdiActiveDocument;
       Editor ed = doc.Editor;
       Database db = doc.Database;
@@ -278,11 +264,9 @@ namespace ElectricalCommands
       ClosePolyline(db, per);
       CreatePolylineAndHatchAroundInnerPolyline(ed, db, ref rectPolyID, ref hatchID, per);
 
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
         Polyline poly = tr.GetObject(per.ObjectId, OpenMode.ForRead) as Polyline;
-        if (poly != null && poly.Closed)
-        {
+        if (poly != null && poly.Closed) {
           Extents3d ext = poly.GeometricExtents;
           Point3d min = ext.MinPoint;
           Point3d max = ext.MaxPoint;
@@ -304,8 +288,7 @@ namespace ElectricalCommands
           int height = (int)(screenMin.Y - screenMax.Y);
 
           // Create a new bitmap to hold the captured image
-          using (Bitmap bitmap = new Bitmap(width, height))
-          {
+          using (Bitmap bitmap = new Bitmap(width, height)) {
             CaptureAScreenshot(
               ed,
               poly,
@@ -349,13 +332,11 @@ namespace ElectricalCommands
               userPt
             );
 
-            foreach (var edge in clusterEdges)
-            {
+            foreach (var edge in clusterEdges) {
               CreateSplinesFromTriangulation(db, new List<Edge> { edge }, magentaObjects);
             }
 
-            for (int i = 0; i < numClusters; i++)
-            {
+            for (int i = 0; i < numClusters; i++) {
               var index = orderedIndices[i];
               List<MagentaObject> clusterObjects = magentaObjects
                 .Where((obj, idx) => labels[idx] == index)
@@ -365,14 +346,12 @@ namespace ElectricalCommands
                 .Select(obj => new TriangleNet.Geometry.Vertex(obj.CenterNode.X, obj.CenterNode.Y))
                 .ToList();
 
-              if (vertices.Count == 2)
-              {
+              if (vertices.Count == 2) {
                 var filteredEdges = new List<Edge>() { new Edge(vertices[0], vertices[1]) };
                 CreateSplinesFromTriangulation(db, filteredEdges, clusterObjects);
               }
               else if (vertices.Count == 1) { }
-              else
-              {
+              else {
                 var triangulator = new Dwyer();
 
                 var mesh = triangulator.Triangulate(vertices, new TriangleNet.Configuration());
@@ -384,8 +363,7 @@ namespace ElectricalCommands
                 double stdDevLength = edgeStats.stdDev;
 
                 List<Edge> filteredEdges = edges
-                  .Where(edge =>
-                  {
+                  .Where(edge => {
                     bool isLengthWithinRange = edge.Length() <= meanLength + stdDevLength;
                     bool isNode1Connected = CountConnectedEdges(edge.Point1, edges) >= 3;
                     bool isNode2Connected = CountConnectedEdges(edge.Point2, edges) >= 3;
@@ -414,15 +392,12 @@ namespace ElectricalCommands
       List<MagentaObject> magentaObjects,
       Editor ed,
       Database db
-    )
-    {
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
+    ) {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
         LayerTable lt = tr.GetObject(db.LayerTableId, OpenMode.ForRead) as LayerTable;
         LayerTableRecord ltr = tr.GetObject(lt["E-TXT1"], OpenMode.ForWrite) as LayerTableRecord;
 
-        foreach (var obj in magentaObjects)
-        {
+        foreach (var obj in magentaObjects) {
           double maxX = obj.BoundaryPoints.Max(p => p.X);
           double maxY = obj.BoundaryPoints.Max(p => p.Y);
           Point3d position = new Point3d(maxX, maxY, 0);
@@ -443,22 +418,17 @@ namespace ElectricalCommands
       HashSet<int> visitedClusters,
       List<Edge> clusterEdges,
       Point3d userPt
-    )
-    {
+    ) {
       visitedClusters.Add(startClusterIndex);
 
-      while (visitedClusters.Count < labels.Distinct().Count())
-      {
+      while (visitedClusters.Count < labels.Distinct().Count()) {
         double minDistance = double.MaxValue;
         int closestClusterIndex = -1;
         Edge closestEdge = null;
 
-        foreach (int visitedClusterIndex in visitedClusters)
-        {
-          for (int i = 0; i < labels.Length; i++)
-          {
-            if (!visitedClusters.Contains(labels[i]))
-            {
+        foreach (int visitedClusterIndex in visitedClusters) {
+          for (int i = 0; i < labels.Length; i++) {
+            if (!visitedClusters.Contains(labels[i])) {
               Edge edge = FindClosestEdgeBetweenClusters(
                 visitedClusterIndex,
                 labels[i],
@@ -466,8 +436,7 @@ namespace ElectricalCommands
                 labels,
                 userPt
               );
-              if (edge != null && edge.Length() < minDistance)
-              {
+              if (edge != null && edge.Length() < minDistance) {
                 minDistance = edge.Length();
                 closestClusterIndex = labels[i];
                 closestEdge = edge;
@@ -476,8 +445,7 @@ namespace ElectricalCommands
           }
         }
 
-        if (closestClusterIndex != -1)
-        {
+        if (closestClusterIndex != -1) {
           visitedClusters.Add(closestClusterIndex);
           clusterEdges.Add(closestEdge);
         }
@@ -490,8 +458,7 @@ namespace ElectricalCommands
       List<MagentaObject> magentaObjects,
       int[] labels,
       Point3d userPt
-    )
-    {
+    ) {
       List<MagentaObject> cluster1Objects = magentaObjects
         .Where((obj, idx) => labels[idx] == cluster1Label)
         .ToList();
@@ -503,17 +470,14 @@ namespace ElectricalCommands
       MagentaObject closestObject1 = null;
       MagentaObject closestObject2 = null;
 
-      foreach (var obj1 in cluster1Objects)
-      {
-        foreach (var obj2 in cluster2Objects)
-        {
+      foreach (var obj1 in cluster1Objects) {
+        foreach (var obj2 in cluster2Objects) {
           double distance1 = obj1.CenterNode.DistanceTo(userPt);
           double distance2 = obj2.CenterNode.DistanceTo(userPt);
           double distance = obj1.CenterNode.DistanceTo(obj2.CenterNode);
           double totalDistance = (distance * 0.7) + (distance1 * 0.15) + (distance2 * 0.15);
 
-          if (totalDistance < minDistance)
-          {
+          if (totalDistance < minDistance) {
             minDistance = totalDistance;
             closestObject1 = obj1;
             closestObject2 = obj2;
@@ -521,8 +485,7 @@ namespace ElectricalCommands
         }
       }
 
-      if (closestObject1 != null && closestObject2 != null)
-      {
+      if (closestObject1 != null && closestObject2 != null) {
         TriangleNet.Geometry.Vertex vertex1 = closestObject1.CenterPointAsVertex();
         TriangleNet.Geometry.Vertex vertex2 = closestObject2.CenterPointAsVertex();
         return new Edge(vertex1, vertex2);
@@ -534,12 +497,10 @@ namespace ElectricalCommands
     private List<int> GetOrderedIndicesOfCentroidsFromUserClick(
       double[][] centroids,
       Point3d userPt
-    )
-    {
+    ) {
       List<int> indices = new List<int>();
 
-      foreach (var centroid in centroids)
-      {
+      foreach (var centroid in centroids) {
         centroid[0] = Math.Abs(centroid[0] - userPt.X);
         centroid[1] = Math.Abs(centroid[1] - userPt.Y);
       }
@@ -549,16 +510,14 @@ namespace ElectricalCommands
         .OrderBy(c => c.Distance)
         .ToList();
 
-      foreach (var centroid in orderedCentroids)
-      {
+      foreach (var centroid in orderedCentroids) {
         indices.Add(centroid.Index);
       }
 
       return indices;
     }
 
-    private List<Edge> BreadthFirstSearch(List<Edge> edges, TriangleNet.Geometry.Vertex startNode)
-    {
+    private List<Edge> BreadthFirstSearch(List<Edge> edges, TriangleNet.Geometry.Vertex startNode) {
       var bfsEdges = new List<Edge>();
       var visited = new HashSet<TriangleNet.Geometry.Vertex>();
       var queue = new QuickGraph.Collections.Queue<TriangleNet.Geometry.Vertex>();
@@ -566,18 +525,15 @@ namespace ElectricalCommands
       visited.Add(startNode);
       queue.Enqueue(startNode);
 
-      while (queue.Count > 0)
-      {
+      while (queue.Count > 0) {
         var currentNode = queue.Dequeue();
 
         foreach (
           var edge in edges.Where(e => e.Point1.Equals(currentNode) || e.Point2.Equals(currentNode))
-        )
-        {
+        ) {
           var neighborNode = edge.Point1.Equals(currentNode) ? edge.Point2 : edge.Point1;
 
-          if (!visited.Contains(neighborNode))
-          {
+          if (!visited.Contains(neighborNode)) {
             visited.Add(neighborNode);
             queue.Enqueue(neighborNode);
             bfsEdges.Add(edge);
@@ -591,17 +547,14 @@ namespace ElectricalCommands
     private MagentaObject FindClosestMagentaObject(
       Point3d userPoint,
       List<MagentaObject> clusterObjects
-    )
-    {
+    ) {
       double minDistance = double.MaxValue;
       MagentaObject closestObject = null;
 
-      foreach (var obj in clusterObjects)
-      {
+      foreach (var obj in clusterObjects) {
         double distance = userPoint.DistanceTo(obj.CenterNode);
 
-        if (distance < minDistance)
-        {
+        if (distance < minDistance) {
           minDistance = distance;
           closestObject = obj;
         }
@@ -619,17 +572,14 @@ namespace ElectricalCommands
       int width,
       int height,
       Bitmap bitmap
-    )
-    {
-      using (Graphics g = Graphics.FromImage(bitmap))
-      {
+    ) {
+      using (Graphics g = Graphics.FromImage(bitmap)) {
         // Set the clipping boundary around the polyline
         GraphicsPath path = new GraphicsPath();
         // Get the polyline points
         int vertices = poly.NumberOfVertices;
         List<System.Drawing.PointF> polylinePoints = new List<System.Drawing.PointF>();
-        for (int i = 0; i < vertices; i++)
-        {
+        for (int i = 0; i < vertices; i++) {
           Point3d point = poly.GetPoint3dAt(i);
           System.Windows.Point screenPoint = ed.PointToScreen(point, 0);
           screenPoint.X -= documentLocation.X;
@@ -659,18 +609,14 @@ namespace ElectricalCommands
       Database db,
       ObjectId rectPolyID,
       ObjectId hatchID
-    )
-    {
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
-        if (rectPolyID != null)
-        {
+    ) {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
+        if (rectPolyID != null) {
           DBObject outerPoly = tr.GetObject(rectPolyID, OpenMode.ForWrite);
           outerPoly.Erase();
         }
 
-        if (hatchID != null)
-        {
+        if (hatchID != null) {
           DBObject hatch = tr.GetObject(hatchID, OpenMode.ForWrite);
           hatch.Erase();
         }
@@ -685,15 +631,12 @@ namespace ElectricalCommands
       ref ObjectId rectPolyID,
       ref ObjectId hatchID,
       PromptEntityResult per
-    )
-    {
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
+    ) {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
         // Get the selected polyline
         Polyline poly = tr.GetObject(per.ObjectId, OpenMode.ForRead) as Polyline;
 
-        if (poly != null && poly.Closed)
-        {
+        if (poly != null && poly.Closed) {
           // Get the polyline's bounding box
           Extents3d ext = poly.GeometricExtents;
           ed.Zoom(ext);
@@ -712,8 +655,7 @@ namespace ElectricalCommands
       }
     }
 
-    private static PromptEntityResult PromptUserForPolyline(Editor ed)
-    {
+    private static PromptEntityResult PromptUserForPolyline(Editor ed) {
       PromptEntityOptions peo = new PromptEntityOptions("");
       peo.SetRejectMessage("\nSelected object is not a closed polyline.");
       peo.AddAllowedClass(typeof(Polyline), true);
@@ -721,14 +663,12 @@ namespace ElectricalCommands
       return per;
     }
 
-    private static Point3d PromptUserForElectricalPanelPoint(Editor ed)
-    {
+    private static Point3d PromptUserForElectricalPanelPoint(Editor ed) {
       PromptPointOptions ppo = new PromptPointOptions("\nClick on the electrical panel: ");
       ppo.AllowNone = false; // User must select a point
 
       PromptPointResult ppr = ed.GetPoint(ppo);
-      if (ppr.Status != PromptStatus.OK)
-      {
+      if (ppr.Status != PromptStatus.OK) {
         ed.WriteMessage("\nPrompt was cancelled.");
         return Point3d.Origin; // Return the origin point if the prompt was cancelled
       }
@@ -736,16 +676,12 @@ namespace ElectricalCommands
       return ppr.Value;
     }
 
-    private static void ClosePolyline(Database db, PromptEntityResult per)
-    {
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
+    private static void ClosePolyline(Database db, PromptEntityResult per) {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
         // Get the selected polyline
         Polyline poly = tr.GetObject(per.ObjectId, OpenMode.ForWrite) as Polyline;
-        if (poly != null)
-        {
-          if (!poly.Closed)
-          {
+        if (poly != null) {
+          if (!poly.Closed) {
             poly.Closed = true;
             tr.Commit();
           }
@@ -753,13 +689,11 @@ namespace ElectricalCommands
       }
     }
 
-    private static int PromptForNumberOfRooms(Editor ed)
-    {
+    private static int PromptForNumberOfRooms(Editor ed) {
       int numRooms = 0;
       bool validInput = false;
 
-      while (!validInput)
-      {
+      while (!validInput) {
         PromptIntegerOptions pio = new PromptIntegerOptions("\nEnter the number of rooms: ");
         pio.AllowNegative = false;
         pio.AllowZero = false;
@@ -769,17 +703,14 @@ namespace ElectricalCommands
 
         PromptIntegerResult pir = ed.GetInteger(pio);
 
-        if (pir.Status == PromptStatus.OK)
-        {
+        if (pir.Status == PromptStatus.OK) {
           numRooms = pir.Value;
           validInput = true;
         }
-        else if (pir.Status == PromptStatus.Cancel)
-        {
+        else if (pir.Status == PromptStatus.Cancel) {
           throw new OperationCanceledException("User canceled the operation.");
         }
-        else
-        {
+        else {
           ed.WriteMessage("\nInvalid input. Please enter a valid number of rooms.");
         }
       }
@@ -787,31 +718,25 @@ namespace ElectricalCommands
       return numRooms;
     }
 
-    private int CountConnectedEdges(TriangleNet.Geometry.Vertex vertex, List<Edge> edges)
-    {
+    private int CountConnectedEdges(TriangleNet.Geometry.Vertex vertex, List<Edge> edges) {
       int count = 0;
-      foreach (var edge in edges)
-      {
-        if (edge.Point1.Equals(vertex) || edge.Point2.Equals(vertex))
-        {
+      foreach (var edge in edges) {
+        if (edge.Point1.Equals(vertex) || edge.Point2.Equals(vertex)) {
           count++;
         }
       }
       return count;
     }
 
-    private (double mean, double stdDev) CalculateEdgeLengthStatistics(List<Edge> edges)
-    {
+    private (double mean, double stdDev) CalculateEdgeLengthStatistics(List<Edge> edges) {
       double sum = 0;
-      foreach (var edge in edges)
-      {
+      foreach (var edge in edges) {
         sum += edge.Length();
       }
       double mean = sum / edges.Count;
 
       double sumSquaredDiff = 0;
-      foreach (var edge in edges)
-      {
+      foreach (var edge in edges) {
         double diff = edge.Length() - mean;
         sumSquaredDiff += diff * diff;
       }
@@ -821,12 +746,10 @@ namespace ElectricalCommands
       return (mean, stdDev);
     }
 
-    private List<Edge> ConvertEdgesToPoints(TriangleNet.Meshing.IMesh mesh)
-    {
+    private List<Edge> ConvertEdgesToPoints(TriangleNet.Meshing.IMesh mesh) {
       List<Edge> edges = new List<Edge>();
 
-      foreach (var edge in mesh.Edges)
-      {
+      foreach (var edge in mesh.Edges) {
         var vert1 = mesh.Vertices.First(vertex => vertex.ID == edge.P0);
         var vert2 = mesh.Vertices.First(vertex => vertex.ID == edge.P1);
 
@@ -840,18 +763,15 @@ namespace ElectricalCommands
       Database db,
       List<Edge> edges,
       List<MagentaObject> magentaObjects
-    )
-    {
-      using (Transaction trSplines = db.TransactionManager.StartTransaction())
-      {
+    ) {
+      using (Transaction trSplines = db.TransactionManager.StartTransaction()) {
         BlockTable blockTable =
           trSplines.GetObject(db.BlockTableId, OpenMode.ForRead) as BlockTable;
         BlockTableRecord modelSpace =
           trSplines.GetObject(blockTable[BlockTableRecord.ModelSpace], OpenMode.ForWrite)
           as BlockTableRecord;
 
-        foreach (var edge in edges)
-        {
+        foreach (var edge in edges) {
           TriangleNet.Geometry.Vertex vertex1 = edge.Point1;
           TriangleNet.Geometry.Vertex vertex2 = edge.Point2;
 
@@ -862,8 +782,7 @@ namespace ElectricalCommands
             obj.CenterNode.X == vertex2.X && obj.CenterNode.Y == vertex2.Y
           );
 
-          if (magentaObject1 != null && magentaObject2 != null)
-          {
+          if (magentaObject1 != null && magentaObject2 != null) {
             Point3d closestPoint1 = FindClosestPoint(
               magentaObject1.BoundaryPoints,
               magentaObject2.CenterNode
@@ -884,8 +803,7 @@ namespace ElectricalCommands
       }
     }
 
-    private static Spline CreateSpline(Point3d startPoint, Point3d endPoint)
-    {
+    private static Spline CreateSpline(Point3d startPoint, Point3d endPoint) {
       Spline spline = new Spline(
         new Point3dCollection(new[] { startPoint, endPoint }),
         Vector3d.ZAxis,
@@ -929,16 +847,13 @@ namespace ElectricalCommands
       return spline;
     }
 
-    private static Point3d FindClosestPoint(List<Point3d> boundaryPoints, Point3d targetNode)
-    {
+    private static Point3d FindClosestPoint(List<Point3d> boundaryPoints, Point3d targetNode) {
       Point3d closestPoint = Point3d.Origin;
       double minDistance = double.MaxValue;
 
-      foreach (var point in boundaryPoints)
-      {
+      foreach (var point in boundaryPoints) {
         double distance = point.DistanceTo(new Point3d(targetNode.X, targetNode.Y, 0));
-        if (distance < minDistance)
-        {
+        if (distance < minDistance) {
           minDistance = distance;
           closestPoint = point;
         }
@@ -951,8 +866,7 @@ namespace ElectricalCommands
       Tuple<System.Drawing.PointF, System.Drawing.PointF> line,
       float centerX,
       float centerY
-    )
-    {
+    ) {
       var pt1 = line.Item1;
       var pt2 = line.Item2;
 
@@ -961,8 +875,7 @@ namespace ElectricalCommands
       var angle2 = Math.Atan2(pt2.Y - centerY, pt2.X - centerX);
 
       // If the angle of pt2 is less than the angle of pt1, swap the points
-      if (angle2 < angle1)
-      {
+      if (angle2 < angle1) {
         var temp = pt1;
         pt1 = pt2;
         pt2 = temp;
@@ -973,13 +886,11 @@ namespace ElectricalCommands
 
     private Tuple<List<double>, List<double>> SplitPointsIntoXListAndYList(
       List<System.Drawing.Point> points
-    )
-    {
+    ) {
       List<double> xVals = new List<double>();
       List<double> yVals = new List<double>();
 
-      foreach (var point in points)
-      {
+      foreach (var point in points) {
         xVals.Add(point.X);
         yVals.Add(point.Y);
       }
@@ -987,8 +898,7 @@ namespace ElectricalCommands
       return new Tuple<List<double>, List<double>>(xVals, yVals);
     }
 
-    private Vector3d GetOrthogonalVector(Tuple<System.Drawing.PointF, System.Drawing.PointF> line)
-    {
+    private Vector3d GetOrthogonalVector(Tuple<System.Drawing.PointF, System.Drawing.PointF> line) {
       // Calculate the difference in x and y coordinates between the end point and the start point
       double dx = line.Item2.X - line.Item1.X;
       double dy = line.Item2.Y - line.Item1.Y;
@@ -1014,10 +924,8 @@ namespace ElectricalCommands
       out double rSquared,
       out double yIntercept,
       out double slope
-    )
-    {
-      if (xVals.Length != yVals.Length)
-      {
+    ) {
+      if (xVals.Length != yVals.Length) {
         throw new System.Exception("Input values should be with the same length.");
       }
 
@@ -1027,8 +935,7 @@ namespace ElectricalCommands
       double sumOfYSq = 0;
       double sumCodeviates = 0;
 
-      for (var i = 0; i < xVals.Length; i++)
-      {
+      for (var i = 0; i < xVals.Length; i++) {
         var x = xVals[i];
         var y = yVals[i];
         sumCodeviates += x * y;
@@ -1061,8 +968,7 @@ namespace ElectricalCommands
       int amount,
       int centerImageX,
       int centerImageY
-    )
-    {
+    ) {
       var grayPixelsWithBlackBorders = FindGrayPixelsWithBlackBorders(
         grayPixels,
         bitmap,
@@ -1070,8 +976,7 @@ namespace ElectricalCommands
         centerImageY
       );
 
-      var distances = grayPixelsWithBlackBorders.Select(p => new
-      {
+      var distances = grayPixelsWithBlackBorders.Select(p => new {
         Pixel = p,
         Distance = Math.Sqrt(Math.Pow(p.X - centerImageX, 2) + Math.Pow(p.Y - centerImageY, 2))
       });
@@ -1090,32 +995,26 @@ namespace ElectricalCommands
       Bitmap bitmap,
       int centerImageX,
       int centerImageY
-    )
-    {
+    ) {
       List<System.Drawing.Point> grayPixelsWithBlackBorders = new List<System.Drawing.Point>();
 
-      foreach (var grayPixel in grayPixels)
-      {
+      foreach (var grayPixel in grayPixels) {
         List<System.Drawing.Point> blackBorderPixels = new List<System.Drawing.Point>();
 
         // Check the pixel to the left
-        if (grayPixel.X > 0 && bitmap.GetPixel(grayPixel.X - 1, grayPixel.Y).R == 0)
-        {
+        if (grayPixel.X > 0 && bitmap.GetPixel(grayPixel.X - 1, grayPixel.Y).R == 0) {
           blackBorderPixels.Add(new System.Drawing.Point(grayPixel.X - 1, grayPixel.Y));
         }
         // Check the pixel to the right
-        if (grayPixel.X < bitmap.Width - 1 && bitmap.GetPixel(grayPixel.X + 1, grayPixel.Y).R == 0)
-        {
+        if (grayPixel.X < bitmap.Width - 1 && bitmap.GetPixel(grayPixel.X + 1, grayPixel.Y).R == 0) {
           blackBorderPixels.Add(new System.Drawing.Point(grayPixel.X + 1, grayPixel.Y));
         }
         // Check the pixel above
-        if (grayPixel.Y > 0 && bitmap.GetPixel(grayPixel.X, grayPixel.Y - 1).R == 0)
-        {
+        if (grayPixel.Y > 0 && bitmap.GetPixel(grayPixel.X, grayPixel.Y - 1).R == 0) {
           blackBorderPixels.Add(new System.Drawing.Point(grayPixel.X, grayPixel.Y - 1));
         }
         // Check the pixel below
-        if (grayPixel.Y < bitmap.Height - 1 && bitmap.GetPixel(grayPixel.X, grayPixel.Y + 1).R == 0)
-        {
+        if (grayPixel.Y < bitmap.Height - 1 && bitmap.GetPixel(grayPixel.X, grayPixel.Y + 1).R == 0) {
           blackBorderPixels.Add(new System.Drawing.Point(grayPixel.X, grayPixel.Y + 1));
         }
 
@@ -1123,14 +1022,12 @@ namespace ElectricalCommands
           Math.Pow(grayPixel.X - centerImageX, 2) + Math.Pow(grayPixel.Y - centerImageY, 2)
         );
 
-        foreach (var blackPixel in blackBorderPixels)
-        {
+        foreach (var blackPixel in blackBorderPixels) {
           double blackPixelDistance = Math.Sqrt(
             Math.Pow(blackPixel.X - centerImageX, 2) + Math.Pow(blackPixel.Y - centerImageY, 2)
           );
 
-          if (blackPixelDistance < grayPixelDistance)
-          {
+          if (blackPixelDistance < grayPixelDistance) {
             grayPixelsWithBlackBorders.Add(grayPixel);
             break;
           }
@@ -1143,11 +1040,9 @@ namespace ElectricalCommands
       Document doc,
       Point3d convertedBackPoint,
       Vector3d unitVector
-    )
-    {
+    ) {
       var blockName = "RECEP";
-      using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
-      {
+      using (Transaction tr = doc.Database.TransactionManager.StartTransaction()) {
         BlockTable bt = (BlockTable)tr.GetObject(doc.Database.BlockTableId, OpenMode.ForRead);
         BlockTableRecord btr = (BlockTableRecord)
           tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
@@ -1160,8 +1055,7 @@ namespace ElectricalCommands
         // Correct the angle for AutoCAD's coordinate system
         angle = Math.PI / 2 - angle;
 
-        if (angle < 0)
-        {
+        if (angle < 0) {
           angle += 2 * Math.PI;
         }
 
@@ -1181,24 +1075,18 @@ namespace ElectricalCommands
       int centerImageX,
       int centerImageY,
       System.Drawing.Point? closestGrayPixel
-    )
-    {
-      if (!closestGrayPixel.HasValue)
-      {
+    ) {
+      if (!closestGrayPixel.HasValue) {
         return new List<System.Drawing.Point>();
       }
 
       var surroundingGrayPixels = new List<System.Drawing.Point>();
 
-      for (int x = closestGrayPixel.Value.X - 2; x <= closestGrayPixel.Value.X + 2; x++)
-      {
-        for (int y = closestGrayPixel.Value.Y - 2; y <= closestGrayPixel.Value.Y + 2; y++)
-        {
-          if (x >= 0 && x < bitmap.Width && y >= 0 && y < bitmap.Height)
-          {
+      for (int x = closestGrayPixel.Value.X - 2; x <= closestGrayPixel.Value.X + 2; x++) {
+        for (int y = closestGrayPixel.Value.Y - 2; y <= closestGrayPixel.Value.Y + 2; y++) {
+          if (x >= 0 && x < bitmap.Width && y >= 0 && y < bitmap.Height) {
             Color pixelColor = bitmap.GetPixel(x, y);
-            if (pixelColor.R == pixelColor.G && pixelColor.G == pixelColor.B && pixelColor.R != 0)
-            {
+            if (pixelColor.R == pixelColor.G && pixelColor.G == pixelColor.B && pixelColor.R != 0) {
               surroundingGrayPixels.Add(new System.Drawing.Point(x, y));
             }
           }
@@ -1213,13 +1101,11 @@ namespace ElectricalCommands
       Bitmap bitmap,
       int centerImageX,
       int centerImageY
-    )
-    {
+    ) {
       System.Drawing.Point? closestGrayPixel = null;
       double closestDistance = double.MaxValue;
 
-      foreach (var grayPixel in grayPixels)
-      {
+      foreach (var grayPixel in grayPixels) {
         // Check the surrounding pixels for a black one
         var surroundingPoints = new List<System.Drawing.Point>
         {
@@ -1229,18 +1115,15 @@ namespace ElectricalCommands
           new System.Drawing.Point(grayPixel.X, grayPixel.Y + 1)
         };
 
-        foreach (var point in surroundingPoints)
-        {
-          if (point.X >= 0 && point.X < bitmap.Width && point.Y >= 0 && point.Y < bitmap.Height)
-          {
+        foreach (var point in surroundingPoints) {
+          if (point.X >= 0 && point.X < bitmap.Width && point.Y >= 0 && point.Y < bitmap.Height) {
             Color pixelColor = bitmap.GetPixel(point.X, point.Y);
             if (pixelColor.R == 0 && pixelColor.G == 0 && pixelColor.B == 0) // if the pixel is black
             {
               double distance = Math.Sqrt(
                 Math.Pow(grayPixel.X - centerImageX, 2) + Math.Pow(grayPixel.Y - centerImageY, 2)
               );
-              if (distance < closestDistance)
-              {
+              if (distance < closestDistance) {
                 closestDistance = distance;
                 closestGrayPixel = grayPixel;
               }
@@ -1260,8 +1143,7 @@ namespace ElectricalCommands
       Point3d max,
       int width,
       int height
-    )
-    {
+    ) {
       int hue = 150;
       double saturation = 1.0;
       double value = 0.9608;
@@ -1305,16 +1187,14 @@ namespace ElectricalCommands
       List<MagentaObject> magentaObjects = new List<MagentaObject>();
 
       // Iterate through the contours and create MagentaObject instances
-      for (int i = 0; i < contours.Size; i++)
-      {
+      for (int i = 0; i < contours.Size; i++) {
         double epsilon = 0.02 * CvInvoke.ArcLength(contours[i], true);
         VectorOfPoint approx = new VectorOfPoint();
         CvInvoke.ApproxPolyDP(contours[i], approx, epsilon, true);
 
         List<Point3d> boundaryPointsAutoCAD = new List<Point3d>();
 
-        for (int j = 0; j < approx.Size; j++)
-        {
+        for (int j = 0; j < approx.Size; j++) {
           Point pixelPoint = new Point(approx[j].X, approx[j].Y);
           Point3d autoCADPoint = ConvertPixelToAutoCAD(pixelPoint, editor, min, max, width, height);
           boundaryPointsAutoCAD.Add(autoCADPoint);
@@ -1340,8 +1220,7 @@ namespace ElectricalCommands
       List<Point3d> boundaryPointsAutoCAD,
       Point3d min,
       Point3d max
-    )
-    {
+    ) {
       double baseScaleFactor = 1000; // Adjust this value based on your desired base scale factor
 
       // Calculate the extents of the model space
@@ -1355,8 +1234,7 @@ namespace ElectricalCommands
       double deltaX = 1 * scaleFactor;
       double deltaY = 0.2466 * scaleFactor / 1000;
 
-      for (int i = 0; i < boundaryPointsAutoCAD.Count; i++)
-      {
+      for (int i = 0; i < boundaryPointsAutoCAD.Count; i++) {
         Point3d point = boundaryPointsAutoCAD[i];
         point = new Point3d(point.X + deltaX, point.Y + deltaY, 0);
         boundaryPointsAutoCAD[i] = point;
@@ -1370,8 +1248,7 @@ namespace ElectricalCommands
       Point3d max,
       int width,
       int height
-    )
-    {
+    ) {
       double worldX = min.X + (pixelPoint.X * (max.X - min.X)) / width;
       double worldY = max.Y - (pixelPoint.Y * (max.Y - min.Y)) / height;
 
@@ -1384,11 +1261,9 @@ namespace ElectricalCommands
       double scale = 1,
       double angle = 0,
       bool associative = false
-    )
-    {
+    ) {
       var db = GetDatabase(loopIds);
-      using (var trans = db.TransactionManager.StartTransaction())
-      {
+      using (var trans = db.TransactionManager.StartTransaction()) {
         var hatch = new Hatch();
         var space = trans.GetObject(db.CurrentSpaceId, OpenMode.ForWrite) as BlockTableRecord;
         ObjectId hatchId = space.AppendEntity(hatch);
@@ -1403,8 +1278,7 @@ namespace ElectricalCommands
         hatch.ColorIndex = 0;
         hatch.PatternAngle = angle;
         hatch.HatchStyle = Autodesk.AutoCAD.DatabaseServices.HatchStyle.Outer;
-        for (int i = 0; i < loopIds.Length; i++)
-        {
+        for (int i = 0; i < loopIds.Length; i++) {
           ObjectId loop = loopIds[i];
           hatch.AppendLoop(HatchLoopTypes.External, new ObjectIdCollection(new[] { loop }));
         }
@@ -1415,8 +1289,7 @@ namespace ElectricalCommands
       }
     }
 
-    internal static Database GetDatabase(IEnumerable<ObjectId> objectIds)
-    {
+    internal static Database GetDatabase(IEnumerable<ObjectId> objectIds) {
       return objectIds.Select(id => id.Database).Distinct().Single();
     }
 
@@ -1425,8 +1298,7 @@ namespace ElectricalCommands
       Transaction tr,
       ref Point3d min,
       ref Point3d max
-    )
-    {
+    ) {
       // Create a rectangular polyline around the selected polyline
       double offset = 1.0; // Adjust the offset value as needed
       Point2d pt1 = new Point2d(min.X - offset, min.Y - offset);
@@ -1453,20 +1325,17 @@ namespace ElectricalCommands
       object data,
       string fileName,
       bool noOverride = false
-    )
-    {
+    ) {
       string jsonData = JsonConvert.SerializeObject(data, Formatting.Indented);
       string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
       string fullPath = Path.Combine(desktopPath, fileName);
 
-      if (noOverride && File.Exists(fullPath))
-      {
+      if (noOverride && File.Exists(fullPath)) {
         int fileNumber = 1;
         string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
         string fileExtension = Path.GetExtension(fileName);
 
-        while (File.Exists(fullPath))
-        {
+        while (File.Exists(fullPath)) {
           string newFileName = $"{fileNameWithoutExtension} ({fileNumber}){fileExtension}";
           fullPath = Path.Combine(desktopPath, newFileName);
           fileNumber++;
@@ -1477,19 +1346,16 @@ namespace ElectricalCommands
     }
   }
 
-  public class Edge
-  {
+  public class Edge {
     public TriangleNet.Geometry.Vertex Point1 { get; set; }
     public TriangleNet.Geometry.Vertex Point2 { get; set; }
 
-    public Edge(TriangleNet.Geometry.Vertex vertex1, TriangleNet.Geometry.Vertex vertex2)
-    {
+    public Edge(TriangleNet.Geometry.Vertex vertex1, TriangleNet.Geometry.Vertex vertex2) {
       Point1 = vertex1;
       Point2 = vertex2;
     }
 
-    public double Length()
-    {
+    public double Length() {
       double dx = Point2.X - Point1.X;
       double dy = Point2.Y - Point1.Y;
 
@@ -1497,14 +1363,12 @@ namespace ElectricalCommands
     }
   }
 
-  public static class EditorExtension
-  {
-    public static void Zoom(this Editor ed, Extents3d ext)
-    {
+  public static class EditorExtension {
+
+    public static void Zoom(this Editor ed, Extents3d ext) {
       if (ed == null)
         throw new ArgumentNullException("ed");
-      using (ViewTableRecord view = ed.GetCurrentView())
-      {
+      using (ViewTableRecord view = ed.GetCurrentView()) {
         Matrix3d worldToEye =
           Matrix3d.WorldToPlane(view.ViewDirection)
           * Matrix3d.Displacement(Point3d.Origin - view.Target)
@@ -1520,8 +1384,7 @@ namespace ElectricalCommands
       }
     }
 
-    public static void ZoomExtents(this Editor ed)
-    {
+    public static void ZoomExtents(this Editor ed) {
       Database db = ed.Document.Database;
       db.UpdateExt(false);
       Extents3d ext =
@@ -1532,28 +1395,24 @@ namespace ElectricalCommands
     }
   }
 
-  public class MagentaObject
-  {
+  public class MagentaObject {
     public List<Point3d> BoundaryPoints { get; set; }
     public Point3d CenterNode { get; set; }
     public Point3d MinPoint { get; set; }
     public Point3d MaxPoint { get; set; }
     public List<Point3d> MidpointsBetweenBoundaryPoints { get; set; }
 
-    public MagentaObject(List<Point3d> boundaryPoints)
-    {
+    public MagentaObject(List<Point3d> boundaryPoints) {
       BoundaryPoints = boundaryPoints;
       CalculateCenterPoint();
       CalculateMinMaxPoints();
       CalculateMidpointsBetweenBoundaryPoints();
     }
 
-    private void CalculateMidpointsBetweenBoundaryPoints()
-    {
+    private void CalculateMidpointsBetweenBoundaryPoints() {
       MidpointsBetweenBoundaryPoints = new List<Point3d>();
 
-      for (int i = 0; i < BoundaryPoints.Count - 1; i++)
-      {
+      for (int i = 0; i < BoundaryPoints.Count - 1; i++) {
         Point3d point3 = BoundaryPoints[i];
         Point3d point4 = BoundaryPoints[i + 1];
         Point3d midpoint1 = new Point3d((point3.X + point4.X) / 2, (point3.Y + point4.Y) / 2, 0);
@@ -1566,12 +1425,10 @@ namespace ElectricalCommands
       MidpointsBetweenBoundaryPoints.Add(midpoint);
     }
 
-    private void CalculateCenterPoint()
-    {
+    private void CalculateCenterPoint() {
       double sumX = 0;
       double sumY = 0;
-      foreach (Point3d point in BoundaryPoints)
-      {
+      foreach (Point3d point in BoundaryPoints) {
         sumX += point.X;
         sumY += point.Y;
       }
@@ -1580,15 +1437,13 @@ namespace ElectricalCommands
       CenterNode = new Point3d(centerX, centerY, 0);
     }
 
-    private void CalculateMinMaxPoints()
-    {
+    private void CalculateMinMaxPoints() {
       double minX = double.MaxValue;
       double minY = double.MaxValue;
       double maxX = double.MinValue;
       double maxY = double.MinValue;
 
-      foreach (Point3d point in BoundaryPoints)
-      {
+      foreach (Point3d point in BoundaryPoints) {
         minX = Math.Min(minX, point.X);
         minY = Math.Min(minY, point.Y);
         maxX = Math.Max(maxX, point.X);
@@ -1599,8 +1454,7 @@ namespace ElectricalCommands
       MaxPoint = new Point3d(maxX, maxY, 0);
     }
 
-    public TriangleNet.Geometry.Vertex CenterPointAsVertex()
-    {
+    public TriangleNet.Geometry.Vertex CenterPointAsVertex() {
       return new TriangleNet.Geometry.Vertex(CenterNode.X, CenterNode.Y, 0);
     }
   }

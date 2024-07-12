@@ -1,4 +1,10 @@
-﻿using System;
+﻿using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.EditorInput;
+using Autodesk.AutoCAD.Geometry;
+using Autodesk.AutoCAD.Runtime;
+using Autodesk.AutoCAD.Windows;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -8,18 +14,11 @@ using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.EditorInput;
-using Autodesk.AutoCAD.Geometry;
-using Autodesk.AutoCAD.Runtime;
-using Autodesk.AutoCAD.Windows;
 using Application = Autodesk.AutoCAD.ApplicationServices.Application;
 
-namespace ElectricalCommands
-{
-  public partial class INITIALIZE_LIGHTING_FORM : Form
-  {
+namespace ElectricalCommands.Lighting {
+
+  public partial class INITIALIZE_LIGHTING_FORM : Form {
     public Point3d _panelPoint = Point3d.Origin;
     public List<ObjectId> _polylines = new List<ObjectId>();
     public int CurrentCircuitNumber { get; set; } = 2;
@@ -37,21 +36,18 @@ namespace ElectricalCommands
 
     public double _textSize = 4.5;
 
-    public INITIALIZE_LIGHTING_FORM()
-    {
+    public INITIALIZE_LIGHTING_FORM() {
       InitializeComponent();
       SCALE_COMBOBOX.SelectedIndex = 0;
     }
 
-    private void SET_WINDOW_BUTTON_Click(object sender, EventArgs e)
-    {
+    private void SET_WINDOW_BUTTON_Click(object sender, EventArgs e) {
       PositionApplicationWindow();
       this.BringToFront();
       this.Focus();
     }
 
-    public static void PositionApplicationWindow()
-    {
+    public static void PositionApplicationWindow() {
       // Get the main AutoCAD window
       var mainWindow = Application.MainWindow;
 
@@ -72,8 +68,7 @@ namespace ElectricalCommands
       acDoc.Window.WindowState = Window.State.Maximized;
     }
 
-    private void SET_PANEL_LOCATION_BUTTON_Click(object sender, EventArgs e)
-    {
+    private void SET_PANEL_LOCATION_BUTTON_Click(object sender, EventArgs e) {
       Document acDoc = FocusAutoCADAndSwitchToModelSpace();
 
       Editor ed = acDoc.Editor;
@@ -83,8 +78,7 @@ namespace ElectricalCommands
       this.Focus();
     }
 
-    private static Document FocusAutoCADAndSwitchToModelSpace()
-    {
+    private static Document FocusAutoCADAndSwitchToModelSpace() {
       Document acDoc = Autodesk
         .AutoCAD
         .ApplicationServices
@@ -92,8 +86,7 @@ namespace ElectricalCommands
         .DocumentManager
         .MdiActiveDocument;
 
-      using (acDoc.LockDocument())
-      {
+      using (acDoc.LockDocument()) {
         Autodesk.AutoCAD.ApplicationServices.Application.MainWindow.Focus();
 
         acDoc.Database.TileMode = true;
@@ -102,14 +95,12 @@ namespace ElectricalCommands
       return acDoc;
     }
 
-    private static Point3d PromptUserForElectricalPanelPoint(Editor ed)
-    {
+    private static Point3d PromptUserForElectricalPanelPoint(Editor ed) {
       PromptPointOptions ppo = new PromptPointOptions("\nClick on the electrical panel: ");
       ppo.AllowNone = false; // User must select a point
 
       PromptPointResult ppr = ed.GetPoint(ppo);
-      if (ppr.Status != PromptStatus.OK)
-      {
+      if (ppr.Status != PromptStatus.OK) {
         ed.WriteMessage("\nPrompt was cancelled.");
         return Point3d.Origin; // Return the origin point if the prompt was cancelled
       }
@@ -117,8 +108,7 @@ namespace ElectricalCommands
       return ppr.Value;
     }
 
-    private void SELECT_POLYLINES_BUTTON_Click(object sender, EventArgs e)
-    {
+    private void SELECT_POLYLINES_BUTTON_Click(object sender, EventArgs e) {
       Document doc = FocusAutoCADAndSwitchToModelSpace();
       Editor ed = doc.Editor;
       Database db = doc.Database;
@@ -127,10 +117,8 @@ namespace ElectricalCommands
       if (polylineIds == null || polylineIds.Count == 0)
         return;
 
-      using (doc.LockDocument())
-      {
-        for (int i = 0; i < polylineIds.Count; i++)
-        {
+      using (doc.LockDocument()) {
+        for (int i = 0; i < polylineIds.Count; i++) {
           var polyId = polylineIds[i];
           ClosePolyline(db, polyId);
 
@@ -146,8 +134,7 @@ namespace ElectricalCommands
             HandlePolylineLightingFormClosed(s, args, i, polylineIds.Count, polylineLightingForm);
           polylineLightingForm.ShowDialog();
 
-          if (polylineLightingForm.DialogResult == DialogResult.Cancel)
-          {
+          if (polylineLightingForm.DialogResult == DialogResult.Cancel) {
             break;
           }
         }
@@ -163,45 +150,37 @@ namespace ElectricalCommands
       int currentIndex,
       int totalCount,
       POLYLINE_LIGHTING_FORM polyForm
-    )
-    {
+    ) {
       var form = sender as POLYLINE_LIGHTING_FORM;
 
       polyForm.RemoveOuterPolylineAndHatch(polyForm.db);
 
-      if (form.DialogResult == DialogResult.OK)
-      {
+      if (form.DialogResult == DialogResult.OK) {
         int? numRooms = form.GetNumberOfRooms();
-        for (int i = 0; i < numRooms; i++)
-        {
+        for (int i = 0; i < numRooms; i++) {
           CurrentInitialLetter = form.GetNextCircuitLetter(CurrentInitialLetter);
         }
 
-        if (numRooms == null || numRooms == 0)
-        {
+        if (numRooms == null || numRooms == 0) {
           this.DialogResult = DialogResult.Abort;
           this.Close();
           return;
         }
 
-        if (currentIndex < totalCount - 1)
-        {
+        if (currentIndex < totalCount - 1) {
           return;
         }
-        else
-        {
+        else {
           this.Close();
         }
       }
-      else if (form.DialogResult == DialogResult.Abort)
-      {
+      else if (form.DialogResult == DialogResult.Abort) {
         this.DialogResult = DialogResult.Abort;
         this.Close();
       }
     }
 
-    private List<ObjectId> PromptUserForPolylines(Editor ed)
-    {
+    private List<ObjectId> PromptUserForPolylines(Editor ed) {
       List<ObjectId> polylineIds = new List<ObjectId>();
 
       PromptSelectionOptions pso = new PromptSelectionOptions();
@@ -210,25 +189,20 @@ namespace ElectricalCommands
 
       PromptSelectionResult psr = ed.GetSelection(pso);
 
-      if (psr.Status == PromptStatus.OK)
-      {
+      if (psr.Status == PromptStatus.OK) {
         SelectionSet ss = psr.Value;
 
-        foreach (SelectedObject so in ss)
-        {
+        foreach (SelectedObject so in ss) {
           if (
             so != null
             && so.ObjectId != ObjectId.Null
             && !so.ObjectId.IsErased
             && so.ObjectId.ObjectClass.IsDerivedFrom(RXClass.GetClass(typeof(Polyline)))
-          )
-          {
-            if (!_polylines.Contains(so.ObjectId))
-            {
+          ) {
+            if (!_polylines.Contains(so.ObjectId)) {
               polylineIds.Add(so.ObjectId);
             }
-            else
-            {
+            else {
               ed.WriteMessage("\nThe selected polyline has already been added.");
             }
           }
@@ -238,17 +212,13 @@ namespace ElectricalCommands
       return polylineIds;
     }
 
-    private void ClosePolyline(Database db, ObjectId polyId)
-    {
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
+    private void ClosePolyline(Database db, ObjectId polyId) {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
         // Get the selected polyline
         Polyline poly = tr.GetObject(polyId, OpenMode.ForWrite) as Polyline;
-        if (poly != null)
-        {
+        if (poly != null) {
           _polylines.Add(polyId);
-          if (!poly.Closed)
-          {
+          if (!poly.Closed) {
             poly.Closed = true;
             tr.Commit();
           }
@@ -256,13 +226,11 @@ namespace ElectricalCommands
       }
     }
 
-    private void SCALE_COMBOBOX_SelectedIndexChanged(object sender, EventArgs e)
-    {
+    private void SCALE_COMBOBOX_SelectedIndexChanged(object sender, EventArgs e) {
       string selectedScale = SCALE_COMBOBOX.SelectedItem?.ToString();
       if (
         !string.IsNullOrEmpty(selectedScale) && _scales.TryGetValue(selectedScale, out double size)
-      )
-      {
+      ) {
         _textSize = size;
       }
     }

@@ -1,0 +1,1 @@
+(command "netload" "C:/Users/JacobH/source/repos/GMEPElectricalCommands/GMEPElectricalCommands/bin/Debug/ElectricalCommands.dll")

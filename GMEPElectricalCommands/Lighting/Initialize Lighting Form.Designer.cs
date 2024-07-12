@@ -1,5 +1,4 @@
-﻿namespace CADTestingGround
-{
+﻿namespace ElectricalCommands.Lighting {
   partial class INITIALIZE_LIGHTING_FORM
   {
     /// <summary>

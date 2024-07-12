@@ -1,19 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Forms;
-using System.Windows.Forms.VisualStyles;
-using Accord.MachineLearning;
+﻿using Accord.MachineLearning;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
@@ -25,13 +10,26 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 using TriangleNet.Meshing.Algorithm;
 using Application = Autodesk.AutoCAD.ApplicationServices.Application;
 
-namespace ElectricalCommands
-{
-  public partial class POLYLINE_LIGHTING_FORM : Form
-  {
+namespace ElectricalCommands.Lighting {
+
+  public partial class POLYLINE_LIGHTING_FORM : Form {
     private Editor ed;
     public Database db;
     private ObjectId polyId;
@@ -52,8 +50,7 @@ namespace ElectricalCommands
       ObjectId polyId,
       Point3d panelPoint,
       double textSize
-    )
-    {
+    ) {
       InitializeComponent();
       this.ed = ed;
       this.db = db;
@@ -67,10 +64,8 @@ namespace ElectricalCommands
       this.Load += (sender, e) => this.SetCircuitAndLetter();
     }
 
-    private void ZoomIn()
-    {
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
+    private void ZoomIn() {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
         Polyline poly = tr.GetObject(polyId, OpenMode.ForRead) as Polyline;
         Extents3d ext = poly.GeometricExtents;
         ed.Zoom(ext);
@@ -78,39 +73,31 @@ namespace ElectricalCommands
       }
     }
 
-    private void SetCircuitAndLetter()
-    {
+    private void SetCircuitAndLetter() {
       CIRCUIT_NUMBER.Text = _parentForm.CurrentCircuitNumber.ToString();
       INITIAL_DIMMER_LETTER.Text = _parentForm.CurrentInitialLetter;
 
       MoveFormToOtherScreen();
     }
 
-    public int? GetNumberOfRooms()
-    {
-      if (string.IsNullOrWhiteSpace(NUMBER_OF_ROOMS.Text))
-      {
+    public int? GetNumberOfRooms() {
+      if (string.IsNullOrWhiteSpace(NUMBER_OF_ROOMS.Text)) {
         return null;
       }
 
-      if (int.TryParse(NUMBER_OF_ROOMS.Text, out int numRooms))
-      {
+      if (int.TryParse(NUMBER_OF_ROOMS.Text, out int numRooms)) {
         return numRooms;
       }
-      else
-      {
+      else {
         throw new InvalidOperationException("Invalid number of rooms entered.");
       }
     }
 
-    private void CreateOuterPolylineAndHatch(Editor ed, Database db, ObjectId polyId)
-    {
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
+    private void CreateOuterPolylineAndHatch(Editor ed, Database db, ObjectId polyId) {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
         // Get the selected polyline
         Polyline poly = tr.GetObject(polyId, OpenMode.ForRead) as Polyline;
-        if (poly != null && poly.Closed)
-        {
+        if (poly != null && poly.Closed) {
           // Get the polyline's bounding box
           Extents3d ext = poly.GeometricExtents;
           ed.Zoom(ext);
@@ -134,8 +121,7 @@ namespace ElectricalCommands
       Transaction tr,
       ref Point3d min,
       ref Point3d max
-    )
-    {
+    ) {
       // Create a rectangular polyline around the selected polyline
       double offset = 1.0; // Adjust the offset value as needed
       Point2d pt1 = new Point2d(min.X - offset, min.Y - offset);
@@ -164,11 +150,9 @@ namespace ElectricalCommands
       double scale = 1,
       double angle = 0,
       bool associative = false
-    )
-    {
+    ) {
       var db = GetDatabase(loopIds);
-      using (var trans = db.TransactionManager.StartTransaction())
-      {
+      using (var trans = db.TransactionManager.StartTransaction()) {
         var hatch = new Hatch();
         var space = trans.GetObject(db.CurrentSpaceId, OpenMode.ForWrite) as BlockTableRecord;
         ObjectId hatchId = space.AppendEntity(hatch);
@@ -183,8 +167,7 @@ namespace ElectricalCommands
         hatch.ColorIndex = 0;
         hatch.PatternAngle = angle;
         hatch.HatchStyle = Autodesk.AutoCAD.DatabaseServices.HatchStyle.Outer;
-        for (int i = 0; i < loopIds.Length; i++)
-        {
+        for (int i = 0; i < loopIds.Length; i++) {
           ObjectId loop = loopIds[i];
           hatch.AppendLoop(HatchLoopTypes.External, new ObjectIdCollection(new[] { loop }));
         }
@@ -195,13 +178,11 @@ namespace ElectricalCommands
       }
     }
 
-    internal Database GetDatabase(IEnumerable<ObjectId> objectIds)
-    {
+    internal Database GetDatabase(IEnumerable<ObjectId> objectIds) {
       return objectIds.Select(id => id.Database).Distinct().Single();
     }
 
-    private void GENERATE_BUTTON_Click(object sender, EventArgs e)
-    {
+    private void GENERATE_BUTTON_Click(object sender, EventArgs e) {
       string initialDimmerLetter = INITIAL_DIMMER_LETTER.Text ?? "";
 
       RemoveSplineAndTextObjects();
@@ -225,16 +206,13 @@ namespace ElectricalCommands
       _magentaObjects = magentaObjects;
       _capturedImagePath = capturedImagePath;
 
-      if (_magentaObjects != null)
-      {
+      if (_magentaObjects != null) {
         var numRooms = GetNumberOfRooms();
-        if (numRooms == null)
-        {
+        if (numRooms == null) {
           MessageBox.Show("Please enter the number of rooms.");
           return;
         }
-        else
-        {
+        else {
           GenerateTextAndSplines(
             _magentaObjects,
             _capturedImagePath,
@@ -246,8 +224,7 @@ namespace ElectricalCommands
       }
     }
 
-    private void MoveFormToOtherScreen()
-    {
+    private void MoveFormToOtherScreen() {
       // Get the screen where AutoCAD is currently showing
       Screen acadScreen = Screen.FromHandle(
         Autodesk.AutoCAD.ApplicationServices.Application.MainWindow.Handle
@@ -256,8 +233,7 @@ namespace ElectricalCommands
       // Find the opposite screen
       Screen oppositeScreen = Screen.AllScreens.FirstOrDefault(s => !s.Equals(acadScreen));
 
-      if (oppositeScreen != null)
-      {
+      if (oppositeScreen != null) {
         // Move the POLYLINE_LIGHTING_FORM to the opposite screen
         this.StartPosition = FormStartPosition.Manual;
         this.Location = oppositeScreen.WorkingArea.Location;
@@ -267,13 +243,10 @@ namespace ElectricalCommands
     private (
       List<MagentaObject> magentaObjects,
       string imagePath
-    ) CaptureScreenshotAndGetMagentaObjects(Document doc, int HEADER_HEIGHT, string imagePath)
-    {
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
+    ) CaptureScreenshotAndGetMagentaObjects(Document doc, int HEADER_HEIGHT, string imagePath) {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
         Polyline poly = tr.GetObject(polyId, OpenMode.ForRead) as Polyline;
-        if (poly != null && poly.Closed)
-        {
+        if (poly != null && poly.Closed) {
           Extents3d ext = poly.GeometricExtents;
           ed.Zoom(ext);
           Point3d min = ext.MinPoint;
@@ -296,8 +269,7 @@ namespace ElectricalCommands
           int height = (int)(screenMin.Y - screenMax.Y);
 
           // Create a new bitmap to hold the captured image
-          using (Bitmap bitmap = new Bitmap(width, height))
-          {
+          using (Bitmap bitmap = new Bitmap(width, height)) {
             CaptureAScreenshot(
               ed,
               poly,
@@ -323,15 +295,13 @@ namespace ElectricalCommands
       List<List<MagentaObject>> subClusters,
       int[] labels,
       double[][] centroids
-    ) PerformClustering(int numRooms, List<MagentaObject> magentaObjects)
-    {
+    ) PerformClustering(int numRooms, List<MagentaObject> magentaObjects) {
       List<List<MagentaObject>> subClusters = new List<List<MagentaObject>>();
       int[] labels;
       double[][] centroids = null;
       double areaPercentage = 0.3;
 
-      if (numRooms > 1)
-      {
+      if (numRooms > 1) {
         double[][] data = magentaObjects
           .Select(obj => new double[] { obj.CenterNode.X, obj.CenterNode.Y })
           .ToArray();
@@ -343,38 +313,31 @@ namespace ElectricalCommands
 
         Dictionary<int, List<MagentaObject>> groupedClusters =
           new Dictionary<int, List<MagentaObject>>();
-        for (int i = 0; i < labels.Length; i++)
-        {
+        for (int i = 0; i < labels.Length; i++) {
           int clusterLabel = labels[i];
-          if (!groupedClusters.ContainsKey(clusterLabel))
-          {
+          if (!groupedClusters.ContainsKey(clusterLabel)) {
             groupedClusters[clusterLabel] = new List<MagentaObject>();
           }
           groupedClusters[clusterLabel].Add(magentaObjects[i]);
         }
 
-        foreach (var clusterGroup in groupedClusters.Values)
-        {
+        foreach (var clusterGroup in groupedClusters.Values) {
           subClusters.AddRange(GroupMagentaObjectsByArea(clusterGroup, areaPercentage));
         }
       }
-      else
-      {
+      else {
         subClusters = GroupMagentaObjectsByArea(magentaObjects, areaPercentage);
         labels = new int[magentaObjects.Count];
         centroids = new double[subClusters.Count][];
 
-        for (int i = 0; i < subClusters.Count; i++)
-        {
+        for (int i = 0; i < subClusters.Count; i++) {
           double sumX = 0;
           double sumY = 0;
           int count = 0;
 
-          foreach (var obj in subClusters[i])
-          {
+          foreach (var obj in subClusters[i]) {
             int index = magentaObjects.IndexOf(obj);
-            if (index != -1)
-            {
+            if (index != -1) {
               labels[index] = i;
               sumX += obj.CenterNode.X;
               sumY += obj.CenterNode.Y;
@@ -382,8 +345,7 @@ namespace ElectricalCommands
             }
           }
 
-          if (count > 0)
-          {
+          if (count > 0) {
             centroids[i] = new double[] { sumX / count, sumY / count };
           }
         }
@@ -397,25 +359,21 @@ namespace ElectricalCommands
       string imagePath,
       string initialDimmerLetter,
       int? numRooms
-    )
-    {
+    ) {
       int numClusters = numRooms ?? 0;
-      if (numClusters == 0)
-      {
+      if (numClusters == 0) {
         return;
       }
 
       (List<List<MagentaObject>> subClusters, int[] labels, double[][] centroids) =
         PerformClustering(numClusters, magentaObjects);
 
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
         PutTextNearMagentaObjects(magentaObjects, ed, db, initialDimmerLetter, labels);
 
         var userPt = _panelPoint;
 
-        if (centroids != null)
-        {
+        if (centroids != null) {
           var orderedIndices = GetOrderedIndicesOfCentroidsFromUserClick(centroids, userPt);
 
           List<Edge> clusterEdges = new List<Edge>();
@@ -431,8 +389,7 @@ namespace ElectricalCommands
             userPt
           );
 
-          foreach (var edge in clusterEdges)
-          {
+          foreach (var edge in clusterEdges) {
             CreateSplinesFromEdges(db, new List<Edge> { edge }, magentaObjects);
           }
         }
@@ -443,8 +400,7 @@ namespace ElectricalCommands
 
         mpg.AppendLoopFromBoundary(poly, true, tolerance);
 
-        for (int i = 0; i < subClusters.Count; i++)
-        {
+        for (int i = 0; i < subClusters.Count; i++) {
           List<MagentaObject> subClusterObjects = subClusters[i];
           int[] subClusterLabels = Enumerable.Repeat(i, subClusterObjects.Count).ToArray();
 
@@ -452,13 +408,11 @@ namespace ElectricalCommands
             .Select(obj => new TriangleNet.Geometry.Vertex(obj.CenterNode.X, obj.CenterNode.Y))
             .ToList();
 
-          if (vertices.Count == 2)
-          {
+          if (vertices.Count == 2) {
             var filteredEdges = new List<Edge>() { new Edge(vertices[0], vertices[1]) };
             CreateSplinesFromEdges(db, filteredEdges, subClusterObjects);
           }
-          else if (vertices.Count > 2)
-          {
+          else if (vertices.Count > 2) {
             var triangulator = new Dwyer();
 
             var mesh = triangulator.Triangulate(vertices, new TriangleNet.Configuration());
@@ -470,8 +424,7 @@ namespace ElectricalCommands
             double stdDevLength = edgeStats.stdDev;
 
             List<Edge> filteredEdges = edges
-              .Where(edge =>
-              {
+              .Where(edge => {
                 bool isLengthWithinRange = edge.Length() <= meanLength + stdDevLength;
                 bool isNode1Connected = CountConnectedEdges(edge.Point1, edges) >= 3;
                 bool isNode2Connected = CountConnectedEdges(edge.Point2, edges) >= 3;
@@ -493,23 +446,17 @@ namespace ElectricalCommands
       }
     }
 
-    private void RemoveSplineAndTextObjects()
-    {
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
-        foreach (var splineId in _splineIds)
-        {
-          if (!splineId.IsNull && !splineId.IsErased)
-          {
+    private void RemoveSplineAndTextObjects() {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
+        foreach (var splineId in _splineIds) {
+          if (!splineId.IsNull && !splineId.IsErased) {
             DBObject spline = tr.GetObject(splineId, OpenMode.ForWrite);
             spline.Erase();
           }
         }
 
-        foreach (var textObjectId in _textObjectIds)
-        {
-          if (!textObjectId.IsNull && !textObjectId.IsErased)
-          {
+        foreach (var textObjectId in _textObjectIds) {
+          if (!textObjectId.IsNull && !textObjectId.IsErased) {
             DBObject textObject = tr.GetObject(textObjectId, OpenMode.ForWrite);
             textObject.Erase();
           }
@@ -519,18 +466,14 @@ namespace ElectricalCommands
       }
     }
 
-    public void RemoveOuterPolylineAndHatch(Database db)
-    {
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
-        if (!_rectPolyID.IsNull && !_rectPolyID.IsErased)
-        {
+    public void RemoveOuterPolylineAndHatch(Database db) {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
+        if (!_rectPolyID.IsNull && !_rectPolyID.IsErased) {
           DBObject outerPoly = tr.GetObject(_rectPolyID, OpenMode.ForWrite);
           outerPoly.Erase();
         }
 
-        if (!_hatchID.IsNull && !_hatchID.IsErased)
-        {
+        if (!_hatchID.IsNull && !_hatchID.IsErased) {
           DBObject hatch = tr.GetObject(_hatchID, OpenMode.ForWrite);
           hatch.Erase();
         }
@@ -548,17 +491,14 @@ namespace ElectricalCommands
       int width,
       int height,
       Bitmap bitmap
-    )
-    {
-      using (Graphics g = Graphics.FromImage(bitmap))
-      {
+    ) {
+      using (Graphics g = Graphics.FromImage(bitmap)) {
         // Set the clipping boundary around the polyline
         GraphicsPath path = new GraphicsPath();
         // Get the polyline points
         int vertices = poly.NumberOfVertices;
         List<System.Drawing.PointF> polylinePoints = new List<System.Drawing.PointF>();
-        for (int i = 0; i < vertices; i++)
-        {
+        for (int i = 0; i < vertices; i++) {
           Point3d point = poly.GetPoint3dAt(i);
           System.Windows.Point screenPoint = ed.PointToScreen(point, 0);
           screenPoint.X -= documentLocation.X;
@@ -591,8 +531,7 @@ namespace ElectricalCommands
       Point3d max,
       int width,
       int height
-    )
-    {
+    ) {
       int hue = 150;
       double saturation = 1.0;
       double value = 0.4784;
@@ -668,16 +607,14 @@ namespace ElectricalCommands
       Mat contoursImage = image.Clone();
 
       // Iterate through the contours and create MagentaObject instances
-      for (int i = 0; i < contours.Size; i++)
-      {
+      for (int i = 0; i < contours.Size; i++) {
         double epsilon = 0.02 * CvInvoke.ArcLength(contours[i], true);
         VectorOfPoint approx = new VectorOfPoint();
         CvInvoke.ApproxPolyDP(contours[i], approx, epsilon, true);
 
         List<Point3d> boundaryPointsAutoCAD = new List<Point3d>();
 
-        for (int j = 0; j < approx.Size; j++)
-        {
+        for (int j = 0; j < approx.Size; j++) {
           Point pixelPoint = new Point(approx[j].X, approx[j].Y);
           Point3d autoCADPoint = ConvertPixelToAutoCAD(pixelPoint, editor, min, max, width, height);
           boundaryPointsAutoCAD.Add(autoCADPoint);
@@ -685,8 +622,7 @@ namespace ElectricalCommands
 
         UpdateBoundaryPoints(boundaryPointsAutoCAD, min, max);
 
-        if (boundaryPointsAutoCAD.Count > 2)
-        {
+        if (boundaryPointsAutoCAD.Count > 2) {
           MagentaObject magentaObject = new MagentaObject(boundaryPointsAutoCAD);
           magentaObjects.Add(magentaObject);
         }
@@ -714,20 +650,17 @@ namespace ElectricalCommands
       object data,
       string fileName,
       bool noOverride = false
-    )
-    {
+    ) {
       string jsonData = JsonConvert.SerializeObject(data, Formatting.Indented);
       string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
       string fullPath = Path.Combine(desktopPath, fileName);
 
-      if (noOverride && File.Exists(fullPath))
-      {
+      if (noOverride && File.Exists(fullPath)) {
         int fileNumber = 1;
         string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
         string fileExtension = Path.GetExtension(fileName);
 
-        while (File.Exists(fullPath))
-        {
+        while (File.Exists(fullPath)) {
           string newFileName = $"{fileNameWithoutExtension} ({fileNumber}){fileExtension}";
           fullPath = Path.Combine(desktopPath, newFileName);
           fileNumber++;
@@ -743,10 +676,8 @@ namespace ElectricalCommands
       Database db,
       string initialDimmerLetter,
       int[] labels
-    )
-    {
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
+    ) {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
         LayerTable lt = tr.GetObject(db.LayerTableId, OpenMode.ForRead) as LayerTable;
         LayerTableRecord ltr = tr.GetObject(lt["E-TXT1"], OpenMode.ForWrite) as LayerTableRecord;
         BlockTable blockTable = tr.GetObject(db.BlockTableId, OpenMode.ForRead) as BlockTable;
@@ -758,14 +689,12 @@ namespace ElectricalCommands
 
         string currentLetter = initialDimmerLetter;
 
-        foreach (int label in labels.Distinct())
-        {
+        foreach (int label in labels.Distinct()) {
           clusterLabels[label] = currentLetter;
           currentLetter = GetNextCircuitLetter(currentLetter);
         }
 
-        foreach (var obj in magentaObjects)
-        {
+        foreach (var obj in magentaObjects) {
           double maxX = obj.BoundaryPoints.Max(p => p.X);
           double maxY = obj.BoundaryPoints.Max(p => p.Y);
           Point3d position = new Point3d(maxX + _textSize / 8, maxY + _textSize / 8, 0);
@@ -781,13 +710,11 @@ namespace ElectricalCommands
 
           TextStyleTable textStyleTable =
             tr.GetObject(db.TextStyleTableId, OpenMode.ForRead) as TextStyleTable;
-          if (textStyleTable.Has("rpm"))
-          {
+          if (textStyleTable.Has("rpm")) {
             ObjectId textStyleId = textStyleTable["rpm"];
             dbText.TextStyleId = textStyleId;
           }
-          else
-          {
+          else {
             ObjectId standardTextStyleId = textStyleTable["Standard"];
             dbText.TextStyleId = standardTextStyleId;
           }
@@ -811,22 +738,17 @@ namespace ElectricalCommands
       HashSet<int> visitedClusters,
       List<Edge> clusterEdges,
       Point3d userPt
-    )
-    {
+    ) {
       visitedClusters.Add(startClusterIndex);
 
-      while (visitedClusters.Count < labels.Distinct().Count())
-      {
+      while (visitedClusters.Count < labels.Distinct().Count()) {
         double minDistance = double.MaxValue;
         int closestClusterIndex = -1;
         Edge closestEdge = null;
 
-        foreach (int visitedClusterIndex in visitedClusters)
-        {
-          for (int i = 0; i < labels.Length; i++)
-          {
-            if (!visitedClusters.Contains(labels[i]))
-            {
+        foreach (int visitedClusterIndex in visitedClusters) {
+          for (int i = 0; i < labels.Length; i++) {
+            if (!visitedClusters.Contains(labels[i])) {
               Edge edge = FindClosestEdgeBetweenClusters(
                 visitedClusterIndex,
                 labels[i],
@@ -834,8 +756,7 @@ namespace ElectricalCommands
                 labels,
                 userPt
               );
-              if (edge != null && edge.Length() < minDistance)
-              {
+              if (edge != null && edge.Length() < minDistance) {
                 minDistance = edge.Length();
                 closestClusterIndex = labels[i];
                 closestEdge = edge;
@@ -844,8 +765,7 @@ namespace ElectricalCommands
           }
         }
 
-        if (closestClusterIndex != -1)
-        {
+        if (closestClusterIndex != -1) {
           visitedClusters.Add(closestClusterIndex);
           clusterEdges.Add(closestEdge);
         }
@@ -858,8 +778,7 @@ namespace ElectricalCommands
       List<MagentaObject> magentaObjects,
       int[] labels,
       Point3d userPt
-    )
-    {
+    ) {
       List<MagentaObject> cluster1Objects = magentaObjects
         .Where((obj, idx) => labels[idx] == cluster1Label)
         .ToList();
@@ -871,10 +790,8 @@ namespace ElectricalCommands
       MagentaObject closestObject1 = null;
       MagentaObject closestObject2 = null;
 
-      foreach (var obj1 in cluster1Objects)
-      {
-        foreach (var obj2 in cluster2Objects)
-        {
+      foreach (var obj1 in cluster1Objects) {
+        foreach (var obj2 in cluster2Objects) {
           double firstObjectDistanceToPanel = obj1.CenterNode.DistanceTo(userPt);
           double secondObjectDistanceToPanel = obj2.CenterNode.DistanceTo(userPt);
           double firstObjectDistanceToSecondObject = obj1.CenterNode.DistanceTo(obj2.CenterNode);
@@ -883,8 +800,7 @@ namespace ElectricalCommands
             + (firstObjectDistanceToPanel * 0.15)
             + (secondObjectDistanceToPanel * 0.15);
 
-          if (totalDistance < minDistance)
-          {
+          if (totalDistance < minDistance) {
             minDistance = totalDistance;
             closestObject1 = obj1;
             closestObject2 = obj2;
@@ -892,8 +808,7 @@ namespace ElectricalCommands
         }
       }
 
-      if (closestObject1 != null && closestObject2 != null)
-      {
+      if (closestObject1 != null && closestObject2 != null) {
         TriangleNet.Geometry.Vertex vertex1 = closestObject1.CenterPointAsVertex();
         TriangleNet.Geometry.Vertex vertex2 = closestObject2.CenterPointAsVertex();
         return new Edge(vertex1, vertex2);
@@ -905,12 +820,10 @@ namespace ElectricalCommands
     private List<int> GetOrderedIndicesOfCentroidsFromUserClick(
       double[][] centroids,
       Point3d userPt
-    )
-    {
+    ) {
       List<int> indices = new List<int>();
 
-      foreach (var centroid in centroids)
-      {
+      foreach (var centroid in centroids) {
         centroid[0] = Math.Abs(centroid[0] - userPt.X);
         centroid[1] = Math.Abs(centroid[1] - userPt.Y);
       }
@@ -920,8 +833,7 @@ namespace ElectricalCommands
         .OrderBy(c => c.Distance)
         .ToList();
 
-      foreach (var centroid in orderedCentroids)
-      {
+      foreach (var centroid in orderedCentroids) {
         indices.Add(centroid.Index);
       }
 
@@ -932,18 +844,15 @@ namespace ElectricalCommands
       Database db,
       List<Edge> edges,
       List<MagentaObject> magentaObjects
-    )
-    {
-      using (Transaction trSplines = db.TransactionManager.StartTransaction())
-      {
+    ) {
+      using (Transaction trSplines = db.TransactionManager.StartTransaction()) {
         BlockTable blockTable =
           trSplines.GetObject(db.BlockTableId, OpenMode.ForRead) as BlockTable;
         BlockTableRecord modelSpace =
           trSplines.GetObject(blockTable[BlockTableRecord.ModelSpace], OpenMode.ForWrite)
           as BlockTableRecord;
 
-        foreach (var edge in edges)
-        {
+        foreach (var edge in edges) {
           TriangleNet.Geometry.Vertex vertex1 = edge.Point1;
           TriangleNet.Geometry.Vertex vertex2 = edge.Point2;
 
@@ -954,8 +863,7 @@ namespace ElectricalCommands
             obj.CenterNode.X == vertex2.X && obj.CenterNode.Y == vertex2.Y
           );
 
-          if (magentaObject1 != null && magentaObject2 != null)
-          {
+          if (magentaObject1 != null && magentaObject2 != null) {
             Point3d closestPoint1 = FindClosestPoint(
               magentaObject1.MidpointsBetweenBoundaryPoints,
               magentaObject2.CenterNode
@@ -979,8 +887,7 @@ namespace ElectricalCommands
       }
     }
 
-    private static Spline CreateSpline(Point3d startPoint, Point3d endPoint)
-    {
+    private static Spline CreateSpline(Point3d startPoint, Point3d endPoint) {
       Spline spline = new Spline(
         new Point3dCollection(new[] { startPoint, endPoint }),
         Vector3d.ZAxis,
@@ -1027,16 +934,13 @@ namespace ElectricalCommands
     private static Point3d FindClosestPoint(
       List<Point3d> midpointsBetweenBoundaryPoints,
       Point3d targetNode
-    )
-    {
+    ) {
       Point3d closestPoint = Point3d.Origin;
       double minDistance = double.MaxValue;
 
-      foreach (var point in midpointsBetweenBoundaryPoints)
-      {
+      foreach (var point in midpointsBetweenBoundaryPoints) {
         double distance = point.DistanceTo(new Point3d(targetNode.X, targetNode.Y, 0));
-        if (distance < minDistance)
-        {
+        if (distance < minDistance) {
           minDistance = distance;
           closestPoint = point;
         }
@@ -1045,31 +949,25 @@ namespace ElectricalCommands
       return closestPoint;
     }
 
-    private int CountConnectedEdges(TriangleNet.Geometry.Vertex vertex, List<Edge> edges)
-    {
+    private int CountConnectedEdges(TriangleNet.Geometry.Vertex vertex, List<Edge> edges) {
       int count = 0;
-      foreach (var edge in edges)
-      {
-        if (edge.Point1.Equals(vertex) || edge.Point2.Equals(vertex))
-        {
+      foreach (var edge in edges) {
+        if (edge.Point1.Equals(vertex) || edge.Point2.Equals(vertex)) {
           count++;
         }
       }
       return count;
     }
 
-    private (double mean, double stdDev) CalculateEdgeLengthStatistics(List<Edge> edges)
-    {
+    private (double mean, double stdDev) CalculateEdgeLengthStatistics(List<Edge> edges) {
       double sum = 0;
-      foreach (var edge in edges)
-      {
+      foreach (var edge in edges) {
         sum += edge.Length();
       }
       double mean = sum / edges.Count;
 
       double sumSquaredDiff = 0;
-      foreach (var edge in edges)
-      {
+      foreach (var edge in edges) {
         double diff = edge.Length() - mean;
         sumSquaredDiff += diff * diff;
       }
@@ -1084,18 +982,15 @@ namespace ElectricalCommands
       List<MagentaObject> magentaObjects,
       MPolygon mpg,
       double tolerance
-    )
-    {
+    ) {
       List<Edge> edges = new List<Edge>();
 
-      foreach (var edge in mesh.Edges)
-      {
+      foreach (var edge in mesh.Edges) {
         var vert1 = mesh.Vertices.First(vertex => vertex.ID == edge.P0);
         var vert2 = mesh.Vertices.First(vertex => vertex.ID == edge.P1);
 
         // Check if the edge cuts through any magenta object
-        if (!EdgeCutsThroughMagentaObject(vert1, vert2, magentaObjects, mpg, tolerance))
-        {
+        if (!EdgeCutsThroughMagentaObject(vert1, vert2, magentaObjects, mpg, tolerance)) {
           edges.Add(new Edge(vert1, vert2));
         }
       }
@@ -1109,8 +1004,7 @@ namespace ElectricalCommands
       List<MagentaObject> magentaObjects,
       MPolygon mpg,
       double tolerance
-    )
-    {
+    ) {
       double stepSize = 1.0; // Adjust this value based on your desired granularity
 
       Vector3d edgeVector = new Vector3d(vert2.X - vert1.X, vert2.Y - vert1.Y, 0);
@@ -1125,35 +1019,30 @@ namespace ElectricalCommands
       );
 
       // Check if any of the 4 points at 20%, 40%, 60%, and 80% distance are outside the inner polyline
-      for (int i = 1; i <= 4; i++)
-      {
+      for (int i = 1; i <= 4; i++) {
         double t = (double)i / 5;
         double x = vert1.X + t * (vert2.X - vert1.X);
         double y = vert1.Y + t * (vert2.Y - vert1.Y);
         Point3d point = new Point3d(x, y, 0);
 
-        if (!IsPointOutsideInnerPolyline(point, mpg, tolerance))
-        {
+        if (!IsPointOutsideInnerPolyline(point, mpg, tolerance)) {
           return true;
         }
       }
 
       // Check if any point along the edge is inside a magenta object (excluding the start and end magenta objects)
-      for (int i = 0; i <= numSteps; i++)
-      {
+      for (int i = 0; i <= numSteps; i++) {
         double t = (double)i / numSteps;
         double x = vert1.X + t * (vert2.X - vert1.X);
         double y = vert1.Y + t * (vert2.Y - vert1.Y);
         Point3d point = new Point3d(x, y, 0);
 
-        foreach (var magentaObject in magentaObjects)
-        {
+        foreach (var magentaObject in magentaObjects) {
           if (
             magentaObject != magentaObject1
             && magentaObject != magentaObject2
             && IsPointInsideMagentaObject(point, magentaObject)
-          )
-          {
+          ) {
             return true;
           }
         }
@@ -1162,13 +1051,10 @@ namespace ElectricalCommands
       return false;
     }
 
-    private bool IsPointOutsideInnerPolyline(Point3d point, MPolygon mpg, double tolerance)
-    {
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
+    private bool IsPointOutsideInnerPolyline(Point3d point, MPolygon mpg, double tolerance) {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
         Polyline poly = tr.GetObject(polyId, OpenMode.ForRead) as Polyline;
-        if (poly != null && poly.Closed)
-        {
+        if (poly != null && poly.Closed) {
           return IsPointInside(mpg, point, tolerance);
         }
         tr.Commit();
@@ -1176,8 +1062,7 @@ namespace ElectricalCommands
       return false;
     }
 
-    private bool IsPointInsideMagentaObject(Point3d point, MagentaObject magentaObject)
-    {
+    private bool IsPointInsideMagentaObject(Point3d point, MagentaObject magentaObject) {
       Point3d min = magentaObject.BoundaryPoints.Aggregate(
         (p1, p2) => new Point3d(Math.Min(p1.X, p2.X), Math.Min(p1.Y, p2.Y), 0)
       );
@@ -1192,8 +1077,7 @@ namespace ElectricalCommands
       List<Edge> edges,
       TriangleNet.Geometry.Vertex startNode,
       Point3d userPt
-    )
-    {
+    ) {
       var bfsEdges = new List<Edge>();
       var visited = new HashSet<TriangleNet.Geometry.Vertex>();
       var queue = new Queue<TriangleNet.Geometry.Vertex>();
@@ -1201,30 +1085,25 @@ namespace ElectricalCommands
       visited.Add(startNode);
       queue.Enqueue(startNode);
 
-      while (queue.Count > 0)
-      {
+      while (queue.Count > 0) {
         var currentNode = queue.Dequeue();
 
         var neighborEdges = edges
           .Where(e => e.Point1.Equals(currentNode) || e.Point2.Equals(currentNode))
-          .OrderBy(e =>
-          {
+          .OrderBy(e => {
             var neighborNode = e.Point1.Equals(currentNode) ? e.Point2 : e.Point1;
             return IsHorizontalOrVertical(currentNode, neighborNode) ? 0 : 1;
           })
-          .ThenBy(e =>
-          {
+          .ThenBy(e => {
             var neighborNode = e.Point1.Equals(currentNode) ? e.Point2 : e.Point1;
             return new Point3d(neighborNode.X, neighborNode.Y, 0).DistanceTo(userPt);
           })
           .ToList();
 
-        foreach (var edge in neighborEdges)
-        {
+        foreach (var edge in neighborEdges) {
           var neighborNode = edge.Point1.Equals(currentNode) ? edge.Point2 : edge.Point1;
 
-          if (!visited.Contains(neighborNode))
-          {
+          if (!visited.Contains(neighborNode)) {
             visited.Add(neighborNode);
             queue.Enqueue(neighborNode);
             bfsEdges.Add(edge);
@@ -1238,25 +1117,21 @@ namespace ElectricalCommands
     private bool IsHorizontalOrVertical(
       TriangleNet.Geometry.Vertex point1,
       TriangleNet.Geometry.Vertex point2
-    )
-    {
+    ) {
       return Math.Abs(point1.X - point2.X) < 3 || Math.Abs(point1.Y - point2.Y) < 3;
     }
 
     private MagentaObject FindClosestMagentaObject(
       Point3d userPoint,
       List<MagentaObject> clusterObjects
-    )
-    {
+    ) {
       double minDistance = double.MaxValue;
       MagentaObject closestObject = null;
 
-      foreach (var obj in clusterObjects)
-      {
+      foreach (var obj in clusterObjects) {
         double distance = userPoint.DistanceTo(obj.CenterNode);
 
-        if (distance < minDistance)
-        {
+        if (distance < minDistance) {
           minDistance = distance;
           closestObject = obj;
         }
@@ -1269,8 +1144,7 @@ namespace ElectricalCommands
       List<Point3d> boundaryPointsAutoCAD,
       Point3d min,
       Point3d max
-    )
-    {
+    ) {
       double baseScaleFactor = 1000; // Adjust this value based on your desired base scale factor
 
       // Calculate the extents of the model space
@@ -1284,8 +1158,7 @@ namespace ElectricalCommands
       double deltaX = 1 * scaleFactor;
       double deltaY = 0.2466 * scaleFactor / 1000;
 
-      for (int i = 0; i < boundaryPointsAutoCAD.Count; i++)
-      {
+      for (int i = 0; i < boundaryPointsAutoCAD.Count; i++) {
         Point3d point = boundaryPointsAutoCAD[i];
         point = new Point3d(point.X + deltaX, point.Y + deltaY, 0);
         boundaryPointsAutoCAD[i] = point;
@@ -1299,33 +1172,25 @@ namespace ElectricalCommands
       Point3d max,
       int width,
       int height
-    )
-    {
+    ) {
       double worldX = min.X + (pixelPoint.X * (max.X - min.X)) / width;
       double worldY = max.Y - (pixelPoint.Y * (max.Y - min.Y)) / height;
 
       return new Point3d(worldX, worldY, 0);
     }
 
-    public static bool IsPointInside(MPolygon _mpg, Point3d point, double tolerance)
-    {
+    public static bool IsPointInside(MPolygon _mpg, Point3d point, double tolerance) {
       return _mpg.IsPointInsideMPolygon(point, tolerance).Count == 1;
     }
 
-    private void FIX_TEXT_BUTTON_Click(object sender, EventArgs e)
-    {
-      using (Transaction tr = db.TransactionManager.StartTransaction())
-      {
-        foreach (var textObjectId in _textObjectIds)
-        {
-          if (!textObjectId.IsNull && !textObjectId.IsErased)
-          {
+    private void FIX_TEXT_BUTTON_Click(object sender, EventArgs e) {
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
+        foreach (var textObjectId in _textObjectIds) {
+          if (!textObjectId.IsNull && !textObjectId.IsErased) {
             DBText textObject = tr.GetObject(textObjectId, OpenMode.ForWrite) as DBText;
-            if (textObject != null)
-            {
+            if (textObject != null) {
               List<ObjectId> nearestSplineIds = GetNearestSplineIds(textObject, 3);
-              if (nearestSplineIds.Count > 0)
-              {
+              if (nearestSplineIds.Count > 0) {
                 Point3d initialPosition = textObject.Position;
                 bool intersects = true;
                 double yOffset = 0.0;
@@ -1333,8 +1198,7 @@ namespace ElectricalCommands
                 double xOffset = 0.0;
                 double xStep = _textSize / 20.0; // Adjust the step value as needed
 
-                while (intersects)
-                {
+                while (intersects) {
                   Point3d newPosition = new Point3d(
                     initialPosition.X + xOffset,
                     initialPosition.Y + yOffset,
@@ -1344,8 +1208,7 @@ namespace ElectricalCommands
 
                   intersects = CheckIntersectionWithSplines(textObject, nearestSplineIds);
 
-                  if (!intersects)
-                  {
+                  if (!intersects) {
                     break;
                   }
 
@@ -1360,21 +1223,16 @@ namespace ElectricalCommands
       }
     }
 
-    private List<ObjectId> GetNearestSplineIds(DBText textObject, int count)
-    {
+    private List<ObjectId> GetNearestSplineIds(DBText textObject, int count) {
       List<ObjectId> nearestSplineIds = new List<ObjectId>();
       Point3d textCenter = textObject.Position;
 
       var splineDistances = _splineIds
-        .Select(splineId =>
-        {
-          if (!splineId.IsNull && !splineId.IsErased)
-          {
-            using (Transaction tr = db.TransactionManager.StartTransaction())
-            {
+        .Select(splineId => {
+          if (!splineId.IsNull && !splineId.IsErased) {
+            using (Transaction tr = db.TransactionManager.StartTransaction()) {
               Spline spline = tr.GetObject(splineId, OpenMode.ForRead) as Spline;
-              if (spline != null)
-              {
+              if (spline != null) {
                 Point3d closestPoint = spline.GetClosestPointTo(textCenter, false);
                 double distance = textCenter.DistanceTo(closestPoint);
                 return new { SplineId = splineId, Distance = distance };
@@ -1394,17 +1252,12 @@ namespace ElectricalCommands
       return nearestSplineIds;
     }
 
-    private bool CheckIntersectionWithSplines(DBText textObject, List<ObjectId> splineIds)
-    {
-      foreach (var splineId in splineIds)
-      {
-        if (!splineId.IsNull && !splineId.IsErased)
-        {
-          using (Transaction tr = db.TransactionManager.StartTransaction())
-          {
+    private bool CheckIntersectionWithSplines(DBText textObject, List<ObjectId> splineIds) {
+      foreach (var splineId in splineIds) {
+        if (!splineId.IsNull && !splineId.IsErased) {
+          using (Transaction tr = db.TransactionManager.StartTransaction()) {
             Spline spline = tr.GetObject(splineId, OpenMode.ForRead) as Spline;
-            if (spline != null)
-            {
+            if (spline != null) {
               Point3dCollection intersectionPoints = new Point3dCollection();
               textObject.IntersectWith(
                 spline,
@@ -1414,8 +1267,7 @@ namespace ElectricalCommands
                 IntPtr.Zero
               );
 
-              if (intersectionPoints.Count > 0)
-              {
+              if (intersectionPoints.Count > 0) {
                 return true;
               }
             }
@@ -1425,48 +1277,36 @@ namespace ElectricalCommands
       return false;
     }
 
-    public string GetNextCircuitLetter(string currentLetter)
-    {
-      if (string.IsNullOrEmpty(currentLetter))
-      {
+    public string GetNextCircuitLetter(string currentLetter) {
+      if (string.IsNullOrEmpty(currentLetter)) {
         return "";
       }
-      else
-      {
-        if (currentLetter == "z")
-        {
+      else {
+        if (currentLetter == "z") {
           return "aa";
         }
-        else if (currentLetter.Length == 1)
-        {
+        else if (currentLetter.Length == 1) {
           char nextChar = (char)(currentLetter[0] + 1);
-          if (nextChar == 'i' || nextChar == 'o' || nextChar == 'l')
-          {
+          if (nextChar == 'i' || nextChar == 'o' || nextChar == 'l') {
             nextChar++;
           }
           return nextChar.ToString();
         }
-        else
-        {
+        else {
           int index = currentLetter.Length - 1;
-          while (index >= 0 && currentLetter[index] == 'z')
-          {
+          while (index >= 0 && currentLetter[index] == 'z') {
             index--;
           }
-          if (index < 0)
-          {
+          if (index < 0) {
             return new string('a', currentLetter.Length + 1);
           }
-          else
-          {
+          else {
             char[] chars = currentLetter.ToCharArray();
             chars[index] = (char)(chars[index] + 1);
-            if (chars[index] == 'i' || chars[index] == 'o' || chars[index] == 'l')
-            {
+            if (chars[index] == 'i' || chars[index] == 'o' || chars[index] == 'l') {
               chars[index]++;
             }
-            for (int i = index + 1; i < chars.Length; i++)
-            {
+            for (int i = index + 1; i < chars.Length; i++) {
               chars[i] = 'a';
             }
             return new string(chars);
@@ -1475,14 +1315,12 @@ namespace ElectricalCommands
       }
     }
 
-    private void PROCEED_BUTTON_Click(object sender, EventArgs e)
-    {
+    private void PROCEED_BUTTON_Click(object sender, EventArgs e) {
       this.DialogResult = DialogResult.OK;
       this.Close();
     }
 
-    private double CalculateAreaThreshold()
-    {
+    private double CalculateAreaThreshold() {
       double areaThreshold = 0.2;
       return areaThreshold;
     }
@@ -1490,28 +1328,23 @@ namespace ElectricalCommands
     private List<List<MagentaObject>> GroupMagentaObjectsByArea(
       List<MagentaObject> magentaObjects,
       double areaThreshold
-    )
-    {
+    ) {
       List<List<MagentaObject>> groups = new List<List<MagentaObject>>();
 
-      foreach (var obj in magentaObjects)
-      {
+      foreach (var obj in magentaObjects) {
         double objectArea = CalculateArea(obj);
 
         bool addedToGroup = false;
-        foreach (var group in groups)
-        {
+        foreach (var group in groups) {
           double groupArea = CalculateArea(group[0]);
-          if (Math.Abs(objectArea - groupArea) / groupArea <= areaThreshold)
-          {
+          if (Math.Abs(objectArea - groupArea) / groupArea <= areaThreshold) {
             group.Add(obj);
             addedToGroup = true;
             break;
           }
         }
 
-        if (!addedToGroup)
-        {
+        if (!addedToGroup) {
           groups.Add(new List<MagentaObject> { obj });
         }
       }
@@ -1519,8 +1352,7 @@ namespace ElectricalCommands
       return groups;
     }
 
-    private double CalculateArea(MagentaObject obj)
-    {
+    private double CalculateArea(MagentaObject obj) {
       double width = obj.MaxPoint.X - obj.MinPoint.X;
       double height = obj.MaxPoint.Y - obj.MinPoint.Y;
       return width * height;
