@@ -41,6 +41,55 @@ namespace ElectricalCommands.Lighting {
       SCALE_COMBOBOX.SelectedIndex = 0;
     }
 
+    private static Document? EnsureCorrectSpace() {
+      Document acDoc = Application.DocumentManager.MdiActiveDocument;
+      Editor ed = acDoc.Editor;
+
+      if (IsInModel() || IsInLayoutViewport()) {
+        // We're in the correct space, so we can proceed
+        return acDoc;
+      }
+      else {
+        // We're in the wrong space, so we need to prompt the user
+        ed.WriteMessage("\nYou need to be in Model space or a Layout viewport to continue.");
+        return null;
+      }
+    }
+
+    public static bool IsInModel() {
+      if (Application.DocumentManager.MdiActiveDocument.Database.TileMode)
+        return true;
+      else
+        return false;
+    }
+
+    public static bool IsInLayout() {
+      return !IsInModel();
+    }
+
+    public static bool IsInLayoutPaper() {
+      Document doc = Application.DocumentManager.MdiActiveDocument;
+      Database db = doc.Database;
+      Editor ed = doc.Editor;
+
+      if (db.TileMode)
+        return false;
+      else {
+        if (db.PaperSpaceVportId == ObjectId.Null)
+          return false;
+        else if (ed.CurrentViewportObjectId == ObjectId.Null)
+          return false;
+        else if (ed.CurrentViewportObjectId == db.PaperSpaceVportId)
+          return true;
+        else
+          return false;
+      }
+    }
+
+    public static bool IsInLayoutViewport() {
+      return IsInLayout() && !IsInLayoutPaper();
+    }
+
     private void SET_WINDOW_BUTTON_Click(object sender, EventArgs e) {
       PositionApplicationWindow();
       this.BringToFront();
@@ -69,30 +118,16 @@ namespace ElectricalCommands.Lighting {
     }
 
     private void SET_PANEL_LOCATION_BUTTON_Click(object sender, EventArgs e) {
-      Document acDoc = FocusAutoCADAndSwitchToModelSpace();
+      var acDoc = EnsureCorrectSpace();
+      if (acDoc == null) return;
+
+      Application.MainWindow.Focus();
 
       Editor ed = acDoc.Editor;
       _panelPoint = PromptUserForElectricalPanelPoint(ed);
 
       this.BringToFront();
       this.Focus();
-    }
-
-    private static Document FocusAutoCADAndSwitchToModelSpace() {
-      Document acDoc = Autodesk
-        .AutoCAD
-        .ApplicationServices
-        .Application
-        .DocumentManager
-        .MdiActiveDocument;
-
-      using (acDoc.LockDocument()) {
-        Autodesk.AutoCAD.ApplicationServices.Application.MainWindow.Focus();
-
-        acDoc.Database.TileMode = true;
-      }
-
-      return acDoc;
     }
 
     private static Point3d PromptUserForElectricalPanelPoint(Editor ed) {
@@ -109,7 +144,11 @@ namespace ElectricalCommands.Lighting {
     }
 
     private void SELECT_POLYLINES_BUTTON_Click(object sender, EventArgs e) {
-      Document doc = FocusAutoCADAndSwitchToModelSpace();
+      var doc = EnsureCorrectSpace();
+      if (doc == null) return;
+
+      Application.MainWindow.Focus();
+
       Editor ed = doc.Editor;
       Database db = doc.Database;
 

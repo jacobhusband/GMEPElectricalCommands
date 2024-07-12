@@ -272,20 +272,6 @@ namespace ElectricalCommands.Lighting {
       lightingForm.Show();
     }
 
-    [CommandMethod("TestSpaceAndViewport")]
-    public static void TestSpaceAndViewport_Method() {
-      Editor ed = Application.DocumentManager.MdiActiveDocument.Editor;
-
-      if (IsInModel())
-        ed.WriteMessage("\nIn Model.");
-      if (IsInLayout())
-        ed.WriteMessage("\nIn Layout.");
-      if (IsInLayoutPaper())
-        ed.WriteMessage("\nIn Layout Paper.");
-      if (IsInLayoutViewport())
-        ed.WriteMessage("\n In Layout Viweport.");
-    }
-
     [CommandMethod("KMeans")]
     public void KMeans() {
       Document doc = Application.DocumentManager.MdiActiveDocument;
@@ -694,40 +680,6 @@ namespace ElectricalCommands.Lighting {
         }
         tr.Commit();
       }
-    }
-
-    public static bool IsInModel() {
-      if (Application.DocumentManager.MdiActiveDocument.Database.TileMode)
-        return true;
-      else
-        return false;
-    }
-
-    public static bool IsInLayout() {
-      return !IsInModel();
-    }
-
-    public static bool IsInLayoutPaper() {
-      Document doc = Application.DocumentManager.MdiActiveDocument;
-      Database db = doc.Database;
-      Editor ed = doc.Editor;
-
-      if (db.TileMode)
-        return false;
-      else {
-        if (db.PaperSpaceVportId == ObjectId.Null)
-          return false;
-        else if (ed.CurrentViewportObjectId == ObjectId.Null)
-          return false;
-        else if (ed.CurrentViewportObjectId == db.PaperSpaceVportId)
-          return true;
-        else
-          return false;
-      }
-    }
-
-    public static bool IsInLayoutViewport() {
-      return IsInLayout() && !IsInLayoutPaper();
     }
 
     private static PromptEntityResult PromptUserForPolyline(Editor ed) {
