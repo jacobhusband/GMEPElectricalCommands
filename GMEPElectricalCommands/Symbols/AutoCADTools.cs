@@ -870,6 +870,7 @@ namespace ElectricalCommands {
       );
       string jsonFilePath = System.IO.Path.Combine(
         assemblyDirectory,
+        "Symbols",
         "BlockData",
         $"{blockName}.json"
       );
