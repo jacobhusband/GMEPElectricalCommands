@@ -336,8 +336,8 @@ namespace ElectricalCommands {
         panel.Add("subtotal_c", "0");
       }
       panel.Add("total_va", TOTAL_VA_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
-      panel.Add("lcl", LCL_GRID.Rows[0].Cells[1].Value.ToString().ToUpper());
-      panel.Add("lcl_125", LCL_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      panel.Add("lcl", LARGEST_LCL_INPUT.Text.ToString().ToUpper());
+      panel.Add("lcl_125", LCL_GRID.Rows[0].Cells[1].Value.ToString().ToUpper());
       panel.Add("lcl_enabled", LARGEST_LCL_CHECKBOX.Checked ? "YES" : "NO");
       panel.Add(
         "total_other_load",
@@ -812,11 +812,11 @@ namespace ElectricalCommands {
       foreach (DataGridViewRow row in PANEL_GRID.Rows) {
         for (int i = 0; i < columnNames.Length; i += 2) {
           bool hasKitchemDemandApplied = false;
-          bool has08LCLApplied = false;
+          bool has80LCLApplied = false;
           bool has125LCLApplied = false;
 
           if (row.Cells[columnNames[i]].Value != null) {
-            has08LCLApplied = verify_LCL_from_phase_cell(row.Index, columnNames[i]);
+            has80LCLApplied = verify_LCL_from_phase_cell(row.Index, columnNames[i]);
             has125LCLApplied = verify_125LCL_from_phase_cell(row.Index, columnNames[i]);
             hasKitchemDemandApplied = verify_kitchen_demand_from_phase_cell(
               row.Index,
@@ -825,14 +825,14 @@ namespace ElectricalCommands {
 
             sums[i / 2] += ParseAndSumCell(
               row.Cells[columnNames[i]].Value.ToString(),
-              has08LCLApplied,
+              has80LCLApplied,
               has125LCLApplied,
               hasKitchemDemandApplied ? demandFactor : 1.0
             );
           }
 
           if (row.Cells[columnNames[i + 1]].Value != null) {
-            has08LCLApplied = verify_LCL_from_phase_cell(row.Index, columnNames[i + 1]);
+            has80LCLApplied = verify_LCL_from_phase_cell(row.Index, columnNames[i + 1]);
             has125LCLApplied = verify_125LCL_from_phase_cell(row.Index, columnNames[i + 1]);
             hasKitchemDemandApplied = verify_kitchen_demand_from_phase_cell(
               row.Index,
@@ -841,7 +841,7 @@ namespace ElectricalCommands {
 
             sums[i / 2] += ParseAndSumCell(
               row.Cells[columnNames[i + 1]].Value.ToString(),
-              has08LCLApplied,
+              has80LCLApplied,
               has125LCLApplied,
               hasKitchemDemandApplied ? demandFactor : 1.0
             );
@@ -953,7 +953,7 @@ namespace ElectricalCommands {
 
     private double ParseAndSumCell(
       string cellValue,
-      bool has08LCLApplied,
+      bool has80LCLApplied,
       bool has125LCLApplied,
       double demandFactor
     ) {
@@ -965,7 +965,7 @@ namespace ElectricalCommands {
             if (has125LCLApplied) {
               sum += value * 1.25;
             }
-            else if (has08LCLApplied) {
+            else if (has80LCLApplied) {
               if (demandFactor < 0.8) {
                 sum += value * demandFactor;
               }
@@ -1200,6 +1200,7 @@ namespace ElectricalCommands {
         .Replace("AMP", "")
         .Replace("A", "")
         .Replace(" ", "");
+      LARGEST_LCL_INPUT.Text = selectedPanelData["lcl"].ToString();
 
       // Set ComboBoxes
       STATUS_COMBOBOX.SelectedItem = selectedPanelData["existing"].ToString();
@@ -2476,6 +2477,10 @@ namespace ElectricalCommands {
           cell.Value = cell.Value.ToString().Replace(findText, replaceText);
         }
       }
+    }
+
+    private void LARGEST_LCL_INPUT_TextChanged_1(object sender, EventArgs e) {
+      calculate_lcl_otherload_panelload_feederamps();
     }
   }
 

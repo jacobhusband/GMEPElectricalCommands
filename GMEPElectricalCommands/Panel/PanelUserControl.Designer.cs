@@ -649,8 +649,6 @@
       // 
       this.AUTO_CHECKBOX.AutoSize = true;
       this.AUTO_CHECKBOX.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-      this.AUTO_CHECKBOX.Checked = true;
-      this.AUTO_CHECKBOX.CheckState = System.Windows.Forms.CheckState.Checked;
       this.AUTO_CHECKBOX.Location = new System.Drawing.Point(22, 436);
       this.AUTO_CHECKBOX.Name = "AUTO_CHECKBOX";
       this.AUTO_CHECKBOX.Size = new System.Drawing.Size(56, 17);
@@ -662,11 +660,11 @@
       // LARGEST_LCL_INPUT
       // 
       this.LARGEST_LCL_INPUT.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-      this.LARGEST_LCL_INPUT.Enabled = false;
       this.LARGEST_LCL_INPUT.Location = new System.Drawing.Point(155, 434);
       this.LARGEST_LCL_INPUT.Name = "LARGEST_LCL_INPUT";
       this.LARGEST_LCL_INPUT.Size = new System.Drawing.Size(142, 20);
       this.LARGEST_LCL_INPUT.TabIndex = 192;
+      this.LARGEST_LCL_INPUT.TextChanged += new System.EventHandler(this.LARGEST_LCL_INPUT_TextChanged_1);
       // 
       // RELOCATE_BUTTON
       // 
