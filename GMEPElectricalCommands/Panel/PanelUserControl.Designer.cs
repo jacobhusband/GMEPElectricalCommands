@@ -91,13 +91,14 @@
       this.RELOCATE_BUTTON = new System.Windows.Forms.Button();
       this.EXISTING_BUTTON = new System.Windows.Forms.Button();
       this.COMMA_TO_SEMI = new System.Windows.Forms.Button();
-      this.LCL80 = new System.Windows.Forms.Button();
-      this.LCL125 = new System.Windows.Forms.Button();
       this.REPLACE_BUTTON = new System.Windows.Forms.Button();
       this.FIND_BOX = new System.Windows.Forms.TextBox();
       this.FIND_LABEL = new System.Windows.Forms.Label();
       this.REPLACE_LABEL = new System.Windows.Forms.Label();
       this.REPLACE_BOX = new System.Windows.Forms.TextBox();
+      this.CUSTOM_PERCENTAGE_LABEL = new System.Windows.Forms.Label();
+      this.CELL_PERCENTAGE_INPUT = new System.Windows.Forms.TextBox();
+      this.PERCENTAGE = new System.Windows.Forms.Label();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -694,26 +695,6 @@
       this.COMMA_TO_SEMI.UseVisualStyleBackColor = true;
       this.COMMA_TO_SEMI.Click += new System.EventHandler(this.COMMA_TO_SEMI_CLICK);
       // 
-      // LCL80
-      // 
-      this.LCL80.BackColor = System.Drawing.Color.Orange;
-      this.LCL80.Location = new System.Drawing.Point(768, 538);
-      this.LCL80.Name = "LCL80";
-      this.LCL80.Size = new System.Drawing.Size(89, 23);
-      this.LCL80.TabIndex = 196;
-      this.LCL80.Text = "LCL @ 80%";
-      this.LCL80.UseVisualStyleBackColor = false;
-      // 
-      // LCL125
-      // 
-      this.LCL125.BackColor = System.Drawing.Color.Red;
-      this.LCL125.Location = new System.Drawing.Point(863, 538);
-      this.LCL125.Name = "LCL125";
-      this.LCL125.Size = new System.Drawing.Size(89, 23);
-      this.LCL125.TabIndex = 197;
-      this.LCL125.Text = "LCL @ 125%";
-      this.LCL125.UseVisualStyleBackColor = false;
-      // 
       // REPLACE_BUTTON
       // 
       this.REPLACE_BUTTON.Location = new System.Drawing.Point(534, 588);
@@ -758,18 +739,46 @@
       this.REPLACE_BOX.Size = new System.Drawing.Size(103, 20);
       this.REPLACE_BOX.TabIndex = 201;
       // 
+      // CUSTOM_PERCENTAGE_LABEL
+      // 
+      this.CUSTOM_PERCENTAGE_LABEL.AutoSize = true;
+      this.CUSTOM_PERCENTAGE_LABEL.Location = new System.Drawing.Point(627, 572);
+      this.CUSTOM_PERCENTAGE_LABEL.Name = "CUSTOM_PERCENTAGE_LABEL";
+      this.CUSTOM_PERCENTAGE_LABEL.Size = new System.Drawing.Size(109, 13);
+      this.CUSTOM_PERCENTAGE_LABEL.TabIndex = 204;
+      this.CUSTOM_PERCENTAGE_LABEL.Text = "CELL PERCENTAGE";
+      // 
+      // CELL_PERCENTAGE_INPUT
+      // 
+      this.CELL_PERCENTAGE_INPUT.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+      this.CELL_PERCENTAGE_INPUT.Location = new System.Drawing.Point(630, 588);
+      this.CELL_PERCENTAGE_INPUT.Name = "CELL_PERCENTAGE_INPUT";
+      this.CELL_PERCENTAGE_INPUT.Size = new System.Drawing.Size(103, 20);
+      this.CELL_PERCENTAGE_INPUT.TabIndex = 203;
+      this.CELL_PERCENTAGE_INPUT.TextChanged += new System.EventHandler(this.CELL_PERCENTAGE_INPUT_TextChanged);
+      // 
+      // PERCENTAGE
+      // 
+      this.PERCENTAGE.AutoSize = true;
+      this.PERCENTAGE.Location = new System.Drawing.Point(739, 592);
+      this.PERCENTAGE.Name = "PERCENTAGE";
+      this.PERCENTAGE.Size = new System.Drawing.Size(15, 13);
+      this.PERCENTAGE.TabIndex = 205;
+      this.PERCENTAGE.Text = "%";
+      // 
       // PanelUserControl
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
+      this.Controls.Add(this.PERCENTAGE);
+      this.Controls.Add(this.CUSTOM_PERCENTAGE_LABEL);
+      this.Controls.Add(this.CELL_PERCENTAGE_INPUT);
       this.Controls.Add(this.REPLACE_LABEL);
       this.Controls.Add(this.REPLACE_BOX);
       this.Controls.Add(this.FIND_LABEL);
       this.Controls.Add(this.FIND_BOX);
       this.Controls.Add(this.REPLACE_BUTTON);
-      this.Controls.Add(this.LCL125);
-      this.Controls.Add(this.LCL80);
       this.Controls.Add(this.COMMA_TO_SEMI);
       this.Controls.Add(this.EXISTING_BUTTON);
       this.Controls.Add(this.RELOCATE_BUTTON);
@@ -894,12 +903,13 @@
     private System.Windows.Forms.Button RELOCATE_BUTTON;
     private System.Windows.Forms.Button EXISTING_BUTTON;
     private System.Windows.Forms.Button COMMA_TO_SEMI;
-    private System.Windows.Forms.Button LCL80;
-    private System.Windows.Forms.Button LCL125;
     private System.Windows.Forms.Button REPLACE_BUTTON;
     private System.Windows.Forms.TextBox FIND_BOX;
     private System.Windows.Forms.Label FIND_LABEL;
     private System.Windows.Forms.Label REPLACE_LABEL;
     private System.Windows.Forms.TextBox REPLACE_BOX;
+    private System.Windows.Forms.Label CUSTOM_PERCENTAGE_LABEL;
+    private System.Windows.Forms.TextBox CELL_PERCENTAGE_INPUT;
+    private System.Windows.Forms.Label PERCENTAGE;
   }
 }
