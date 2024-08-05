@@ -760,9 +760,9 @@ namespace ElectricalCommands {
 
           BlockTableRecord acBlkTblRec;
 
-          if (acBlkTbl.Has(blockName)) {
+          if (acBlkTbl.Has(blockName + Scale.ToString())) {
             acBlkTblRec =
-              acTrans.GetObject(acBlkTbl[blockName], OpenMode.ForWrite) as BlockTableRecord;
+              acTrans.GetObject(acBlkTbl[blockName + Scale.ToString()], OpenMode.ForWrite) as BlockTableRecord;
 
             // Remove all entities from the block
             foreach (ObjectId id in acBlkTblRec) {
@@ -770,7 +770,7 @@ namespace ElectricalCommands {
             }
           }
           else {
-            acBlkTblRec = new BlockTableRecord { Name = blockName };
+            acBlkTblRec = new BlockTableRecord { Name = blockName + Scale.ToString() };
 
             acBlkTbl.UpgradeOpen();
             acBlkTbl.Add(acBlkTblRec);
@@ -793,7 +793,7 @@ namespace ElectricalCommands {
             acTrans.GetObject(acCurDb.BlockTableId, OpenMode.ForRead) as BlockTable;
 
           var acBlkTblRec =
-            acTrans.GetObject(acBlkTbl[blockName], OpenMode.ForWrite) as BlockTableRecord;
+            acTrans.GetObject(acBlkTbl[blockName + Scale.ToString()], OpenMode.ForWrite) as BlockTableRecord;
           PromptPointResult ppr = ed.GetPoint("\nSpecify insertion point: ");
 
           if (ppr.Status == PromptStatus.OK) {
