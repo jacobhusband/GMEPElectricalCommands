@@ -926,6 +926,78 @@ namespace ElectricalCommands {
       }
     }
 
+    [CommandMethod("INCREMENTER")]
+    public void Incrementer() {
+      Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      Database db = doc.Database;
+      Editor ed = doc.Editor;
+
+      try {
+        // Get user inputs
+        string prefix = ed.GetString("\nEnter prefix (e.g., HP-): ").StringResult;
+        int startNum = Convert.ToInt32(ed.GetString("\nEnter start number: ").StringResult);
+        int endNum = Convert.ToInt32(ed.GetString("\nEnter end number: ").StringResult);
+        string oddEven = ed.GetString("\nEnter 'O' for odd or 'E' for even: ").StringResult.ToUpper();
+
+        // Prompt user to select MText and DBText objects
+        PromptSelectionOptions pso = new PromptSelectionOptions();
+        pso.MessageForAdding = "\nSelect MText and DBText objects: ";
+        PromptSelectionResult psr = ed.GetSelection(pso);
+        if (psr.Status != PromptStatus.OK) return;
+
+        // Get point from user
+        PromptPointResult ppr = ed.GetPoint("\nSelect a reference point: ");
+        if (ppr.Status != PromptStatus.OK) return;
+        Point3d selectedPoint = ppr.Value;
+
+        // Collect selected MText and DBText objects
+        List<(Entity entity, double distance)> textObjects = new List<(Entity, double)>();
+        using (Transaction tr = db.TransactionManager.StartTransaction()) {
+          foreach (ObjectId objId in psr.Value.GetObjectIds()) {
+            Entity ent = tr.GetObject(objId, OpenMode.ForRead) as Entity;
+            if (ent is MText || ent is DBText) {
+              double dist = ent.GeometricExtents.MinPoint.DistanceTo(selectedPoint);
+              textObjects.Add((ent, dist));
+            }
+          }
+
+          // Sort objects by distance
+          textObjects = textObjects.OrderBy(x => x.distance).ToList();
+
+          // Update text objects
+          int currentNum = startNum;
+          foreach (var (ent, _) in textObjects) {
+            ent.UpgradeOpen();
+            string newText = $"{prefix}{currentNum}";
+
+            if (ent is MText mtext) {
+              mtext.Contents = newText;
+            }
+            else if (ent is DBText dbtext) {
+              dbtext.TextString = newText;
+            }
+
+            if (currentNum < endNum) {
+              do {
+                currentNum++;
+              } while ((oddEven == "O" && currentNum % 2 == 0) || (oddEven == "E" && currentNum % 2 != 0));
+
+              if (currentNum > endNum) {
+                currentNum = endNum;
+              }
+            }
+          }
+
+          tr.Commit();
+        }
+
+        ed.WriteMessage("\nINCREMENTER command completed successfully.");
+      }
+      catch (System.Exception ex) {
+        ed.WriteMessage($"\nError: {ex.Message}");
+      }
+    }
+
     public void CreateBlock() {
       var (doc, db, _) = GeneralCommands.GetGlobals();
 
