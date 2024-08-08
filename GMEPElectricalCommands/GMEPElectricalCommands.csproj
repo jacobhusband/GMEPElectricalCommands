@@ -691,7 +691,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"Z:\GMEP Engineers\Projects\2024jobs\Youngren Construction\24-392 42400 Winchester Rd\ELEC\24-392 42400 Winchester Rd_Electrical.dwg"</PostBuildEvent>
+    <PostBuildEvent>"C:\Users\JacobH\OneDrive - GMEPE\Desktop\Temp Panel Folder\Template_Electrical_CA_Lite.dwg"</PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\Accord.3.8.0\build\Accord.targets" Condition="Exists('..\packages\Accord.3.8.0\build\Accord.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

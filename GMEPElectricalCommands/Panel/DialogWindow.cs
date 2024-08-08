@@ -264,10 +264,13 @@ namespace ElectricalCommands {
       if (rowIndex < tagList.Count) {
         string tagValue = tagList[rowIndex];
         if (!string.IsNullOrEmpty(tagValue)) {
-          if (key.Contains("phase")) {
+          if (key.Contains("phase") && tagValue.Contains("=")) {
             row.Cells[cellIndex].Value = tagValue;
           }
           else if (key.Contains("description")) {
+            row.Cells[cellIndex].Tag = tagValue;
+          }
+          else if (key.Contains("phase") && !tagValue.Contains("=")) {
             row.Cells[cellIndex].Tag = tagValue;
           }
         }

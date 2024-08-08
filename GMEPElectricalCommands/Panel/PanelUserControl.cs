@@ -27,7 +27,6 @@ namespace ElectricalCommands {
     private List<DataGridViewCell> selectedCells;
     private List<string> defaultNotes;
     private object oldValue;
-    private UndoRedoManager undoRedoManager = new UndoRedoManager();
 
     public PanelUserControl(
       PanelCommands myCommands,
@@ -87,22 +86,6 @@ namespace ElectricalCommands {
       add_rows_to_datagrid();
       set_default_form_values(tabName);
       deselect_cells();
-    }
-
-    protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
-      if (keyData == (Keys.Control | Keys.Z)) {
-        undoRedoManager.Undo();
-        return true;
-      }
-      else if (
-        keyData == (Keys.Control | Keys.Y)
-        || keyData == (Keys.Control | Keys.Shift | Keys.Z)
-      ) {
-        undoRedoManager.Redo();
-        return true;
-      }
-
-      return base.ProcessCmdKey(ref msg, keyData);
     }
 
     // Shared method to handle prefix addition/removal
@@ -805,9 +788,10 @@ namespace ElectricalCommands {
 
       foreach (DataGridViewRow row in PANEL_GRID.Rows) {
         for (int i = 0; i < columnNames.Length; i += 2) {
+          var tag = (row.Cells[columnNames[i]].Tag != null) ? row.Cells[columnNames[i]].Tag.ToString() : "";
           bool hasKitchemDemandApplied;
-          bool has80LCLApplied = false;
-          bool has125LCLApplied = false;
+          bool has80LCLApplied = tag.Contains("LCL80");
+          bool has125LCLApplied = tag.Contains("LCL125");
 
           if (row.Cells[columnNames[i]].Value != null) {
             hasKitchemDemandApplied = verify_kitchen_demand_from_phase_cell(
@@ -966,9 +950,10 @@ namespace ElectricalCommands {
 
       foreach (DataGridViewRow row in PANEL_GRID.Rows) {
         for (int i = 0; i < columnNames.Length; i += 2) {
+          var tag = (row.Cells[columnNames[i]].Tag != null) ? row.Cells[columnNames[i]].Tag.ToString() : "";
           bool hasKitchemDemandApplied;
-          bool has80LCLApplied = false;
-          bool has125LCLApplied = false;
+          bool has80LCLApplied = tag.Contains("LCL80");
+          bool has125LCLApplied = tag.Contains("LCL125");
 
           if (row.Cells[columnNames[i]].Value != null) {
             hasKitchemDemandApplied = verify_kitchen_demand_from_phase_cell(
@@ -1540,6 +1525,12 @@ namespace ElectricalCommands {
           if (cell.OwningColumn.Name.Contains("description")) {
             cell.Style.BackColor = Color.Empty;
           }
+          else if (cell.OwningColumn.Name.Contains("phase") && cell.Tag != null && cell.Tag.ToString().Contains("LCL125")) {
+            cell.Style.BackColor = Color.Salmon;
+          }
+          else if (cell.OwningColumn.Name.Contains("phase") && cell.Tag != null && cell.Tag.ToString().Contains("LCL80")) {
+            cell.Style.BackColor = Color.Gold;
+          }
         }
       }
 
@@ -1895,9 +1886,6 @@ namespace ElectricalCommands {
     }
 
     private void PANEL_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e) {
-      if (undoRedoManager.IsUndoing)
-        return;
-
       remove_existing_from_description(PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex]);
       remove_existing_breaker_note(PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex]);
 
@@ -2056,6 +2044,7 @@ namespace ElectricalCommands {
 
       // check if the cell has a tag
       if (cell.Tag != null) {
+        if (!cell.Tag.ToString().Contains("=")) return;
         // remove the equals from the tag
         string cellValue = cell.Tag.ToString().Replace("=", "");
 
@@ -2342,87 +2331,45 @@ namespace ElectricalCommands {
     private void CELL_PERCENTAGE_INPUT_TextChanged(object sender, EventArgs e) {
       calculate_lcl_otherload_panelload_feederamps();
     }
-  }
 
-  public interface ICommand {
-
-    void Execute();
-
-    void Undo();
-
-    void Redo();
-  }
-
-  public class UndoRedoManager {
-    private Stack<ICommand> undoStack = new Stack<ICommand>();
-    private Stack<ICommand> redoStack = new Stack<ICommand>();
-    public bool IsUndoing { get; private set; }
-
-    public void Execute(ICommand command) {
-      command.Execute();
-      undoStack.Push(command);
-    }
-
-    public void Undo() {
-      if (undoStack.Count > 0) {
-        IsUndoing = true;
-        ICommand command = undoStack.Pop();
-        command.Undo();
-        redoStack.Push(command);
-        IsUndoing = false;
+    private void LCL125_BUTTON_Click(object sender, EventArgs e) {
+      foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells) {
+        if (PANEL_GRID.Columns[cell.ColumnIndex].Name.ToLower().Contains("phase")) {
+          var colorGray = cell.Style.BackColor == Color.LightGray;
+          var colorGold = cell.Style.BackColor == Color.Gold;
+          var tag = (cell.Tag != null) ? cell.Tag.ToString() : "";
+          var tagEmpty = String.IsNullOrEmpty(tag);
+          if ((tagEmpty && colorGray) || (colorGold && tag.Equals("LCL80"))) {
+            cell.Tag = "LCL125";
+            cell.Style.BackColor = Color.Salmon;
+          }
+          else if (tag.Equals("LCL125")) {
+            cell.Tag = null;
+            cell.Style.BackColor = Color.LightGray;
+          }
+        }
       }
+      recalculate_breakers();
     }
 
-    public void Redo() {
-      if (redoStack.Count > 0) {
-        IsUndoing = true;
-        ICommand command = redoStack.Pop();
-        command.Redo();
-        undoStack.Push(command);
-        IsUndoing = false;
+    private void LCL80_BUTTON_Click(object sender, EventArgs e) {
+      foreach (DataGridViewCell cell in PANEL_GRID.SelectedCells) {
+        if (PANEL_GRID.Columns[cell.ColumnIndex].Name.ToLower().Contains("phase")) {
+          var colorGray = cell.Style.BackColor == Color.LightGray;
+          var colorSalmon = cell.Style.BackColor == Color.Salmon;
+          var tag = (cell.Tag != null) ? cell.Tag.ToString() : "";
+          var tagEmpty = String.IsNullOrEmpty(tag);
+          if ((tagEmpty && colorGray) || (colorSalmon && tag.Equals("LCL125"))) {
+            cell.Tag = "LCL80";
+            cell.Style.BackColor = Color.Gold;
+          }
+          else if (tag.Equals("LCL80")) {
+            cell.Tag = null;
+            cell.Style.BackColor = Color.LightGray;
+          }
+        }
       }
-    }
-
-    public string GetStackState() {
-      return string.Join("\n", undoStack.Select(cmd => cmd.ToString()).Reverse());
-    }
-  }
-
-  public class CellValueChangeCommand : ICommand {
-    private DataGridView dataGridView;
-    private int rowIndex;
-    private int columnIndex;
-    private object oldValue;
-    private object newValue;
-
-    public CellValueChangeCommand(
-      DataGridView dataGridView,
-      int rowIndex,
-      int columnIndex,
-      object oldValue,
-      object newValue
-    ) {
-      this.dataGridView = dataGridView;
-      this.rowIndex = rowIndex;
-      this.columnIndex = columnIndex;
-      this.oldValue = oldValue;
-      this.newValue = newValue;
-    }
-
-    public void Execute() {
-      dataGridView[columnIndex, rowIndex].Value = newValue;
-    }
-
-    public void Undo() {
-      dataGridView[columnIndex, rowIndex].Value = oldValue;
-    }
-
-    public void Redo() {
-      dataGridView[columnIndex, rowIndex].Value = newValue;
-    }
-
-    public override string ToString() {
-      return $"Cell at ({rowIndex}, {columnIndex}): '{oldValue}' -> '{newValue}'";
+      recalculate_breakers();
     }
   }
 }

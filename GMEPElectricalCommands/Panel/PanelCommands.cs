@@ -1724,7 +1724,7 @@ namespace ElectricalCommands {
       );
       CreateAndPositionRightText(
         tr,
-        (string)panelData["lcl_125"],
+        (string)panelData["lcl"],
         "ROMANS",
         0.09375,
         1,
@@ -1744,7 +1744,7 @@ namespace ElectricalCommands {
       );
       CreateAndPositionRightText(
         tr,
-        panelData["lcl"] as string,
+        panelData["lcl_125"] as string,
         "ROMANS",
         0.09375,
         1,

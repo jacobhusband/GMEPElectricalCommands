@@ -96,9 +96,8 @@
       this.FIND_LABEL = new System.Windows.Forms.Label();
       this.REPLACE_LABEL = new System.Windows.Forms.Label();
       this.REPLACE_BOX = new System.Windows.Forms.TextBox();
-      this.CUSTOM_PERCENTAGE_LABEL = new System.Windows.Forms.Label();
-      this.CELL_PERCENTAGE_INPUT = new System.Windows.Forms.TextBox();
-      this.PERCENTAGE = new System.Windows.Forms.Label();
+      this.LCL125_BUTTON = new System.Windows.Forms.Button();
+      this.LCL80_BUTTON = new System.Windows.Forms.Button();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -739,41 +738,35 @@
       this.REPLACE_BOX.Size = new System.Drawing.Size(103, 20);
       this.REPLACE_BOX.TabIndex = 201;
       // 
-      // CUSTOM_PERCENTAGE_LABEL
+      // LCL125_BUTTON
       // 
-      this.CUSTOM_PERCENTAGE_LABEL.AutoSize = true;
-      this.CUSTOM_PERCENTAGE_LABEL.Location = new System.Drawing.Point(627, 572);
-      this.CUSTOM_PERCENTAGE_LABEL.Name = "CUSTOM_PERCENTAGE_LABEL";
-      this.CUSTOM_PERCENTAGE_LABEL.Size = new System.Drawing.Size(109, 13);
-      this.CUSTOM_PERCENTAGE_LABEL.TabIndex = 204;
-      this.CUSTOM_PERCENTAGE_LABEL.Text = "CELL PERCENTAGE";
+      this.LCL125_BUTTON.BackColor = System.Drawing.Color.Salmon;
+      this.LCL125_BUTTON.Location = new System.Drawing.Point(768, 538);
+      this.LCL125_BUTTON.Name = "LCL125_BUTTON";
+      this.LCL125_BUTTON.Size = new System.Drawing.Size(47, 23);
+      this.LCL125_BUTTON.TabIndex = 203;
+      this.LCL125_BUTTON.Text = "125%";
+      this.LCL125_BUTTON.UseVisualStyleBackColor = false;
+      this.LCL125_BUTTON.Click += new System.EventHandler(this.LCL125_BUTTON_Click);
       // 
-      // CELL_PERCENTAGE_INPUT
+      // LCL80_BUTTON
       // 
-      this.CELL_PERCENTAGE_INPUT.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-      this.CELL_PERCENTAGE_INPUT.Location = new System.Drawing.Point(630, 588);
-      this.CELL_PERCENTAGE_INPUT.Name = "CELL_PERCENTAGE_INPUT";
-      this.CELL_PERCENTAGE_INPUT.Size = new System.Drawing.Size(103, 20);
-      this.CELL_PERCENTAGE_INPUT.TabIndex = 203;
-      this.CELL_PERCENTAGE_INPUT.TextChanged += new System.EventHandler(this.CELL_PERCENTAGE_INPUT_TextChanged);
-      // 
-      // PERCENTAGE
-      // 
-      this.PERCENTAGE.AutoSize = true;
-      this.PERCENTAGE.Location = new System.Drawing.Point(739, 592);
-      this.PERCENTAGE.Name = "PERCENTAGE";
-      this.PERCENTAGE.Size = new System.Drawing.Size(15, 13);
-      this.PERCENTAGE.TabIndex = 205;
-      this.PERCENTAGE.Text = "%";
+      this.LCL80_BUTTON.BackColor = System.Drawing.Color.Gold;
+      this.LCL80_BUTTON.Location = new System.Drawing.Point(821, 538);
+      this.LCL80_BUTTON.Name = "LCL80_BUTTON";
+      this.LCL80_BUTTON.Size = new System.Drawing.Size(43, 23);
+      this.LCL80_BUTTON.TabIndex = 204;
+      this.LCL80_BUTTON.Text = "80%";
+      this.LCL80_BUTTON.UseVisualStyleBackColor = false;
+      this.LCL80_BUTTON.Click += new System.EventHandler(this.LCL80_BUTTON_Click);
       // 
       // PanelUserControl
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
-      this.Controls.Add(this.PERCENTAGE);
-      this.Controls.Add(this.CUSTOM_PERCENTAGE_LABEL);
-      this.Controls.Add(this.CELL_PERCENTAGE_INPUT);
+      this.Controls.Add(this.LCL80_BUTTON);
+      this.Controls.Add(this.LCL125_BUTTON);
       this.Controls.Add(this.REPLACE_LABEL);
       this.Controls.Add(this.REPLACE_BOX);
       this.Controls.Add(this.FIND_LABEL);
@@ -908,8 +901,7 @@
     private System.Windows.Forms.Label FIND_LABEL;
     private System.Windows.Forms.Label REPLACE_LABEL;
     private System.Windows.Forms.TextBox REPLACE_BOX;
-    private System.Windows.Forms.Label CUSTOM_PERCENTAGE_LABEL;
-    private System.Windows.Forms.TextBox CELL_PERCENTAGE_INPUT;
-    private System.Windows.Forms.Label PERCENTAGE;
+    private System.Windows.Forms.Button LCL125_BUTTON;
+    private System.Windows.Forms.Button LCL80_BUTTON;
   }
 }
