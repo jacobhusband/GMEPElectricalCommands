@@ -788,16 +788,20 @@ namespace ElectricalCommands {
 
       foreach (DataGridViewRow row in PANEL_GRID.Rows) {
         for (int i = 0; i < columnNames.Length; i += 2) {
-          var tag = (row.Cells[columnNames[i]].Tag != null) ? row.Cells[columnNames[i]].Tag.ToString() : "";
+          string tag;
           bool hasKitchemDemandApplied;
-          bool has80LCLApplied = tag.Contains("LCL80");
-          bool has125LCLApplied = tag.Contains("LCL125");
+          bool has80LCLApplied;
+          bool has125LCLApplied;
 
           if (row.Cells[columnNames[i]].Value != null) {
             hasKitchemDemandApplied = verify_kitchen_demand_from_phase_cell(
               row.Index,
               columnNames[i]
             );
+
+            tag = (row.Cells[columnNames[i]].Tag != null) ? row.Cells[columnNames[i]].Tag.ToString() : "";
+            has80LCLApplied = tag.Contains("LCL80");
+            has125LCLApplied = tag.Contains("LCL125");
 
             sums[i / 2] += ParseAndSumCell(
               row.Cells[columnNames[i]].Value.ToString(),
@@ -812,6 +816,10 @@ namespace ElectricalCommands {
               row.Index,
               columnNames[i + 1]
             );
+
+            tag = (row.Cells[columnNames[i + 1]].Tag != null) ? row.Cells[columnNames[i + 1]].Tag.ToString() : "";
+            has80LCLApplied = tag.Contains("LCL80");
+            has125LCLApplied = tag.Contains("LCL125");
 
             sums[i / 2] += ParseAndSumCell(
               row.Cells[columnNames[i + 1]].Value.ToString(),
@@ -950,16 +958,20 @@ namespace ElectricalCommands {
 
       foreach (DataGridViewRow row in PANEL_GRID.Rows) {
         for (int i = 0; i < columnNames.Length; i += 2) {
-          var tag = (row.Cells[columnNames[i]].Tag != null) ? row.Cells[columnNames[i]].Tag.ToString() : "";
+          string tag;
           bool hasKitchemDemandApplied;
-          bool has80LCLApplied = tag.Contains("LCL80");
-          bool has125LCLApplied = tag.Contains("LCL125");
+          bool has80LCLApplied;
+          bool has125LCLApplied;
 
           if (row.Cells[columnNames[i]].Value != null) {
             hasKitchemDemandApplied = verify_kitchen_demand_from_phase_cell(
               row.Index,
               columnNames[i]
             );
+
+            tag = (row.Cells[columnNames[i]].Tag != null) ? row.Cells[columnNames[i]].Tag.ToString() : "";
+            has80LCLApplied = tag.Contains("LCL80");
+            has125LCLApplied = tag.Contains("LCL125");
 
             sums[i / 2] += ParseAndSumCell(
               row.Cells[columnNames[i]].Value.ToString(),
@@ -974,6 +986,10 @@ namespace ElectricalCommands {
               row.Index,
               columnNames[i + 1]
             );
+
+            tag = (row.Cells[columnNames[i + 1]].Tag != null) ? row.Cells[columnNames[i + 1]].Tag.ToString() : "";
+            has80LCLApplied = tag.Contains("LCL80");
+            has125LCLApplied = tag.Contains("LCL125");
 
             sums[i / 2] += ParseAndSumCell(
               row.Cells[columnNames[i + 1]].Value.ToString(),
