@@ -998,6 +998,53 @@ namespace ElectricalCommands {
       }
     }
 
+    [CommandMethod("TXTNEW")]
+    public void TextNew() {
+      Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      Database db = doc.Database;
+      Editor ed = doc.Editor;
+
+      // Prompt user to select text objects
+      PromptSelectionOptions pso = new PromptSelectionOptions();
+      pso.MessageForAdding = "Select text objects to modify:";
+      PromptSelectionResult psr = ed.GetSelection(pso);
+
+      if (psr.Status != PromptStatus.OK) {
+        ed.WriteMessage("\nCommand canceled.");
+        return;
+      }
+
+      // Prompt user for new text content
+      PromptResult pr = ed.GetString("\nEnter new text content: ");
+      if (pr.Status != PromptStatus.OK) {
+        ed.WriteMessage("\nCommand canceled.");
+        return;
+      }
+
+      string newContent = pr.StringResult;
+
+      using (Transaction tr = db.TransactionManager.StartTransaction()) {
+        try {
+          foreach (SelectedObject so in psr.Value) {
+            DBObject obj = tr.GetObject(so.ObjectId, OpenMode.ForWrite);
+            if (obj is DBText text) {
+              text.TextString = newContent;
+            }
+            else if (obj is MText mtext) {
+              mtext.Contents = newContent;
+            }
+          }
+
+          tr.Commit();
+          ed.WriteMessage($"\n{psr.Value.Count} text object(s) modified.");
+        }
+        catch (System.Exception ex) {
+          ed.WriteMessage($"\nError: {ex.Message}");
+          tr.Abort();
+        }
+      }
+    }
+
     public void CreateBlock() {
       var (doc, db, _) = GeneralCommands.GetGlobals();
 
