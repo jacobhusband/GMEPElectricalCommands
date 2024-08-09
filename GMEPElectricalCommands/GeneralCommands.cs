@@ -685,148 +685,167 @@ namespace ElectricalCommands {
       double viewportWidth = 0.0;
       double viewportHeight = 0.0;
 
-      foreach (var scaleEntry in scales.OrderByDescending(e => e.Key)) {
-        viewportWidth = rectWidth / scaleEntry.Value;
-        viewportHeight = rectHeight / scaleEntry.Value;
+      PromptResult result = ed.GetString("\nEnter scale (e.g., 1/4, 3/16) or press Enter to autoscale: ");
 
-        if (viewportWidth <= 30 && viewportHeight <= 22) {
-          scaleToFit = scaleEntry.Key;
-          break;
+      if (result.Status == PromptStatus.OK) {
+        string input = result.StringResult.Trim();
+
+        if (string.IsNullOrEmpty(input)) {
+          foreach (var scaleEntry in scales.OrderByDescending(e => e.Key)) {
+            viewportWidth = rectWidth / scaleEntry.Value;
+            viewportHeight = rectHeight / scaleEntry.Value;
+
+            if (viewportWidth <= 30 && viewportHeight <= 22) {
+              scaleToFit = scaleEntry.Key;
+              break;
+            }
+
+            ed.WriteMessage(
+                $"\nChecking scale {scaleEntry.Key}: viewportWidth = {viewportWidth}, viewportHeight = {viewportHeight}"
+            );
+          }
+
+          if (scaleToFit == 0.0) {
+            ed.WriteMessage("Couldn't fit the rectangle in the specified scales");
+            return;
+          }
         }
+        else {
+          string[] fraction = input.Split('/');
+          if (fraction.Length == 2 && double.TryParse(fraction[0], out double numerator) && double.TryParse(fraction[1], out double denominator)) {
+            double inputScale = numerator / denominator;
+            scaleToFit = scales.Keys.OrderBy(s => Math.Abs(s - inputScale)).First();
+            ed.WriteMessage($"\nUsing closest available scale to input: {scaleToFit}");
 
-        ed.WriteMessage(
-            $"\nChecking scale {scaleEntry.Key}: viewportWidth = {viewportWidth}, viewportHeight = {viewportHeight}"
-        );
-      }
-
-      if (scaleToFit == 0.0) {
-        ed.WriteMessage("Couldn't fit the rectangle in the specified scales");
-        return;
-      }
-
-      using (Transaction tr = db.TransactionManager.StartTransaction()) {
-        // Get the layout dictionary
-        DBDictionary layoutDict =
-            tr.GetObject(db.LayoutDictionaryId, OpenMode.ForRead) as DBDictionary;
-
-        foreach (var layoutEntry in layoutDict) {
-          string layoutName = layoutEntry.Key;
-          if (layoutName.StartsWith("E-") && layoutName.Contains(inputSheetName)) {
-            matchedLayoutName = layoutName;
-            break;
+            viewportWidth = rectWidth / (12 / scaleToFit);
+            viewportHeight = rectHeight / (12 / scaleToFit);
           }
         }
 
-        if (string.IsNullOrEmpty(matchedLayoutName)) {
-          ed.WriteMessage($"No matching layout found for '{inputSheetName}'.");
-          return;
-        }
+        using (Transaction tr = db.TransactionManager.StartTransaction()) {
+          // Get the layout dictionary
+          DBDictionary layoutDict =
+              tr.GetObject(db.LayoutDictionaryId, OpenMode.ForRead) as DBDictionary;
 
-        if (!layoutDict.Contains(matchedLayoutName)) {
+          foreach (var layoutEntry in layoutDict) {
+            string layoutName = layoutEntry.Key;
+            if (layoutName.StartsWith("E-") && layoutName.Contains(inputSheetName)) {
+              matchedLayoutName = layoutName;
+              break;
+            }
+          }
+
+          if (string.IsNullOrEmpty(matchedLayoutName)) {
+            ed.WriteMessage($"No matching layout found for '{inputSheetName}'.");
+            return;
+          }
+
+          if (!layoutDict.Contains(matchedLayoutName)) {
+            ed.WriteMessage(
+                $"Sheet (Layout) named '{matchedLayoutName}' not found in the drawing."
+            );
+            return;
+          }
+          ObjectId layoutId = layoutDict.GetAt(matchedLayoutName);
+          Layout layout = tr.GetObject(layoutId, OpenMode.ForRead) as Layout;
+
+          BlockTable blockTable =
+              tr.GetObject(db.BlockTableId, OpenMode.ForRead) as BlockTable;
+          BlockTableRecord paperSpace =
+              tr.GetObject(layout.BlockTableRecordId, OpenMode.ForWrite) as BlockTableRecord;
+
+          LayerTable layerTable =
+              tr.GetObject(db.LayerTableId, OpenMode.ForRead) as LayerTable;
+
+          if (!layerTable.Has("DEFPOINTS")) {
+            LayerTableRecord layerRecord = new LayerTableRecord {
+              Name = "DEFPOINTS",
+              Color = Color.FromColorIndex(ColorMethod.ByAci, 7) // White color
+            };
+
+            layerTable.UpgradeOpen(); // Switch to write mode
+            ObjectId layerId = layerTable.Add(layerRecord);
+            tr.AddNewlyCreatedDBObject(layerRecord, true);
+          }
+
+          Point2d modelSpaceCenter = new Point2d(
+              (rectExtents.MinPoint.X + rectWidth / 2),
+              (rectExtents.MinPoint.Y + rectHeight / 2)
+          );
+
+          Viewport viewport = new Viewport();
+
+          // This is the placement of the viewport on the PAPER SPACE (typically the center of your paper space or wherever you want the viewport to appear)
+          viewport.CenterPoint = new Point3d(
+              32.7086 - viewportWidth / 2.0,
+              23.3844 - viewportHeight / 2.0,
+              0.0
+          );
+          viewport.Width = viewportWidth;
+          viewport.Height = viewportHeight;
+          viewport.CustomScale = scaleToFit / 12;
+          viewport.Layer = "DEFPOINTS";
+
+          // This is the center of the view in MODEL SPACE (the actual content you want to show inside the viewport)
           ed.WriteMessage(
-              $"Sheet (Layout) named '{matchedLayoutName}' not found in the drawing."
+              $"\nModelSpaceCenterX: {modelSpaceCenter.X}, ModelSpaceCenterY: {modelSpaceCenter.Y}"
           );
-          return;
+          viewport.ViewTarget = new Point3d(modelSpaceCenter.X, modelSpaceCenter.Y, 0.0);
+          viewport.ViewDirection = new Vector3d(0, 0, 1);
+
+          ed.WriteMessage($"\nSet viewport scale to {viewport.CustomScale}");
+
+          paperSpace.AppendEntity(viewport);
+          tr.AddNewlyCreatedDBObject(viewport, true);
+
+          db.TileMode = false; // Set to Paper Space
+
+          // Set the current layout to the one you are working on
+          Autodesk.AutoCAD.ApplicationServices.Application.SetSystemVariable(
+              "CTAB",
+              layout.LayoutName
+          );
+
+          viewport.On = true; // Now turn the viewport on
+          viewport.Locked = true;
+
+          // Prompt user for the type of viewport
+          PromptResult viewportTypeResult = ed.GetString(
+              "\nPlease enter the type of viewport (e.g., lighting, power, roof): "
+          );
+          if (viewportTypeResult.Status == PromptStatus.OK) {
+            string viewportTypeUpperCase = viewportTypeResult.StringResult.ToUpper();
+            string finalViewportText = "ELECTRICAL " + viewportTypeUpperCase + " PLAN";
+
+            // Getting scale in string format
+            string scaleStr = ScaleToFraction(12 * viewport.CustomScale);
+            string text2 = $"SCALE: {scaleStr}\" = 1'";
+
+            // Create extents using the viewport properties
+            Point3d minPoint = new Point3d(
+                viewport.CenterPoint.X - viewport.Width / 2.0,
+                viewport.CenterPoint.Y - viewport.Height / 2.0,
+                0.0
+            );
+            Point3d maxPoint = new Point3d(
+                viewport.CenterPoint.X + viewport.Width / 2.0,
+                viewport.CenterPoint.Y + viewport.Height / 2.0,
+                0.0
+            );
+            Extents3d viewportExtents = new Extents3d(minPoint, maxPoint);
+
+            // Use the function to create the title
+            CreateEntitiesAtEndPoint(
+                tr,
+                viewportExtents,
+                minPoint,
+                finalViewportText,
+                text2
+            );
+          }
+
+          tr.Commit();
         }
-        ObjectId layoutId = layoutDict.GetAt(matchedLayoutName);
-        Layout layout = tr.GetObject(layoutId, OpenMode.ForRead) as Layout;
-
-        BlockTable blockTable =
-            tr.GetObject(db.BlockTableId, OpenMode.ForRead) as BlockTable;
-        BlockTableRecord paperSpace =
-            tr.GetObject(layout.BlockTableRecordId, OpenMode.ForWrite) as BlockTableRecord;
-
-        LayerTable layerTable =
-            tr.GetObject(db.LayerTableId, OpenMode.ForRead) as LayerTable;
-
-        if (!layerTable.Has("DEFPOINTS")) {
-          LayerTableRecord layerRecord = new LayerTableRecord {
-            Name = "DEFPOINTS",
-            Color = Color.FromColorIndex(ColorMethod.ByAci, 7) // White color
-          };
-
-          layerTable.UpgradeOpen(); // Switch to write mode
-          ObjectId layerId = layerTable.Add(layerRecord);
-          tr.AddNewlyCreatedDBObject(layerRecord, true);
-        }
-
-        Point2d modelSpaceCenter = new Point2d(
-            (rectExtents.MinPoint.X + rectWidth / 2),
-            (rectExtents.MinPoint.Y + rectHeight / 2)
-        );
-
-        Viewport viewport = new Viewport();
-
-        // This is the placement of the viewport on the PAPER SPACE (typically the center of your paper space or wherever you want the viewport to appear)
-        viewport.CenterPoint = new Point3d(
-            32.7086 - viewportWidth / 2.0,
-            23.3844 - viewportHeight / 2.0,
-            0.0
-        );
-        viewport.Width = viewportWidth;
-        viewport.Height = viewportHeight;
-        viewport.CustomScale = scaleToFit / 12;
-        viewport.Layer = "DEFPOINTS";
-
-        // This is the center of the view in MODEL SPACE (the actual content you want to show inside the viewport)
-        ed.WriteMessage(
-            $"\nModelSpaceCenterX: {modelSpaceCenter.X}, ModelSpaceCenterY: {modelSpaceCenter.Y}"
-        );
-        viewport.ViewTarget = new Point3d(modelSpaceCenter.X, modelSpaceCenter.Y, 0.0);
-        viewport.ViewDirection = new Vector3d(0, 0, 1);
-
-        ed.WriteMessage($"\nSet viewport scale to {viewport.CustomScale}");
-
-        paperSpace.AppendEntity(viewport);
-        tr.AddNewlyCreatedDBObject(viewport, true);
-
-        db.TileMode = false; // Set to Paper Space
-
-        // Set the current layout to the one you are working on
-        Autodesk.AutoCAD.ApplicationServices.Application.SetSystemVariable(
-            "CTAB",
-            layout.LayoutName
-        );
-
-        viewport.On = true; // Now turn the viewport on
-        viewport.Locked = true;
-
-        // Prompt user for the type of viewport
-        PromptResult viewportTypeResult = ed.GetString(
-            "\nPlease enter the type of viewport (e.g., lighting, power, roof): "
-        );
-        if (viewportTypeResult.Status == PromptStatus.OK) {
-          string viewportTypeUpperCase = viewportTypeResult.StringResult.ToUpper();
-          string finalViewportText = "ELECTRICAL " + viewportTypeUpperCase + " PLAN";
-
-          // Getting scale in string format
-          string scaleStr = ScaleToFraction(12 * viewport.CustomScale);
-          string text2 = $"SCALE: {scaleStr}\" = 1'";
-
-          // Create extents using the viewport properties
-          Point3d minPoint = new Point3d(
-              viewport.CenterPoint.X - viewport.Width / 2.0,
-              viewport.CenterPoint.Y - viewport.Height / 2.0,
-              0.0
-          );
-          Point3d maxPoint = new Point3d(
-              viewport.CenterPoint.X + viewport.Width / 2.0,
-              viewport.CenterPoint.Y + viewport.Height / 2.0,
-              0.0
-          );
-          Extents3d viewportExtents = new Extents3d(minPoint, maxPoint);
-
-          // Use the function to create the title
-          CreateEntitiesAtEndPoint(
-              tr,
-              viewportExtents,
-              minPoint,
-              finalViewportText,
-              text2
-          );
-        }
-
-        tr.Commit();
       }
 
       ed.Regen();
