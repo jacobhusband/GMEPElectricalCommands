@@ -421,15 +421,15 @@ namespace ElectricalCommands {
             acTrans.GetObject(acCurDb.BlockTableId, OpenMode.ForRead) as BlockTable;
           BlockTableRecord acBlkTblRec;
 
-          if (acBlkTbl.Has("ar")) {
-            acBlkTblRec = acTrans.GetObject(acBlkTbl["ar"], OpenMode.ForWrite) as BlockTableRecord;
+          if (acBlkTbl.Has($"ar{Scale}")) {
+            acBlkTblRec = acTrans.GetObject(acBlkTbl[$"ar{Scale}"], OpenMode.ForWrite) as BlockTableRecord;
             foreach (ObjectId id in acBlkTblRec) {
               acTrans.GetObject(id, OpenMode.ForWrite).Erase();
             }
           }
           else {
             acBlkTblRec = new BlockTableRecord();
-            acBlkTblRec.Name = "ar";
+            acBlkTblRec.Name = $"ar{Scale}";
 
             acBlkTbl.UpgradeOpen();
             acBlkTbl.Add(acBlkTblRec);
@@ -445,7 +445,7 @@ namespace ElectricalCommands {
           BlockTable acBlkTbl =
             acTrans.GetObject(acCurDb.BlockTableId, OpenMode.ForRead) as BlockTable;
           BlockTableRecord acBlkTblRec =
-            acTrans.GetObject(acBlkTbl["ar"], OpenMode.ForRead) as BlockTableRecord;
+            acTrans.GetObject(acBlkTbl[$"ar{Scale}"], OpenMode.ForRead) as BlockTableRecord;
 
           using (BlockReference acBlkRef = new BlockReference(Point3d.Origin, acBlkTblRec.ObjectId)) {
             ArrowJig arrowJig = new ArrowJig(acBlkRef, PanelLocation);
@@ -1457,12 +1457,21 @@ namespace ElectricalCommands {
       TextData text,
       double scaleFactor
     ) {
+      Autodesk.AutoCAD.EditorInput.Editor ed = Autodesk
+        .AutoCAD
+        .ApplicationServices
+        .Application
+        .DocumentManager
+        .MdiActiveDocument
+        .Editor;
+
       DBText dbText = new DBText();
       var textStyleObject = new TextStyle(text.StyleAttributes);
       textStyleObject.CreateStyleIfNotExisting(text.Style);
 
       dbText.Layer = text.Layer;
       dbText.TextString = text.Contents;
+      ed.WriteMessage($"This is the scalefactor inside createtext function: {scaleFactor}");
       dbText.Height = text.Height * scaleFactor;
       dbText.Rotation = text.Rotation;
 
