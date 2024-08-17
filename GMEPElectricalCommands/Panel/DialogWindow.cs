@@ -537,25 +537,38 @@ namespace ElectricalCommands {
       Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Database db = doc.Database;
       Editor ed = doc.Editor;
+
+      // Collect all subpanel names
+      HashSet<string> subpanelNames = new HashSet<string>();
+      foreach (var userControl in userControls) {
+        subpanelNames.UnionWith(userControl.GetSubPanels());
+      }
+
       using (DocumentLock docLock = doc.LockDocument()) {
         using (Transaction tr = db.TransactionManager.StartTransaction()) {
           try {
             BlockTableRecord currentSpace = (BlockTableRecord)tr.GetObject(db.CurrentSpaceId, OpenMode.ForWrite);
             Table table = new Table();
-            // Calculate the number of rows
-            int rowCount = userControls.Count + 3; // Header + userControls + Total + "IN CONCLUSION:"
+
+            // Calculate the number of rows (exclude subpanels)
+            int rowCount = userControls.Count(uc => !subpanelNames.Contains(uc.GetPanelName())) + 3; // Header + non-subpanel userControls + Total + "IN CONCLUSION:"
+
             table.TableStyle = db.Tablestyle;
             table.SetSize(rowCount, 3);
+
             PromptPointResult pr = ed.GetPoint("\nSpecify insertion point: ");
             if (pr.Status != PromptStatus.OK)
               return;
             table.Position = pr.Value;
+
             // Set layer to "M-TEXT"
             table.Layer = "E-TEXT";
+
             // Set column widths
             table.Columns[0].Width = 0.5;
             table.Columns[1].Width = 5.0;
             table.Columns[2].Width = 2.5;
+
             // Set row heights and text properties
             for (int row = 0; row < rowCount; row++) {
               table.Rows[row].Height = 0.75;
@@ -563,32 +576,46 @@ namespace ElectricalCommands {
                 Cell cell = table.Cells[row, col];
                 cell.TextHeight = (row == 0) ? 0.25 : 0.1;
                 cell.TextStyleId = CreateOrGetTextStyle(db, tr, "Archquick");
-                cell.Alignment = CellAlignment.MiddleCenter; // Set all cells to middle-center alignment
+                cell.Alignment = CellAlignment.MiddleCenter;
               }
             }
+
             // Populate the table
             table.Cells[0, 0].TextString = "LOAD CALCULATIONS";
             table.MergeCells(CellRange.Create(table, 0, 0, 0, 2));
+
             double totalKVA = 0;
-            for (int i = 0; i < userControls.Count; i++) {
-              int rowIndex = i + 1;
-              var userControl = userControls[i];
-              double kVA = userControl.GetTotalVA() / 1000.0; // Convert VA to kVA
-              totalKVA += kVA;
-              table.Cells[rowIndex, 0].TextString = $"{i + 1}.";
-              table.Cells[rowIndex, 1].TextString = $"NEW PANEL '{(char)('A' + i)}'";
-              table.Cells[rowIndex, 2].TextString = $"{kVA:F1} KVA";
+            int rowIndex = 1;
+            int panelCounter = 1;
+
+            foreach (var userControl in userControls) {
+              string panelName = userControl.GetPanelName();
+              if (!subpanelNames.Contains(panelName)) {
+                double kVA = userControl.GetTotalVA() / 1000.0; // Convert VA to kVA
+                totalKVA += kVA;
+
+                table.Cells[rowIndex, 0].TextString = $"{panelCounter}.";
+                table.Cells[rowIndex, 1].TextString = $"NEW PANEL '{panelName}'";
+                table.Cells[rowIndex, 2].TextString = $"{kVA:F1} KVA";
+
+                rowIndex++;
+                panelCounter++;
+              }
             }
-            int totalRowIndex = userControls.Count + 1;
+
+            int totalRowIndex = rowCount - 2;
             table.Cells[totalRowIndex, 0].TextString = "TOTAL @ 120/208V 3PH 4W";
             table.MergeCells(CellRange.Create(table, totalRowIndex, 0, totalRowIndex, 1));
             table.Cells[totalRowIndex, 2].TextString = $"{totalKVA:F1} KVA";
+
             int conclusionRowIndex = rowCount - 1;
             table.Cells[conclusionRowIndex, 0].TextString = "IN CONCLUSION:";
             table.MergeCells(CellRange.Create(table, conclusionRowIndex, 0, conclusionRowIndex, 2));
+
             currentSpace.AppendEntity(table);
             tr.AddNewlyCreatedDBObject(table, true);
             tr.Commit();
+
             ed.WriteMessage("\nLoad calculations table created successfully.");
           }
           catch (System.Exception ex) {

@@ -960,6 +960,34 @@ namespace ElectricalCommands {
       return 0.0;
     }
 
+    public List<string> GetSubPanels() {
+      List<string> subPanels = new List<string>();
+      string pattern = @"(PANEL|SUBPANEL)\s+(?:'?([^']+)'?)";
+      Regex regex = new Regex(pattern, RegexOptions.IgnoreCase);
+
+      foreach (DataGridViewRow row in PANEL_GRID.Rows) {
+        foreach (DataGridViewCell cell in row.Cells) {
+          string cellValue = cell.Value?.ToString() ?? "";
+          MatchCollection matches = regex.Matches(cellValue);
+
+          foreach (Match match in matches) {
+            if (match.Groups.Count > 2) {
+              string panelName = match.Groups[2].Value;
+              if (!subPanels.Contains(panelName)) {
+                subPanels.Add(panelName);
+              }
+            }
+          }
+        }
+      }
+
+      return subPanels;
+    }
+
+    public string GetPanelName() {
+      return PANEL_NAME_INPUT.Text;
+    }
+
     private void panel_cell_changed_2P() {
       string[] columnNames = { "phase_a_left", "phase_a_right", "phase_b_left", "phase_b_right" };
       int numberOfBreakersWithKitchenDemand = count_number_of_breakers_with_kitchen_demand_tag();
