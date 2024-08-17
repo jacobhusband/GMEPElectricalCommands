@@ -950,6 +950,16 @@ namespace ElectricalCommands {
       return Math.Ceiling(sum);
     }
 
+    public double GetTotalVA() {
+      if (TOTAL_VA_GRID != null && TOTAL_VA_GRID.Rows.Count > 0 && TOTAL_VA_GRID.Columns.Count > 0) {
+        object cellValue = TOTAL_VA_GRID.Rows[0].Cells[0].Value;
+        if (cellValue != null && double.TryParse(cellValue.ToString(), out double totalVA)) {
+          return totalVA;
+        }
+      }
+      return 0.0;
+    }
+
     private void panel_cell_changed_2P() {
       string[] columnNames = { "phase_a_left", "phase_a_right", "phase_b_left", "phase_b_right" };
       int numberOfBreakersWithKitchenDemand = count_number_of_breakers_with_kitchen_demand_tag();

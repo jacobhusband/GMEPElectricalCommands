@@ -38,6 +38,7 @@ namespace ElectricalCommands
       this.SAVE_BUTTON = new System.Windows.Forms.Button();
       this.LOAD_BUTTON = new System.Windows.Forms.Button();
       this.DUPLICATE_PANEL_BUTTON = new System.Windows.Forms.Button();
+      this.LOAD_CALCULATIONS_BUTTON = new System.Windows.Forms.Button();
       this.PANEL_TABS.SuspendLayout();
       this.SuspendLayout();
       // 
@@ -121,11 +122,22 @@ namespace ElectricalCommands
       this.DUPLICATE_PANEL_BUTTON.UseVisualStyleBackColor = true;
       this.DUPLICATE_PANEL_BUTTON.Click += new System.EventHandler(this.DUPLICATE_PANEL_BUTTON_Click);
       // 
+      // LOAD_CALCULATIONS_BUTTON
+      // 
+      this.LOAD_CALCULATIONS_BUTTON.Location = new System.Drawing.Point(24, 200);
+      this.LOAD_CALCULATIONS_BUTTON.Name = "LOAD_CALCULATIONS_BUTTON";
+      this.LOAD_CALCULATIONS_BUTTON.Size = new System.Drawing.Size(137, 23);
+      this.LOAD_CALCULATIONS_BUTTON.TabIndex = 197;
+      this.LOAD_CALCULATIONS_BUTTON.Text = "LOAD CALCULATIONS";
+      this.LOAD_CALCULATIONS_BUTTON.UseVisualStyleBackColor = true;
+      this.LOAD_CALCULATIONS_BUTTON.Click += new System.EventHandler(this.LOAD_CALCULATIONS_BUTTON_Click);
+      // 
       // MainForm
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(1586, 696);
+      this.Controls.Add(this.LOAD_CALCULATIONS_BUTTON);
       this.Controls.Add(this.DUPLICATE_PANEL_BUTTON);
       this.Controls.Add(this.LOAD_BUTTON);
       this.Controls.Add(this.SAVE_BUTTON);
@@ -149,6 +161,7 @@ namespace ElectricalCommands
     private System.Windows.Forms.Button SAVE_BUTTON;
     private System.Windows.Forms.Button LOAD_BUTTON;
     private System.Windows.Forms.Button DUPLICATE_PANEL_BUTTON;
+    private System.Windows.Forms.Button LOAD_CALCULATIONS_BUTTON;
   }
 }
 

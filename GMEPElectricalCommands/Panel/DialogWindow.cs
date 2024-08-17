@@ -1,5 +1,7 @@
 ﻿using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.EditorInput;
+using Autodesk.AutoCAD.GraphicsInterface;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -523,6 +525,98 @@ namespace ElectricalCommands {
 
     private void DUPLICATE_PANEL_BUTTON_Click(object sender, EventArgs e) {
       DuplicatePanel();
+    }
+
+    private void LOAD_CALCULATIONS_BUTTON_Click(object sender, EventArgs e) {
+      using (DocumentLock docLock = this.acDoc.LockDocument()) {
+        CreateLoadCalculationsTable(this.userControls);
+      }
+    }
+
+    public static void CreateLoadCalculationsTable(List<PanelUserControl> userControls) {
+      Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      Database db = doc.Database;
+      Editor ed = doc.Editor;
+      using (DocumentLock docLock = doc.LockDocument()) {
+        using (Transaction tr = db.TransactionManager.StartTransaction()) {
+          try {
+            BlockTableRecord currentSpace = (BlockTableRecord)tr.GetObject(db.CurrentSpaceId, OpenMode.ForWrite);
+            Table table = new Table();
+            // Calculate the number of rows
+            int rowCount = userControls.Count + 3; // Header + userControls + Total + "IN CONCLUSION:"
+            table.TableStyle = db.Tablestyle;
+            table.SetSize(rowCount, 3);
+            PromptPointResult pr = ed.GetPoint("\nSpecify insertion point: ");
+            if (pr.Status != PromptStatus.OK)
+              return;
+            table.Position = pr.Value;
+            // Set layer to "M-TEXT"
+            table.Layer = "E-TEXT";
+            // Set column widths
+            table.Columns[0].Width = 0.5;
+            table.Columns[1].Width = 5.0;
+            table.Columns[2].Width = 2.5;
+            // Set row heights and text properties
+            for (int row = 0; row < rowCount; row++) {
+              table.Rows[row].Height = 0.75;
+              for (int col = 0; col < 3; col++) {
+                Cell cell = table.Cells[row, col];
+                cell.TextHeight = (row == 0) ? 0.25 : 0.1;
+                cell.TextStyleId = CreateOrGetTextStyle(db, tr, "Archquick");
+                cell.Alignment = CellAlignment.MiddleCenter; // Set all cells to middle-center alignment
+              }
+            }
+            // Populate the table
+            table.Cells[0, 0].TextString = "LOAD CALCULATIONS";
+            table.MergeCells(CellRange.Create(table, 0, 0, 0, 2));
+            double totalKVA = 0;
+            for (int i = 0; i < userControls.Count; i++) {
+              int rowIndex = i + 1;
+              var userControl = userControls[i];
+              double kVA = userControl.GetTotalVA() / 1000.0; // Convert VA to kVA
+              totalKVA += kVA;
+              table.Cells[rowIndex, 0].TextString = $"{i + 1}.";
+              table.Cells[rowIndex, 1].TextString = $"NEW PANEL '{(char)('A' + i)}'";
+              table.Cells[rowIndex, 2].TextString = $"{kVA:F1} KVA";
+            }
+            int totalRowIndex = userControls.Count + 1;
+            table.Cells[totalRowIndex, 0].TextString = "TOTAL @ 120/208V 3PH 4W";
+            table.MergeCells(CellRange.Create(table, totalRowIndex, 0, totalRowIndex, 1));
+            table.Cells[totalRowIndex, 2].TextString = $"{totalKVA:F1} KVA";
+            int conclusionRowIndex = rowCount - 1;
+            table.Cells[conclusionRowIndex, 0].TextString = "IN CONCLUSION:";
+            table.MergeCells(CellRange.Create(table, conclusionRowIndex, 0, conclusionRowIndex, 2));
+            currentSpace.AppendEntity(table);
+            tr.AddNewlyCreatedDBObject(table, true);
+            tr.Commit();
+            ed.WriteMessage("\nLoad calculations table created successfully.");
+          }
+          catch (System.Exception ex) {
+            ed.WriteMessage($"\nError creating load calculations table: {ex.Message}");
+            tr.Abort();
+          }
+        }
+      }
+    }
+
+    private static ObjectId CreateOrGetTextStyle(Database db, Transaction tr, string styleName) {
+      TextStyleTable textStyleTable = (TextStyleTable)tr.GetObject(db.TextStyleTableId, OpenMode.ForRead);
+
+      if (!textStyleTable.Has(styleName)) {
+        using (TextStyleTableRecord textStyle = new TextStyleTableRecord()) {
+          textStyle.Name = styleName;
+          textStyle.Font = new FontDescriptor(styleName, false, false, 0, 0);
+
+          textStyleTable.UpgradeOpen();
+          ObjectId textStyleId = textStyleTable.Add(textStyle);
+          tr.AddNewlyCreatedDBObject(textStyle, true);
+
+          return textStyleId;
+        }
+      }
+      else {
+        return textStyleTable[styleName];
+      }
     }
   }
 }
