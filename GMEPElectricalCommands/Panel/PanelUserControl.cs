@@ -15,6 +15,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Media.Media3D;
 
 namespace ElectricalCommands {
 
@@ -726,70 +727,6 @@ namespace ElectricalCommands {
       return Math.Round(maxVal / lineVoltage, 1);
     }
 
-    private double KitchenDemandFactor(int numberOfBreakersWithKitchenDemand) {
-      if (numberOfBreakersWithKitchenDemand == 1 || numberOfBreakersWithKitchenDemand == 2) {
-        return 1.00;
-      }
-      else if (numberOfBreakersWithKitchenDemand == 3) {
-        return 0.90;
-      }
-      else if (numberOfBreakersWithKitchenDemand == 4) {
-        return 0.80;
-      }
-      else if (numberOfBreakersWithKitchenDemand == 5) {
-        return 0.70;
-      }
-      else if (numberOfBreakersWithKitchenDemand >= 6) {
-        return 0.65;
-      }
-      else {
-        return 1.00;
-      }
-    }
-
-    private int BreakersWithKitchenDemand() {
-      return PANEL_GRID.Rows.Cast<DataGridViewRow>()
-          .Sum(row => new[] { "description_left", "description_right" }
-              .Count(colName => HasKitchenDemand(colName, row)));
-    }
-
-    private bool HasKitchenDemand(string columnName, DataGridViewRow row) {
-      const string note = "KITCHEN DEMAND";
-
-      if (row == null || !PANEL_GRID.Columns.Contains(columnName))
-        return false;
-
-      var cell = row.Cells[columnName];
-      if (cell == null)
-        return false;
-
-      string cellValueString = cell.Value?.ToString() ?? "";
-      string cellTagString = cell.Tag?.ToString() ?? "";
-
-      return !string.IsNullOrEmpty(cellValueString) && cellTagString.Contains(note);
-    }
-
-    private double ParseAndSumCell(
-      string cellValue,
-      double demandFactor
-    ) {
-      double sum = 0;
-      if (!string.IsNullOrEmpty(cellValue)) {
-        var parts = cellValue.Split(';');
-        foreach (var part in parts) {
-          if (double.TryParse(part, out double value)) {
-            if (demandFactor != 1.00) {
-              sum += value * demandFactor;
-            }
-            else {
-              sum += value;
-            }
-          }
-        }
-      }
-      return Math.Ceiling(sum);
-    }
-
     public double GetTotalVA() {
       if (TOTAL_VA_GRID != null && TOTAL_VA_GRID.Rows.Count > 0 && TOTAL_VA_GRID.Columns.Count > 0) {
         object cellValue = TOTAL_VA_GRID.Rows[0].Cells[0].Value;
@@ -828,6 +765,35 @@ namespace ElectricalCommands {
       return PANEL_NAME_INPUT.Text;
     }
 
+    public double CalculateWattageSum(string note) {
+      int phaseCount = PHASE_SUM_GRID.ColumnCount;
+      if (phaseCount < 2 || phaseCount > 3) {
+        throw new ArgumentException("Unsupported phase count. Must be 2 or 3.");
+      }
+      return CalculateWattageSumForPhases(phaseCount, note);
+    }
+
+    private double CalculateWattageSumForPhases(int phaseCount, string note) {
+      string[] columnNames = GetColumnNames(phaseCount);
+      double[] sums = new double[phaseCount];
+
+      foreach (DataGridViewRow row in PANEL_GRID.Rows) {
+        for (int i = 0; i < columnNames.Length; i += 2) {
+          for (int j = 0; j < 2; j++) {
+            string colName = columnNames[i + j];
+            if (row.Cells[colName].Value != null) {
+              bool hasNoteApplied = BreakerContainsNote(row.Index, colName, note);
+              if (hasNoteApplied) {
+                sums[i / 2] += ParseAndSumCell(row.Cells[colName].Value.ToString(), 1);
+              }
+            }
+          }
+        }
+      }
+
+      return sums.Sum();
+    }
+
     public void CalculateBreakerLoad() {
       int phaseCount = PHASE_SUM_GRID.ColumnCount;
       if (phaseCount < 2 || phaseCount > 3) {
@@ -839,18 +805,18 @@ namespace ElectricalCommands {
 
     private void CalculateBreakerLoadForPhases(int phaseCount) {
       string[] columnNames = GetColumnNames(phaseCount);
-      int numberOfBreakersWithKitchenDemand = BreakersWithKitchenDemand();
-      double demandFactor = KitchenDemandFactor(numberOfBreakersWithKitchenDemand);
+      int breakersWithKitchenDemand = BreakersWithNote("KITCHEN DEMAND");
+      double demandFactor = KitchenDemandFactor(breakersWithKitchenDemand);
       double[] sums = new double[phaseCount];
 
       foreach (DataGridViewRow row in PANEL_GRID.Rows) {
         for (int i = 0; i < columnNames.Length; i += 2) {
           for (int j = 0; j < 2; j++) {
-            string cellName = columnNames[i + j];
-            if (row.Cells[cellName].Value != null) {
-              bool hasKitchenDemandApplied = BreakerContainsNote(row.Index, cellName, "KITCHEN DEMAND");
+            string colName = columnNames[i + j];
+            if (row.Cells[colName].Value != null) {
+              bool hasKitchenDemandApplied = BreakerContainsNote(row.Index, colName, "KITCHEN DEMAND");
               sums[i / 2] += ParseAndSumCell(
-                  row.Cells[cellName].Value.ToString(),
+                  row.Cells[colName].Value.ToString(),
                   hasKitchenDemandApplied ? demandFactor : 1.0
               );
             }
@@ -867,9 +833,70 @@ namespace ElectricalCommands {
       if (phaseCount == 2) {
         return new[] { "phase_a_left", "phase_a_right", "phase_b_left", "phase_b_right" };
       }
-      else // phaseCount == 3
-      {
+      else {
         return new[] { "phase_a_left", "phase_a_right", "phase_b_left", "phase_b_right", "phase_c_left", "phase_c_right" };
+      }
+    }
+
+    private int BreakersWithNote(string note) {
+      return PANEL_GRID.Rows.Cast<DataGridViewRow>()
+          .Sum(row => new[] { "description_left", "description_right" }
+              .Count(colName => CellHasNote(colName, row, note)));
+    }
+
+    private bool CellHasNote(string columnName, DataGridViewRow row, string note) {
+      if (row == null || !PANEL_GRID.Columns.Contains(columnName))
+        return false;
+
+      var cell = row.Cells[columnName];
+      if (cell == null)
+        return false;
+
+      string cellValueString = cell.Value?.ToString() ?? "";
+      string cellTagString = cell.Tag?.ToString() ?? "";
+
+      return !string.IsNullOrEmpty(cellValueString) && cellTagString.Contains(note);
+    }
+
+    private double ParseAndSumCell(
+      string cellValue,
+      double demandFactor
+    ) {
+      double sum = 0;
+      if (!string.IsNullOrEmpty(cellValue)) {
+        var parts = cellValue.Split(';');
+        foreach (var part in parts) {
+          if (double.TryParse(part, out double value)) {
+            if (demandFactor != 1.00) {
+              sum += value * demandFactor;
+            }
+            else {
+              sum += value;
+            }
+          }
+        }
+      }
+      return Math.Ceiling(sum);
+    }
+
+    private double KitchenDemandFactor(int numberOfBreakersWithKitchenDemand) {
+      if (numberOfBreakersWithKitchenDemand == 1 || numberOfBreakersWithKitchenDemand == 2) {
+        return 1.00;
+      }
+      else if (numberOfBreakersWithKitchenDemand == 3) {
+        return 0.90;
+      }
+      else if (numberOfBreakersWithKitchenDemand == 4) {
+        return 0.80;
+      }
+      else if (numberOfBreakersWithKitchenDemand == 5) {
+        return 0.70;
+      }
+      else if (numberOfBreakersWithKitchenDemand >= 6) {
+        return 0.65;
+      }
+      else {
+        return 1.00;
       }
     }
 
