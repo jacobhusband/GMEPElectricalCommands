@@ -204,69 +204,6 @@ namespace ElectricalCommands {
       Create_Panels(null);
     }
 
-    private Dictionary<string, object> UpdatePanelDataDescriptions(
-      Dictionary<string, object> panelData
-    ) {
-      // Check if the keys exist in the dictionary
-      if (
-        panelData.ContainsKey("description_left_tags")
-        && panelData.ContainsKey("description_right_tags")
-      ) {
-        // Get the lists from the dictionary
-        List<string> leftTags = panelData["description_left_tags"] as List<string>;
-        List<string> rightTags = panelData["description_right_tags"] as List<string>;
-
-        // Get the description lists
-        List<string> leftDescriptions = panelData["description_left"] as List<string>;
-        List<string> rightDescriptions = panelData["description_right"] as List<string>;
-
-        // Iterate over the left tags
-        for (int i = 0; i < leftTags.Count; i++) {
-          if (leftTags[i].Contains("ADD SUFFIX (E). *NOT ADDED AS NOTE*")) {
-            // Add the suffix to the associated description if it's not "existing load", "EXISTING LOAD", "space", or "SPACE"
-            string lowerDescription = leftDescriptions[i * 2].ToLower();
-            if (lowerDescription != "existing load" && lowerDescription != "space") {
-              leftDescriptions[i * 2] = "(E)" + leftDescriptions[i * 2];
-              if (!string.IsNullOrEmpty(leftDescriptions[i * 2 + 1])) {
-                leftDescriptions[i * 2 + 1] = "(E)" + leftDescriptions[i * 2 + 1];
-              }
-            }
-          }
-          else if (leftTags[i].Contains("ADD SUFFIX (R). *NOT ADDED AS NOTE*")) {
-            // Add the suffix to the associated description
-            leftDescriptions[i * 2] = "(R)" + leftDescriptions[i * 2];
-            if (!string.IsNullOrEmpty(leftDescriptions[i * 2 + 1])) {
-              leftDescriptions[i * 2 + 1] = "(R)" + leftDescriptions[i * 2 + 1];
-            }
-          }
-
-          if (rightTags[i].Contains("ADD SUFFIX (E). *NOT ADDED AS NOTE*")) {
-            // Add the suffix to the associated description if it's not "existing load", "EXISTING LOAD", "space", or "SPACE"
-            string lowerDescription = rightDescriptions[i * 2].ToLower();
-            if (lowerDescription != "existing load" && lowerDescription != "space") {
-              rightDescriptions[i * 2] = "(E)" + rightDescriptions[i * 2];
-              if (!string.IsNullOrEmpty(rightDescriptions[i * 2 + 1])) {
-                rightDescriptions[i * 2 + 1] = "(E)" + rightDescriptions[i * 2 + 1];
-              }
-            }
-          }
-          else if (rightTags[i].Contains("ADD SUFFIX (R). *NOT ADDED AS NOTE*")) {
-            // Add the suffix to the associated description
-            rightDescriptions[i * 2] = "(R)" + rightDescriptions[i * 2];
-            if (!string.IsNullOrEmpty(rightDescriptions[i * 2 + 1])) {
-              rightDescriptions[i * 2 + 1] = "(R)" + rightDescriptions[i * 2 + 1];
-            }
-          }
-        }
-
-        // Update the descriptions in the dictionary
-        panelData["description_left"] = leftDescriptions;
-        panelData["description_right"] = rightDescriptions;
-      }
-
-      return panelData;
-    }
-
     private void CreateTextsWithoutPanelData(
       Transaction tr,
       string layerName,
@@ -919,11 +856,9 @@ namespace ElectricalCommands {
       int counter = 0;
       CREATEBLOCK();
 
-      foreach (var panelDataOG in panelDataList) {
-        bool is2Pole = !panelDataOG.ContainsKey("phase_c_left");
+      foreach (var panelData in panelDataList) {
+        bool is2Pole = !panelData.ContainsKey("phase_c_left");
         var endPoint = new Point3d(0, 0, 0);
-
-        var panelData = UpdatePanelDataDescriptions(panelDataOG);
 
         using (var tr = db.TransactionManager.StartTransaction()) {
           var btr = (BlockTableRecord)tr.GetObject(spaceId, OpenMode.ForWrite);
@@ -1549,279 +1484,87 @@ namespace ElectricalCommands {
     }
 
     private void CreateCalculations(
-      BlockTableRecord btr,
-      Transaction tr,
-      Point3d startPoint,
-      Point3d endPoint,
-      Dictionary<string, object> panelData
-    ) {
+    BlockTableRecord btr,
+    Transaction tr,
+    Point3d startPoint,
+    Point3d endPoint,
+    Dictionary<string, object> panelData
+) {
       var (_, _, ed) = GetGlobals();
-      double kvaValue;
-      double feederAmpsValue;
-      var kvaParseResult = double.TryParse(panelData["kva"] as string, out kvaValue);
-      var feederAmpsParseResult = double.TryParse(
-        panelData["feeder_amps"] as string,
-        out feederAmpsValue
-      );
 
-      if (kvaParseResult) {
+      // Helper function to safely get string value from dictionary
+      string GetSafeString(string key) {
+        return panelData.TryGetValue(key, out object value) ? value?.ToString() ?? "" : "0";
+      }
+
+      // Helper function to safely parse double
+      bool TryParseDouble(string key, out double result) {
+        result = 0;
+        string value = GetSafeString(key);
+        return !string.IsNullOrEmpty(value) && double.TryParse(value, out result);
+      }
+
+      // KVA calculation
+      if (TryParseDouble("kva", out double kvaValue)) {
         CreateAndPositionRightText(
-          tr,
-          Math.Round(kvaValue, 1).ToString("0.0") + " KVA",
-          "ROMANS",
-          0.09375,
-          1,
-          2,
-          "PNLTXT",
-          new Point3d(endPoint.X - 6.69695957617801, endPoint.Y - 0.785594790702817, 0)
+            tr,
+            Math.Round(kvaValue, 1).ToString("0.0") + " KVA",
+            "ROMANS",
+            0.09375,
+            1,
+            2,
+            "PNLTXT",
+            new Point3d(endPoint.X - 6.69695957617801, endPoint.Y - 0.785594790702817, 0)
         );
       }
       else {
-        ed.WriteMessage($"Error: Unable to convert 'kva' value to double: {panelData["kva"]}");
+        ed.WriteMessage($"Error: Unable to convert 'kva' value to double: {GetSafeString("kva")}");
       }
 
-      if (feederAmpsParseResult) {
+      // Feeder Amps calculation
+      if (TryParseDouble("feeder_amps", out double feederAmpsValue)) {
         CreateAndPositionRightText(
-          tr,
-          Math.Round(feederAmpsValue, 1).ToString("0.0") + " A",
-          "ROMANS",
-          0.09375,
-          1,
-          2,
-          "PNLTXT",
-          new Point3d(endPoint.X - 6.70142386189229, endPoint.Y - 0.970762733814496, 0)
+            tr,
+            Math.Round(feederAmpsValue, 1).ToString("0.0") + " A",
+            "ROMANS",
+            0.09375,
+            1,
+            2,
+            "PNLTXT",
+            new Point3d(endPoint.X - 6.70142386189229, endPoint.Y - 0.970762733814496, 0)
         );
       }
       else {
-        ed.WriteMessage(
-          $"Error: Unable to convert 'feeder_amps' value to double: {panelData["feeder_amps"]}"
-        );
+        ed.WriteMessage($"Error: Unable to convert 'feeder_amps' value to double: {GetSafeString("feeder_amps")}");
       }
 
       // Create the calculation lines
-      CreateLine(
-        tr,
-        btr,
-        endPoint.X - 6.17759999999998,
-        endPoint.Y - 0.0846396524177919,
-        endPoint.X - 8.98559999999998,
-        endPoint.Y - 0.0846396524177919,
-        "0"
-      );
-      CreateLine(
-        tr,
-        btr,
-        endPoint.X - 6.17759999999998,
-        endPoint.Y - 1.02063965241777,
-        endPoint.X - 6.17759999999998,
-        endPoint.Y - 0.0846396524177919,
-        "0"
-      );
-      CreateLine(
-        tr,
-        btr,
-        endPoint.X - 8.98559999999998,
-        endPoint.Y - 1.02063965241777,
-        endPoint.X - 8.98559999999998,
-        endPoint.Y - 0.0846396524177919,
-        "0"
-      );
-      CreateLine(
-        tr,
-        btr,
-        endPoint.X - 6.17759999999998,
-        endPoint.Y - 1.02063965241777,
-        endPoint.X - 8.98559999999998,
-        endPoint.Y - 1.02063965241777,
-        "0"
-      );
-      CreateLine(
-        tr,
-        btr,
-        endPoint.X - 6.17759999999998,
-        endPoint.Y - 0.833439652417809,
-        endPoint.X - 8.98559999999998,
-        endPoint.Y - 0.833439652417809,
-        "0"
-      );
-      CreateLine(
-        tr,
-        btr,
-        endPoint.X - 6.17759999999998,
-        endPoint.Y - 0.64623965241779,
-        endPoint.X - 8.98559999999998,
-        endPoint.Y - 0.64623965241779,
-        "0"
-      );
-      CreateLine(
-        tr,
-        btr,
-        endPoint.X - 6.17759999999998,
-        endPoint.Y - 0.459039652417772,
-        endPoint.X - 8.98559999999998,
-        endPoint.Y - 0.459039652417772,
-        "0"
-      );
-      CreateLine(
-        tr,
-        btr,
-        endPoint.X - 6.17759999999998,
-        endPoint.Y - 0.27183965241781,
-        endPoint.X - 8.98559999999998,
-        endPoint.Y - 0.27183965241781,
-        "0"
-      );
-      CreateLine(
-        tr,
-        btr,
-        endPoint.X - 6.17759999999998,
-        endPoint.Y - 0.0846396524177919,
-        endPoint.X - 8.98559999999998,
-        endPoint.Y - 0.0846396524177919,
-        "0"
-      );
+      CreateLine(tr, btr, endPoint.X - 6.17759999999998, endPoint.Y - 0.0846396524177919, endPoint.X - 8.98559999999998, endPoint.Y - 0.0846396524177919, "0");
+      CreateLine(tr, btr, endPoint.X - 6.17759999999998, endPoint.Y - 1.02063965241777, endPoint.X - 6.17759999999998, endPoint.Y - 0.0846396524177919, "0");
+      CreateLine(tr, btr, endPoint.X - 8.98559999999998, endPoint.Y - 1.02063965241777, endPoint.X - 8.98559999999998, endPoint.Y - 0.0846396524177919, "0");
+      CreateLine(tr, btr, endPoint.X - 6.17759999999998, endPoint.Y - 1.02063965241777, endPoint.X - 8.98559999999998, endPoint.Y - 1.02063965241777, "0");
+      CreateLine(tr, btr, endPoint.X - 6.17759999999998, endPoint.Y - 0.833439652417809, endPoint.X - 8.98559999999998, endPoint.Y - 0.833439652417809, "0");
+      CreateLine(tr, btr, endPoint.X - 6.17759999999998, endPoint.Y - 0.64623965241779, endPoint.X - 8.98559999999998, endPoint.Y - 0.64623965241779, "0");
+      CreateLine(tr, btr, endPoint.X - 6.17759999999998, endPoint.Y - 0.459039652417772, endPoint.X - 8.98559999999998, endPoint.Y - 0.459039652417772, "0");
+      CreateLine(tr, btr, endPoint.X - 6.17759999999998, endPoint.Y - 0.27183965241781, endPoint.X - 8.98559999999998, endPoint.Y - 0.27183965241781, "0");
+      CreateLine(tr, btr, endPoint.X - 6.17759999999998, endPoint.Y - 0.0846396524177919, endPoint.X - 8.98559999999998, endPoint.Y - 0.0846396524177919, "0");
 
       // Create the text
-      CreateAndPositionText(
-        tr,
-        "TOTAL CONNECTED VA",
-        "Standard",
-        0.1248,
-        0.75,
-        256,
-        "0",
-        new Point3d(endPoint.X - 8.93821353998555, endPoint.Y - 0.244065644556514, 0)
-      );
-      CreateAndPositionRightText(
-        tr,
-        panelData["total_va"] as string,
-        "ROMANS",
-        0.09375,
-        1,
-        2,
-        "PNLTXT",
-        new Point3d(endPoint.X - 6.69695957617801, endPoint.Y - 0.222040136230106, 0)
-      );
-      CreateAndPositionText(
-        tr,
-        "=",
-        "Standard",
-        0.1248,
-        0.75,
-        256,
-        "0",
-        new Point3d(endPoint.X - 7.03028501835593, endPoint.Y - 0.242614932747216, 0)
-      );
-      CreateAndPositionText(
-        tr,
-        "LCL @ 125 %          ",
-        "Standard",
-        0.1248,
-        0.75,
-        256,
-        "0",
-        new Point3d(endPoint.X - 8.91077927366155, endPoint.Y - 0.432165907882307, 0)
-      );
-      CreateAndPositionRightText(
-        tr,
-        (string)panelData["lcl"],
-        "ROMANS",
-        0.09375,
-        1,
-        2,
-        "PNLTXT",
-        new Point3d(endPoint.X - 7.59414061117746, endPoint.Y - 0.413648726513742, 0)
-      );
-      CreateAndPositionText(
-        tr,
-        "=",
-        "Standard",
-        0.1248,
-        0.75,
-        256,
-        "0",
-        new Point3d(endPoint.X - 7.03028501835593, endPoint.Y - 0.437756414851634, 0)
-      );
-      CreateAndPositionRightText(
-        tr,
-        panelData["lcl_125"] as string,
-        "ROMANS",
-        0.09375,
-        1,
-        2,
-        "PNLTXT",
-        new Point3d(endPoint.X - 6.69695957617801, endPoint.Y - 0.413648726513742, 0)
-      );
-      CreateAndPositionText(
-        tr,
-        "TOTAL OTHER LOAD",
-        "Standard",
-        0.1248,
-        0.75,
-        256,
-        "0",
-        new Point3d(endPoint.X - 8.9456956126196, endPoint.Y - 0.616854044919108, 0)
-      );
-      CreateAndPositionText(
-        tr,
-        "=",
-        "Standard",
-        0.1248,
-        0.75,
-        256,
-        "0",
-        new Point3d(endPoint.X - 7.03028501835593, endPoint.Y - 0.618180694030713, 0)
-      );
-      CreateAndPositionRightText(
-        tr,
-        panelData["total_other_load"] as string,
-        "ROMANS",
-        0.09375,
-        1,
-        2,
-        "PNLTXT",
-        new Point3d(endPoint.X - 6.69695957617801, endPoint.Y - 0.597206513223341, 0)
-      );
-      CreateAndPositionText(
-        tr,
-        "PANEL LOAD",
-        "Standard",
-        0.1248,
-        0.75,
-        256,
-        "0",
-        new Point3d(endPoint.X - 8.92075537050664, endPoint.Y - 0.804954308244959, 0)
-      );
-      CreateAndPositionText(
-        tr,
-        "=",
-        "Standard",
-        0.1248,
-        0.75,
-        256,
-        "0",
-        new Point3d(endPoint.X - 7.03028501835593, endPoint.Y - 0.809218166102625, 0)
-      );
-      CreateAndPositionText(
-        tr,
-        "FEEDER AMPS",
-        "Standard",
-        0.1248,
-        0.75,
-        256,
-        "0",
-        new Point3d(endPoint.X - 8.9120262857673, endPoint.Y - 0.994381220682413, 0)
-      );
-      CreateAndPositionText(
-        tr,
-        "=",
-        "Standard",
-        0.1248,
-        0.75,
-        256,
-        "0",
-        new Point3d(endPoint.X - 7.03028501835593, endPoint.Y - 0.998928989062989, 0)
-      );
+      CreateAndPositionText(tr, "TOTAL CONNECTED VA", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 8.93821353998555, endPoint.Y - 0.244065644556514, 0));
+      CreateAndPositionRightText(tr, GetSafeString("total_va"), "ROMANS", 0.09375, 1, 2, "PNLTXT", new Point3d(endPoint.X - 6.69695957617801, endPoint.Y - 0.222040136230106, 0));
+      CreateAndPositionText(tr, "=", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 7.03028501835593, endPoint.Y - 0.242614932747216, 0));
+      CreateAndPositionText(tr, "LCL @ 125 %          ", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 8.91077927366155, endPoint.Y - 0.432165907882307, 0));
+      CreateAndPositionRightText(tr, GetSafeString("lcl"), "ROMANS", 0.09375, 1, 2, "PNLTXT", new Point3d(endPoint.X - 7.59414061117746, endPoint.Y - 0.413648726513742, 0));
+      CreateAndPositionText(tr, "=", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 7.03028501835593, endPoint.Y - 0.437756414851634, 0));
+      CreateAndPositionRightText(tr, GetSafeString("lcl_125"), "ROMANS", 0.09375, 1, 2, "PNLTXT", new Point3d(endPoint.X - 6.69695957617801, endPoint.Y - 0.413648726513742, 0));
+      CreateAndPositionText(tr, "LML @ 125 %", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 8.9456956126196, endPoint.Y - 0.616854044919108, 0));
+      CreateAndPositionRightText(tr, GetSafeString("lml"), "ROMANS", 0.09375, 1, 2, "PNLTXT", new Point3d(endPoint.X - 7.59414061117746, endPoint.Y - 0.618180694030713, 0));
+      CreateAndPositionText(tr, "=", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 7.03028501835593, endPoint.Y - 0.618180694030713, 0));
+      CreateAndPositionRightText(tr, GetSafeString("lml_125"), "ROMANS", 0.09375, 1, 2, "PNLTXT", new Point3d(endPoint.X - 6.69695957617801, endPoint.Y - 0.618180694030713, 0));
+      CreateAndPositionText(tr, "PANEL LOAD", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 8.92075537050664, endPoint.Y - 0.804954308244959, 0));
+      CreateAndPositionText(tr, "=", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 7.03028501835593, endPoint.Y - 0.809218166102625, 0));
+      CreateAndPositionText(tr, "FEEDER AMPS", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 8.9120262857673, endPoint.Y - 0.994381220682413, 0));
+      CreateAndPositionText(tr, "=", "Standard", 0.1248, 0.75, 256, "0", new Point3d(endPoint.X - 7.03028501835593, endPoint.Y - 0.998928989062989, 0));
     }
 
     private double CreateNotes(

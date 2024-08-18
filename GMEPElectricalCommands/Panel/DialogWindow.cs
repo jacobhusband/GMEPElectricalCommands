@@ -254,8 +254,7 @@ namespace ElectricalCommands {
           }
         }
         userControl1.update_cell_background_color();
-        userControl1.recalculate_breakers();
-        userControl1.calculate_lcl_otherload_panelload_feederamps();
+        userControl1.CalculateBreakerLoad();
       }
     }
 
@@ -644,6 +643,66 @@ namespace ElectricalCommands {
       else {
         return textStyleTable[styleName];
       }
+    }
+
+    public LCLLMLManager GetLCLLMLManager() {
+      LCLLMLManager manager = new LCLLMLManager();
+
+      foreach (PanelUserControl userControl in this.userControls) {
+        LCLLMLObject obj = new LCLLMLObject(userControl.Name);
+
+        DataGridView panelGrid = userControl.retrieve_panelGrid();
+        foreach (DataGridViewRow row in panelGrid.Rows) {
+          // Check for LCL
+          if (row.Cells[0].Tag != null && row.Cells[0].Tag.ToString().Contains("LCL")) {
+            double wattage;
+            if (double.TryParse(row.Cells[1].Value?.ToString(), out wattage)) {
+              obj.LCL += wattage;
+            }
+          }
+          // Check for LML
+          if (row.Cells[0].Tag != null && row.Cells[0].Tag.ToString().Contains("LML")) {
+            double wattage;
+            if (double.TryParse(row.Cells[1].Value?.ToString(), out wattage)) {
+              obj.LML += wattage;
+            }
+          }
+          // Check for subpanels
+          if (row.Cells[0].Value != null) {
+            string cellValue = row.Cells[0].Value.ToString().ToLower();
+            if (cellValue.StartsWith("panel ")) {
+              string panelName = cellValue.Substring(6).Trim();
+              obj.Panels.Add(panelName);
+            }
+          }
+        }
+
+        manager.List.Add(obj);
+      }
+
+      return manager;
+    }
+  }
+
+  public class LCLLMLObject {
+    public double LCL { get; set; }
+    public double LML { get; set; }
+    public List<string> Panels { get; set; }
+    public string PanelName { get; }
+
+    public LCLLMLObject(string panelName) {
+      LCL = 0;
+      LML = 0;
+      Panels = new List<string>();
+      PanelName = panelName;
+    }
+  }
+
+  public class LCLLMLManager {
+    public List<LCLLMLObject> List { get; set; }
+
+    public LCLLMLManager() {
+      List = new List<LCLLMLObject>();
     }
   }
 }

@@ -40,7 +40,6 @@
       this.phase_b_right = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.description_right = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.label18 = new System.Windows.Forms.Label();
-      this.LARGEST_LCL_CHECKBOX = new System.Windows.Forms.CheckBox();
       this.label17 = new System.Windows.Forms.Label();
       this.LARGEST_LCL_LABEL = new System.Windows.Forms.Label();
       this.label16 = new System.Windows.Forms.Label();
@@ -53,12 +52,7 @@
       this.PANEL_LOAD_GRID = new System.Windows.Forms.DataGridView();
       this.PANEL_LOAD = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.label12 = new System.Windows.Forms.Label();
-      this.TOTAL_OTHER_LOAD_GRID = new System.Windows.Forms.DataGridView();
-      this.TOTAL_OTHER_LOAD = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.label11 = new System.Windows.Forms.Label();
-      this.LCL_GRID = new System.Windows.Forms.DataGridView();
-      this.LCL_AT_100PC = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.LCL_AT_125PC = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.label10 = new System.Windows.Forms.Label();
       this.TOTAL_VA_GRID = new System.Windows.Forms.DataGridView();
       this.TOTAL_VA = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -86,8 +80,6 @@
       this.CUSTOM_TITLE_TEXT = new System.Windows.Forms.TextBox();
       this.CUSTOM_TITLE_LABEL = new System.Windows.Forms.Label();
       this.REMOVE_NOTE_BUTTON = new System.Windows.Forms.Button();
-      this.AUTO_CHECKBOX = new System.Windows.Forms.CheckBox();
-      this.LARGEST_LCL_INPUT = new System.Windows.Forms.TextBox();
       this.RELOCATE_BUTTON = new System.Windows.Forms.Button();
       this.EXISTING_BUTTON = new System.Windows.Forms.Button();
       this.COMMA_TO_SEMI = new System.Windows.Forms.Button();
@@ -96,13 +88,12 @@
       this.FIND_LABEL = new System.Windows.Forms.Label();
       this.REPLACE_LABEL = new System.Windows.Forms.Label();
       this.REPLACE_BOX = new System.Windows.Forms.TextBox();
-      this.LCL125_BUTTON = new System.Windows.Forms.Button();
-      this.LCL80_BUTTON = new System.Windows.Forms.Button();
+      this.LCL125 = new System.Windows.Forms.Label();
+      this.LARGEST_MOTOR_LOAD_LABEL = new System.Windows.Forms.Label();
+      this.LML125 = new System.Windows.Forms.Label();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.TOTAL_OTHER_LOAD_GRID)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.LCL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.TOTAL_VA_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PHASE_SUM_GRID)).BeginInit();
       this.SuspendLayout();
@@ -189,18 +180,6 @@
       this.label18.TabIndex = 163;
       this.label18.Text = "PANEL";
       // 
-      // LARGEST_LCL_CHECKBOX
-      // 
-      this.LARGEST_LCL_CHECKBOX.AutoSize = true;
-      this.LARGEST_LCL_CHECKBOX.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-      this.LARGEST_LCL_CHECKBOX.Location = new System.Drawing.Point(81, 436);
-      this.LARGEST_LCL_CHECKBOX.Name = "LARGEST_LCL_CHECKBOX";
-      this.LARGEST_LCL_CHECKBOX.Size = new System.Drawing.Size(68, 17);
-      this.LARGEST_LCL_CHECKBOX.TabIndex = 176;
-      this.LARGEST_LCL_CHECKBOX.Text = "ENABLE";
-      this.LARGEST_LCL_CHECKBOX.UseVisualStyleBackColor = true;
-      this.LARGEST_LCL_CHECKBOX.CheckedChanged += new System.EventHandler(this.LARGEST_LCL_CHECKBOX_CheckedChanged);
-      // 
       // label17
       // 
       this.label17.AutoSize = true;
@@ -213,11 +192,11 @@
       // LARGEST_LCL_LABEL
       // 
       this.LARGEST_LCL_LABEL.AutoSize = true;
-      this.LARGEST_LCL_LABEL.Location = new System.Drawing.Point(22, 417);
+      this.LARGEST_LCL_LABEL.Location = new System.Drawing.Point(72, 423);
       this.LARGEST_LCL_LABEL.Name = "LARGEST_LCL_LABEL";
-      this.LARGEST_LCL_LABEL.Size = new System.Drawing.Size(268, 13);
+      this.LARGEST_LCL_LABEL.Size = new System.Drawing.Size(215, 13);
       this.LARGEST_LCL_LABEL.TabIndex = 175;
-      this.LARGEST_LCL_LABEL.Text = "LARGEST LONG CONTINUOUS LOAD (LCL @ 100%)";
+      this.LARGEST_LCL_LABEL.Text = "LONG CONTINUOUS LOAD (LCL @ 125%)";
       // 
       // label16
       // 
@@ -263,7 +242,7 @@
       this.FEEDER_AMP_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.FEEDER_AMP_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.FEEDER_AMPS});
-      this.FEEDER_AMP_GRID.Location = new System.Drawing.Point(122, 605);
+      this.FEEDER_AMP_GRID.Location = new System.Drawing.Point(122, 567);
       this.FEEDER_AMP_GRID.Name = "FEEDER_AMP_GRID";
       this.FEEDER_AMP_GRID.ReadOnly = true;
       this.FEEDER_AMP_GRID.Size = new System.Drawing.Size(175, 40);
@@ -292,7 +271,7 @@
       this.PANEL_LOAD_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.PANEL_LOAD_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.PANEL_LOAD});
-      this.PANEL_LOAD_GRID.Location = new System.Drawing.Point(114, 556);
+      this.PANEL_LOAD_GRID.Location = new System.Drawing.Point(114, 518);
       this.PANEL_LOAD_GRID.Name = "PANEL_LOAD_GRID";
       this.PANEL_LOAD_GRID.ReadOnly = true;
       this.PANEL_LOAD_GRID.Size = new System.Drawing.Size(183, 43);
@@ -314,26 +293,6 @@
       this.label12.TabIndex = 169;
       this.label12.Text = "PHASE";
       // 
-      // TOTAL_OTHER_LOAD_GRID
-      // 
-      this.TOTAL_OTHER_LOAD_GRID.AllowUserToAddRows = false;
-      this.TOTAL_OTHER_LOAD_GRID.AllowUserToDeleteRows = false;
-      this.TOTAL_OTHER_LOAD_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-      this.TOTAL_OTHER_LOAD_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.TOTAL_OTHER_LOAD});
-      this.TOTAL_OTHER_LOAD_GRID.Location = new System.Drawing.Point(83, 509);
-      this.TOTAL_OTHER_LOAD_GRID.Name = "TOTAL_OTHER_LOAD_GRID";
-      this.TOTAL_OTHER_LOAD_GRID.ReadOnly = true;
-      this.TOTAL_OTHER_LOAD_GRID.Size = new System.Drawing.Size(214, 41);
-      this.TOTAL_OTHER_LOAD_GRID.TabIndex = 160;
-      // 
-      // TOTAL_OTHER_LOAD
-      // 
-      this.TOTAL_OTHER_LOAD.HeaderText = "TOTAL OTHER LOAD (VA)";
-      this.TOTAL_OTHER_LOAD.Name = "TOTAL_OTHER_LOAD";
-      this.TOTAL_OTHER_LOAD.ReadOnly = true;
-      this.TOTAL_OTHER_LOAD.Width = 170;
-      // 
       // label11
       // 
       this.label11.AutoSize = true;
@@ -342,34 +301,6 @@
       this.label11.Size = new System.Drawing.Size(36, 13);
       this.label11.TabIndex = 170;
       this.label11.Text = "WIRE";
-      // 
-      // LCL_GRID
-      // 
-      this.LCL_GRID.AllowUserToAddRows = false;
-      this.LCL_GRID.AllowUserToDeleteRows = false;
-      this.LCL_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-      this.LCL_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.LCL_AT_100PC,
-            this.LCL_AT_125PC});
-      this.LCL_GRID.Location = new System.Drawing.Point(13, 461);
-      this.LCL_GRID.Name = "LCL_GRID";
-      this.LCL_GRID.ReadOnly = true;
-      this.LCL_GRID.Size = new System.Drawing.Size(284, 42);
-      this.LCL_GRID.TabIndex = 159;
-      // 
-      // LCL_AT_100PC
-      // 
-      this.LCL_AT_100PC.HeaderText = "LCL @ 100% (VA)";
-      this.LCL_AT_100PC.Name = "LCL_AT_100PC";
-      this.LCL_AT_100PC.ReadOnly = true;
-      this.LCL_AT_100PC.Width = 120;
-      // 
-      // LCL_AT_125PC
-      // 
-      this.LCL_AT_125PC.HeaderText = "LCL @ 125% (VA)";
-      this.LCL_AT_125PC.Name = "LCL_AT_125PC";
-      this.LCL_AT_125PC.ReadOnly = true;
-      this.LCL_AT_125PC.Width = 120;
       // 
       // label10
       // 
@@ -530,7 +461,6 @@
       // PHASE_COMBOBOX
       // 
       this.PHASE_COMBOBOX.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-      this.PHASE_COMBOBOX.Enabled = false;
       this.PHASE_COMBOBOX.FormattingEnabled = true;
       this.PHASE_COMBOBOX.Items.AddRange(new object[] {
             "1",
@@ -554,7 +484,6 @@
       // WIRE_COMBOBOX
       // 
       this.WIRE_COMBOBOX.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-      this.WIRE_COMBOBOX.Enabled = false;
       this.WIRE_COMBOBOX.FormattingEnabled = true;
       this.WIRE_COMBOBOX.Items.AddRange(new object[] {
             "3",
@@ -645,27 +574,6 @@
       this.REMOVE_NOTE_BUTTON.UseVisualStyleBackColor = true;
       this.REMOVE_NOTE_BUTTON.Click += new System.EventHandler(this.REMOVE_NOTE_BUTTON_Click);
       // 
-      // AUTO_CHECKBOX
-      // 
-      this.AUTO_CHECKBOX.AutoSize = true;
-      this.AUTO_CHECKBOX.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-      this.AUTO_CHECKBOX.Location = new System.Drawing.Point(22, 436);
-      this.AUTO_CHECKBOX.Name = "AUTO_CHECKBOX";
-      this.AUTO_CHECKBOX.Size = new System.Drawing.Size(56, 17);
-      this.AUTO_CHECKBOX.TabIndex = 191;
-      this.AUTO_CHECKBOX.Text = "AUTO";
-      this.AUTO_CHECKBOX.UseVisualStyleBackColor = true;
-      this.AUTO_CHECKBOX.CheckedChanged += new System.EventHandler(this.AUTO_CHECKBOX_CheckedChanged);
-      // 
-      // LARGEST_LCL_INPUT
-      // 
-      this.LARGEST_LCL_INPUT.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-      this.LARGEST_LCL_INPUT.Location = new System.Drawing.Point(155, 434);
-      this.LARGEST_LCL_INPUT.Name = "LARGEST_LCL_INPUT";
-      this.LARGEST_LCL_INPUT.Size = new System.Drawing.Size(142, 20);
-      this.LARGEST_LCL_INPUT.TabIndex = 192;
-      this.LARGEST_LCL_INPUT.TextChanged += new System.EventHandler(this.LARGEST_LCL_INPUT_TextChanged_1);
-      // 
       // RELOCATE_BUTTON
       // 
       this.RELOCATE_BUTTON.Location = new System.Drawing.Point(558, 538);
@@ -738,35 +646,43 @@
       this.REPLACE_BOX.Size = new System.Drawing.Size(103, 20);
       this.REPLACE_BOX.TabIndex = 201;
       // 
-      // LCL125_BUTTON
+      // LCL125
       // 
-      this.LCL125_BUTTON.BackColor = System.Drawing.Color.Salmon;
-      this.LCL125_BUTTON.Location = new System.Drawing.Point(768, 538);
-      this.LCL125_BUTTON.Name = "LCL125_BUTTON";
-      this.LCL125_BUTTON.Size = new System.Drawing.Size(47, 23);
-      this.LCL125_BUTTON.TabIndex = 203;
-      this.LCL125_BUTTON.Text = "125%";
-      this.LCL125_BUTTON.UseVisualStyleBackColor = false;
-      this.LCL125_BUTTON.Click += new System.EventHandler(this.LCL125_BUTTON_Click);
+      this.LCL125.AutoSize = true;
+      this.LCL125.Location = new System.Drawing.Point(273, 444);
+      this.LCL125.Name = "LCL125";
+      this.LCL125.RightToLeft = System.Windows.Forms.RightToLeft.No;
+      this.LCL125.Size = new System.Drawing.Size(13, 13);
+      this.LCL125.TabIndex = 203;
+      this.LCL125.Text = "0";
       // 
-      // LCL80_BUTTON
+      // LARGEST_MOTOR_LOAD_LABEL
       // 
-      this.LCL80_BUTTON.BackColor = System.Drawing.Color.Gold;
-      this.LCL80_BUTTON.Location = new System.Drawing.Point(821, 538);
-      this.LCL80_BUTTON.Name = "LCL80_BUTTON";
-      this.LCL80_BUTTON.Size = new System.Drawing.Size(43, 23);
-      this.LCL80_BUTTON.TabIndex = 204;
-      this.LCL80_BUTTON.Text = "80%";
-      this.LCL80_BUTTON.UseVisualStyleBackColor = false;
-      this.LCL80_BUTTON.Click += new System.EventHandler(this.LCL80_BUTTON_Click);
+      this.LARGEST_MOTOR_LOAD_LABEL.AutoSize = true;
+      this.LARGEST_MOTOR_LOAD_LABEL.Location = new System.Drawing.Point(82, 469);
+      this.LARGEST_MOTOR_LOAD_LABEL.Name = "LARGEST_MOTOR_LOAD_LABEL";
+      this.LARGEST_MOTOR_LOAD_LABEL.Size = new System.Drawing.Size(205, 13);
+      this.LARGEST_MOTOR_LOAD_LABEL.TabIndex = 204;
+      this.LARGEST_MOTOR_LOAD_LABEL.Text = "LARGEST MOTOR LOAD (LML @ 125%)";
+      // 
+      // LML125
+      // 
+      this.LML125.AutoSize = true;
+      this.LML125.Location = new System.Drawing.Point(273, 490);
+      this.LML125.Name = "LML125";
+      this.LML125.RightToLeft = System.Windows.Forms.RightToLeft.No;
+      this.LML125.Size = new System.Drawing.Size(13, 13);
+      this.LML125.TabIndex = 205;
+      this.LML125.Text = "0";
       // 
       // PanelUserControl
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
-      this.Controls.Add(this.LCL80_BUTTON);
-      this.Controls.Add(this.LCL125_BUTTON);
+      this.Controls.Add(this.LML125);
+      this.Controls.Add(this.LARGEST_MOTOR_LOAD_LABEL);
+      this.Controls.Add(this.LCL125);
       this.Controls.Add(this.REPLACE_LABEL);
       this.Controls.Add(this.REPLACE_BOX);
       this.Controls.Add(this.FIND_LABEL);
@@ -775,8 +691,6 @@
       this.Controls.Add(this.COMMA_TO_SEMI);
       this.Controls.Add(this.EXISTING_BUTTON);
       this.Controls.Add(this.RELOCATE_BUTTON);
-      this.Controls.Add(this.LARGEST_LCL_INPUT);
-      this.Controls.Add(this.AUTO_CHECKBOX);
       this.Controls.Add(this.REMOVE_NOTE_BUTTON);
       this.Controls.Add(this.CUSTOM_TITLE_LABEL);
       this.Controls.Add(this.CUSTOM_TITLE_TEXT);
@@ -787,7 +701,6 @@
       this.Controls.Add(this.DELETE_PANEL_BUTTON);
       this.Controls.Add(this.PANEL_GRID);
       this.Controls.Add(this.label18);
-      this.Controls.Add(this.LARGEST_LCL_CHECKBOX);
       this.Controls.Add(this.label17);
       this.Controls.Add(this.LARGEST_LCL_LABEL);
       this.Controls.Add(this.label16);
@@ -798,9 +711,7 @@
       this.Controls.Add(this.label13);
       this.Controls.Add(this.PANEL_LOAD_GRID);
       this.Controls.Add(this.label12);
-      this.Controls.Add(this.TOTAL_OTHER_LOAD_GRID);
       this.Controls.Add(this.label11);
-      this.Controls.Add(this.LCL_GRID);
       this.Controls.Add(this.label10);
       this.Controls.Add(this.TOTAL_VA_GRID);
       this.Controls.Add(this.PANEL_NAME_INPUT);
@@ -822,8 +733,6 @@
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.TOTAL_OTHER_LOAD_GRID)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.LCL_GRID)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.TOTAL_VA_GRID)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.PHASE_SUM_GRID)).EndInit();
       this.ResumeLayout(false);
@@ -845,7 +754,6 @@
     private System.Windows.Forms.DataGridViewTextBoxColumn phase_b_right;
     private System.Windows.Forms.DataGridViewTextBoxColumn description_right;
     private System.Windows.Forms.Label label18;
-    private System.Windows.Forms.CheckBox LARGEST_LCL_CHECKBOX;
     private System.Windows.Forms.Label label17;
     private System.Windows.Forms.Label LARGEST_LCL_LABEL;
     private System.Windows.Forms.Label label16;
@@ -858,12 +766,7 @@
     private System.Windows.Forms.DataGridView PANEL_LOAD_GRID;
     private System.Windows.Forms.DataGridViewTextBoxColumn PANEL_LOAD;
     private System.Windows.Forms.Label label12;
-    private System.Windows.Forms.DataGridView TOTAL_OTHER_LOAD_GRID;
-    private System.Windows.Forms.DataGridViewTextBoxColumn TOTAL_OTHER_LOAD;
     private System.Windows.Forms.Label label11;
-    private System.Windows.Forms.DataGridView LCL_GRID;
-    private System.Windows.Forms.DataGridViewTextBoxColumn LCL_AT_100PC;
-    private System.Windows.Forms.DataGridViewTextBoxColumn LCL_AT_125PC;
     private System.Windows.Forms.Label label10;
     private System.Windows.Forms.DataGridView TOTAL_VA_GRID;
     private System.Windows.Forms.DataGridViewTextBoxColumn TOTAL_VA;
@@ -891,8 +794,6 @@
     private System.Windows.Forms.TextBox CUSTOM_TITLE_TEXT;
     private System.Windows.Forms.Label CUSTOM_TITLE_LABEL;
     private System.Windows.Forms.Button REMOVE_NOTE_BUTTON;
-    private System.Windows.Forms.CheckBox AUTO_CHECKBOX;
-    private System.Windows.Forms.TextBox LARGEST_LCL_INPUT;
     private System.Windows.Forms.Button RELOCATE_BUTTON;
     private System.Windows.Forms.Button EXISTING_BUTTON;
     private System.Windows.Forms.Button COMMA_TO_SEMI;
@@ -901,7 +802,8 @@
     private System.Windows.Forms.Label FIND_LABEL;
     private System.Windows.Forms.Label REPLACE_LABEL;
     private System.Windows.Forms.TextBox REPLACE_BOX;
-    private System.Windows.Forms.Button LCL125_BUTTON;
-    private System.Windows.Forms.Button LCL80_BUTTON;
+    private System.Windows.Forms.Label LCL125;
+    private System.Windows.Forms.Label LARGEST_MOTOR_LOAD_LABEL;
+    private System.Windows.Forms.Label LML125;
   }
 }

@@ -71,8 +71,10 @@
       this.QUICK_ADD_COMBOBOX.Items.AddRange(new object[] {
             "THE KITCHEN DEMAND FACTOR IS BEING APPLIED TO THE KITCHEN EQUIPMENT (NEC 220.56)." +
                 "",
-            "THESE BREAKERS ARE RELOCATED FROM PANEL _ TO THIS PANEL.",
-            "THESE BREAKERS HAVE BEEN RELOCATED TO PANEL _ FROM THIS PANEL."});
+            "THE BREAKER IS A LONG CONTINUOUS LOAD (LCL) TAKEN AT 125% OF ITS CURRENT DRAW (NE" +
+                "C 210.19(A)(1)). ",
+            "THE BREAKER IS THE LARGEST MOTOR LOAD (LML) TAKEN AT 125% OF ITS FULL-LOAD CURREN" +
+                "T RATING (NEC 430.24(1))."});
       this.QUICK_ADD_COMBOBOX.Location = new System.Drawing.Point(12, 430);
       this.QUICK_ADD_COMBOBOX.Name = "QUICK_ADD_COMBOBOX";
       this.QUICK_ADD_COMBOBOX.Size = new System.Drawing.Size(666, 21);
@@ -98,7 +100,7 @@
       this.DONE_BUTTON.UseVisualStyleBackColor = true;
       this.DONE_BUTTON.Click += new System.EventHandler(this.DONE_BUTTON_Click);
       // 
-      // noteForm
+      // NoteForm
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -109,7 +111,7 @@
       this.Controls.Add(this.QUICK_ADD_NOTE_TEXT);
       this.Controls.Add(this.NOTE_PER_LINE_TEXT);
       this.Controls.Add(this.NOTES_TEXTBOX);
-      this.Name = "noteForm";
+      this.Name = "NoteForm";
       this.Text = "Notes";
       this.ResumeLayout(false);
       this.PerformLayout();
