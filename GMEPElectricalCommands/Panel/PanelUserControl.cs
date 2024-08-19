@@ -2250,6 +2250,10 @@ namespace ElectricalCommands {
         }
       }
     }
+
+    public string GetNewOrExisting() {
+      return STATUS_COMBOBOX.Text;
+    }
   }
 
   public class PanelItem {

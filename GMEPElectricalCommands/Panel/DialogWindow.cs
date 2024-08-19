@@ -600,12 +600,13 @@ namespace ElectricalCommands {
 
             foreach (var userControl in userControls) {
               string panelName = userControl.GetPanelName();
+              string newOrExisting = userControl.GetNewOrExisting();
               if (!subpanelNames.Contains(panelName)) {
                 double kVA = userControl.GetPanelLoad();
                 totalKVA += kVA;
 
                 table.Cells[rowIndex, 0].TextString = $"{panelCounter}.";
-                table.Cells[rowIndex, 1].TextString = $"NEW PANEL '{panelName}'";
+                table.Cells[rowIndex, 1].TextString = $"{newOrExisting} PANEL '{panelName}'";
                 table.Cells[rowIndex, 2].TextString = $"{kVA:F1} KVA";
 
                 rowIndex++;
