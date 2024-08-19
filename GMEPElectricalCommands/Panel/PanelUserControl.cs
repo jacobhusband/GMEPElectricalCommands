@@ -726,11 +726,11 @@ namespace ElectricalCommands {
       return Math.Round(sum / 1000, 1);
     }
 
-    public double GetTotalVA() {
-      if (TOTAL_VA_GRID != null && TOTAL_VA_GRID.Rows.Count > 0 && TOTAL_VA_GRID.Columns.Count > 0) {
-        object cellValue = TOTAL_VA_GRID.Rows[0].Cells[0].Value;
-        if (cellValue != null && double.TryParse(cellValue.ToString(), out double totalVA)) {
-          return totalVA;
+    public double GetPanelLoad() {
+      if (PANEL_LOAD_GRID != null && PANEL_LOAD_GRID.Rows.Count > 0 && PANEL_LOAD_GRID.Columns.Count > 0) {
+        object cellValue = PANEL_LOAD_GRID.Rows[0].Cells[0].Value;
+        if (cellValue != null && double.TryParse(cellValue.ToString(), out double totalKVA)) {
+          return totalKVA;
         }
       }
       return 0.0;
@@ -1915,6 +1915,8 @@ namespace ElectricalCommands {
           cell.Tag = null;
         }
         e.Handled = true;
+
+        UpdatePerCellValueChange();
       }
       // Check if Ctrl+D was pressed
       else if (e.Control && e.KeyCode == Keys.D) {
@@ -2168,6 +2170,7 @@ namespace ElectricalCommands {
       }
 
       CalculateBreakerLoad();
+      UpdatePerCellValueChange();
     }
 
     private void APPLY_COMBOBOX_SelectedIndexChanged(object sender, EventArgs e) {
@@ -2219,6 +2222,7 @@ namespace ElectricalCommands {
       }
 
       CalculateBreakerLoad();
+      UpdatePerCellValueChange();
     }
 
     private void COMMA_TO_SEMI_CLICK(object sender, EventArgs e) {

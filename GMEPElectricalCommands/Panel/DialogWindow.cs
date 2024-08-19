@@ -601,7 +601,7 @@ namespace ElectricalCommands {
             foreach (var userControl in userControls) {
               string panelName = userControl.GetPanelName();
               if (!subpanelNames.Contains(panelName)) {
-                double kVA = userControl.GetTotalVA() / 1000.0; // Convert VA to kVA
+                double kVA = userControl.GetPanelLoad();
                 totalKVA += kVA;
 
                 table.Cells[rowIndex, 0].TextString = $"{panelCounter}.";
