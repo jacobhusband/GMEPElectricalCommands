@@ -300,8 +300,14 @@ namespace ElectricalCommands {
         panel.Add("subtotal_c", "0");
       }
       panel.Add("total_va", TOTAL_VA_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
-      panel.Add("lcl", LCL125.Text.ToString().ToUpper());
-      panel.Add("lml", LML125.Text.ToString().ToUpper());
+      double lcl = Convert.ToDouble(LCL.Text.Split(' ')[0]);
+      double lcl125 = Math.Round(lcl * 1.25, 0);
+      panel.Add("lcl", lcl.ToString().ToUpper());
+      panel.Add("lcl125", lcl125.ToString().ToUpper());
+      double lml = Convert.ToDouble(LML.Text.Split(' ')[0]);
+      double lml125 = Math.Round(lml * 1.25, 0);
+      panel.Add("lml", lml.ToString().ToUpper());
+      panel.Add("lml125", lml125.ToString().ToUpper());
       panel.Add("kva", PANEL_LOAD_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
       panel.Add("feeder_amps", FEEDER_AMP_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
       panel.Add("custom_title", CUSTOM_TITLE_TEXT.Text.ToUpper());
@@ -720,15 +726,6 @@ namespace ElectricalCommands {
       return Math.Round(sum / 1000, 1);
     }
 
-    public double CalculateFeederAmps(double phA, double phB, double phC, double lineVoltage) {
-      if (lineVoltage == 0) {
-        return 0; // or throw an exception, depending on your error handling strategy
-      }
-
-      double maxVal = Math.Max(Math.Max(phA, phB), phC);
-      return Math.Round(maxVal / lineVoltage, 1);
-    }
-
     public double GetTotalVA() {
       if (TOTAL_VA_GRID != null && TOTAL_VA_GRID.Rows.Count > 0 && TOTAL_VA_GRID.Columns.Count > 0) {
         object cellValue = TOTAL_VA_GRID.Rows[0].Cells[0].Value;
@@ -753,7 +750,7 @@ namespace ElectricalCommands {
             if (match.Groups.Count > 2) {
               string panelName = match.Groups[2].Value;
               if (!subPanels.Contains(panelName)) {
-                subPanels.Add(panelName);
+                subPanels.Add(panelName.ToUpper());
               }
             }
           }
@@ -807,7 +804,7 @@ namespace ElectricalCommands {
               string thirdBreakerValue = thirdRow.Cells[isLeftSide ? "breaker_left" : "breaker_right"].Value?.ToString();
 
               if (secondBreakerValue == 0 && thirdBreakerValue == "3") {
-                item.Wattage = phaseValue * 3;
+                item.Wattage = phaseValue * 1.732;
                 item.Poles = 3;
                 rowIndex += 2; // Skip 2 rows
                 items.Add(item);
@@ -1117,8 +1114,8 @@ namespace ElectricalCommands {
       PANEL_NAME_INPUT.Text = GetSafeString("panel").Replace("'", "");
       PANEL_LOCATION_INPUT.Text = GetSafeString("location");
       BUS_RATING_INPUT.Text = GetSafeString("bus_rating").Replace("AMP", "").Replace("A", "").Replace(" ", "");
-      LCL125.Text = GetSafeString("lcl");
-      LML125.Text = GetSafeString("lml");
+      LCL.Text = GetSafeString("lcl");
+      LML.Text = GetSafeString("lml");
 
       // Set ComboBoxes
       STATUS_COMBOBOX.SelectedItem = GetSafeString("existing");
@@ -1239,8 +1236,8 @@ namespace ElectricalCommands {
       MAIN_INPUT.Text = string.Empty;
       PANEL_LOCATION_INPUT.Text = string.Empty;
       PANEL_NAME_INPUT.Text = string.Empty;
-      LCL125.Text = "0";
-      LML125.Text = "0";
+      LCL.Text = "0";
+      LML.Text = "0";
 
       // Clear ComboBoxes
       STATUS_COMBOBOX.SelectedIndex = -1; // This will unselect all items
@@ -2001,32 +1998,65 @@ namespace ElectricalCommands {
 
     private void PHASE_SUM_GRID_CellValueChanged(object sender, DataGridViewCellEventArgs e) {
       if (e.RowIndex == 0 && (e.ColumnIndex == 0 || e.ColumnIndex == 1 || e.ColumnIndex == 2)) {
-        double phA = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[0].Value ?? 0);
-        double phB = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[1].Value ?? 0);
-        double phC = 0;
-        double sum = phA + phB;
-        if (PHASE_SUM_GRID.ColumnCount > 2) {
-          phC = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[2].Value ?? 0);
-          sum += phC;
-        }
+        UpdatePerCellValueChange();
+      }
+    }
 
-        var LCLLMLObject = mainForm.GetLCLLMLManager();
+    public void UpdatePerCellValueChange() {
+      double phA = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[0].Value ?? 0);
+      double phB = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[1].Value ?? 0);
+      double phC = 0;
+      double sum = phA + phB;
+      if (PHASE_SUM_GRID.ColumnCount > 2) {
+        phC = Convert.ToDouble(PHASE_SUM_GRID.Rows[0].Cells[2].Value ?? 0);
+        sum += phC;
+      }
+      mainForm.UpdateLCLLML();
 
-        TOTAL_VA_GRID.Rows[0].Cells[0].Value = CalculateTotalVA(sum);
-        PANEL_LOAD_GRID.Rows[0].Cells[0].Value = CalculatePanelLoad(sum);
+      TOTAL_VA_GRID.Rows[0].Cells[0].Value = CalculateTotalVA(sum);
 
-        object lineVoltageObj = LINE_VOLTAGE_COMBOBOX.SelectedItem;
+      // Handle LCL
+      if (!string.IsNullOrEmpty(LCL.Text) && LCL.Text != "0 VA") {
+        sum += Math.Round(Convert.ToDouble(LCL.Text.Split(' ')[0]) * 0.25, 0);
+      }
 
-        if (lineVoltageObj != null) {
-          double lineVoltage = Convert.ToDouble(lineVoltageObj);
-          if (lineVoltage != 0) {
+      // Handle LML
+      if (!string.IsNullOrEmpty(LML.Text) && LML.Text != "0 VA") {
+        sum += Math.Round(Convert.ToDouble(LML.Text.Split(' ')[0]) * 0.25, 0);
+      }
+
+      PANEL_LOAD_GRID.Rows[0].Cells[0].Value = CalculatePanelLoad(sum);
+
+      object lineVoltageObj = LINE_VOLTAGE_COMBOBOX.SelectedItem;
+      if (lineVoltageObj != null) {
+        double lineVoltage = Convert.ToDouble(lineVoltageObj);
+        if (lineVoltage != 0) {
+          if (string.IsNullOrEmpty(LCL.Text) || LCL.Text == "0 VA" && string.IsNullOrEmpty(LML.Text) || LML.Text == "0 VA") {
             FEEDER_AMP_GRID.Rows[0].Cells[0].Value = CalculateFeederAmps(phA, phB, phC, lineVoltage);
           }
+          else {
+            FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(sum / (lineVoltage * 3), 1);
+          }
         }
-
-        // Save LCLLMLObject as JSON
-        SaveLCLLMLObjectAsJson(LCLLMLObject);
       }
+    }
+
+    public double CalculateFeederAmps(double phA, double phB, double phC, double lineVoltage) {
+      if (lineVoltage == 0) {
+        return 0;
+      }
+
+      double maxVal = Math.Max(Math.Max(phA, phB), phC);
+      return Math.Round(maxVal / lineVoltage, 1);
+    }
+
+    public void UpdateLCLLMLLabels(int lcl, int lml) {
+      LCL.Text = $"{lcl} VA";
+      LML.Text = $"{lml} VA";
+    }
+
+    private void UpdatePanelLCLAndLMLValues(LCLLMLManager LCLLMLObject) {
+      throw new NotImplementedException();
     }
 
     private void SaveLCLLMLObjectAsJson(object LCLLMLObject) {

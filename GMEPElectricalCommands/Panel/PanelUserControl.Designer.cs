@@ -88,9 +88,9 @@
       this.FIND_LABEL = new System.Windows.Forms.Label();
       this.REPLACE_LABEL = new System.Windows.Forms.Label();
       this.REPLACE_BOX = new System.Windows.Forms.TextBox();
-      this.LCL125 = new System.Windows.Forms.Label();
+      this.LCL = new System.Windows.Forms.Label();
       this.LARGEST_MOTOR_LOAD_LABEL = new System.Windows.Forms.Label();
-      this.LML125 = new System.Windows.Forms.Label();
+      this.LML = new System.Windows.Forms.Label();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -196,7 +196,7 @@
       this.LARGEST_LCL_LABEL.Name = "LARGEST_LCL_LABEL";
       this.LARGEST_LCL_LABEL.Size = new System.Drawing.Size(215, 13);
       this.LARGEST_LCL_LABEL.TabIndex = 175;
-      this.LARGEST_LCL_LABEL.Text = "LONG CONTINUOUS LOAD (LCL @ 125%)";
+      this.LARGEST_LCL_LABEL.Text = "LONG CONTINUOUS LOAD (LCL @ 100%)";
       // 
       // label16
       // 
@@ -646,15 +646,16 @@
       this.REPLACE_BOX.Size = new System.Drawing.Size(103, 20);
       this.REPLACE_BOX.TabIndex = 201;
       // 
-      // LCL125
+      // LCL
       // 
-      this.LCL125.AutoSize = true;
-      this.LCL125.Location = new System.Drawing.Point(273, 444);
-      this.LCL125.Name = "LCL125";
-      this.LCL125.RightToLeft = System.Windows.Forms.RightToLeft.No;
-      this.LCL125.Size = new System.Drawing.Size(13, 13);
-      this.LCL125.TabIndex = 203;
-      this.LCL125.Text = "0";
+      this.LCL.Anchor = System.Windows.Forms.AnchorStyles.Right;
+      this.LCL.AutoSize = true;
+      this.LCL.Location = new System.Drawing.Point(203, 445);
+      this.LCL.Name = "LCL";
+      this.LCL.Size = new System.Drawing.Size(30, 13);
+      this.LCL.TabIndex = 203;
+      this.LCL.Text = "0 VA";
+      this.LCL.TextAlign = System.Drawing.ContentAlignment.TopRight;
       // 
       // LARGEST_MOTOR_LOAD_LABEL
       // 
@@ -663,26 +664,28 @@
       this.LARGEST_MOTOR_LOAD_LABEL.Name = "LARGEST_MOTOR_LOAD_LABEL";
       this.LARGEST_MOTOR_LOAD_LABEL.Size = new System.Drawing.Size(205, 13);
       this.LARGEST_MOTOR_LOAD_LABEL.TabIndex = 204;
-      this.LARGEST_MOTOR_LOAD_LABEL.Text = "LARGEST MOTOR LOAD (LML @ 125%)";
+      this.LARGEST_MOTOR_LOAD_LABEL.Text = "LARGEST MOTOR LOAD (LML @ 100%)";
       // 
-      // LML125
+      // LML
       // 
-      this.LML125.AutoSize = true;
-      this.LML125.Location = new System.Drawing.Point(273, 490);
-      this.LML125.Name = "LML125";
-      this.LML125.RightToLeft = System.Windows.Forms.RightToLeft.No;
-      this.LML125.Size = new System.Drawing.Size(13, 13);
-      this.LML125.TabIndex = 205;
-      this.LML125.Text = "0";
+      this.LML.Anchor = System.Windows.Forms.AnchorStyles.Right;
+      this.LML.AutoSize = true;
+      this.LML.Location = new System.Drawing.Point(203, 492);
+      this.LML.Name = "LML";
+      this.LML.RightToLeft = System.Windows.Forms.RightToLeft.No;
+      this.LML.Size = new System.Drawing.Size(30, 13);
+      this.LML.TabIndex = 205;
+      this.LML.Text = "0 VA";
+      this.LML.TextAlign = System.Drawing.ContentAlignment.TopRight;
       // 
       // PanelUserControl
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
-      this.Controls.Add(this.LML125);
+      this.Controls.Add(this.LML);
       this.Controls.Add(this.LARGEST_MOTOR_LOAD_LABEL);
-      this.Controls.Add(this.LCL125);
+      this.Controls.Add(this.LCL);
       this.Controls.Add(this.REPLACE_LABEL);
       this.Controls.Add(this.REPLACE_BOX);
       this.Controls.Add(this.FIND_LABEL);
@@ -802,8 +805,8 @@
     private System.Windows.Forms.Label FIND_LABEL;
     private System.Windows.Forms.Label REPLACE_LABEL;
     private System.Windows.Forms.TextBox REPLACE_BOX;
-    private System.Windows.Forms.Label LCL125;
+    private System.Windows.Forms.Label LCL;
     private System.Windows.Forms.Label LARGEST_MOTOR_LOAD_LABEL;
-    private System.Windows.Forms.Label LML125;
+    private System.Windows.Forms.Label LML;
   }
 }

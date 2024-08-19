@@ -81,6 +81,7 @@ namespace ElectricalCommands {
       else {
         MakeTabsAndPopulate(panelStorage);
         this.initialized = true;
+        UpdateLCLLML();
       }
     }
 
@@ -169,6 +170,16 @@ namespace ElectricalCommands {
     private void MakeTabsAndPopulate(List<Dictionary<string, object>> panelStorage) {
       set_up_cell_values_from_panel_data(panelStorage);
       set_up_tags_from_panel_data(panelStorage);
+
+      foreach (Dictionary<string, object> panel in panelStorage) {
+        string panelName = panel["panel"].ToString();
+        PanelUserControl userControl = (PanelUserControl)findUserControl(panelName);
+        if (userControl == null) {
+          continue;
+        }
+
+        userControl.UpdatePerCellValueChange();
+      }
     }
 
     public static void put_in_json_file(object thing) {
@@ -645,28 +656,53 @@ namespace ElectricalCommands {
       }
     }
 
-    public LCLLMLManager GetLCLLMLManager() {
+    public void UpdateLCLLML() {
       Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Database db = doc.Database;
       Editor ed = doc.Editor;
       LCLLMLManager manager = new LCLLMLManager();
 
+      // First pass: Collect initial data
       foreach (PanelUserControl userControl in this.userControls) {
         LCLLMLObject obj = new LCLLMLObject(userControl.Name.Replace("'", ""));
-
         obj.LCL = (int)Math.Round(userControl.CalculateWattageSum("LCL"));
-
         List<PanelItem> lmlItems = userControl.StoreItemsAndWattage("LML");
-
         obj.LML = lmlItems.Count > 0
-            ? (int)Math.Round(lmlItems.Max(item => item.Wattage) / 1.732)
+            ? (int)Math.Round(lmlItems.Max(item => item.Wattage))
             : 0;
-
         obj.Subpanels = userControl.GetSubPanels();
         manager.List.Add(obj);
       }
 
-      return manager;
+      // Second pass: Calculate final LCL and LML values
+      foreach (var panel in manager.List) {
+        CalculateLCLAndLML(panel, manager.List);
+      }
+
+      // Third pass: Update user controls with calculated values
+      foreach (PanelUserControl userControl in this.userControls) {
+        var panelObj = manager.List.Find(p => p.PanelName == userControl.Name.Replace("'", ""));
+        if (panelObj != null) {
+          userControl.UpdateLCLLMLLabels(panelObj.LCL, panelObj.LML);
+        }
+      }
+    }
+
+    private void CalculateLCLAndLML(LCLLMLObject panel, List<LCLLMLObject> allPanels) {
+      int totalLCL = panel.LCL;
+      int maxLML = panel.LML;
+
+      foreach (var subpanelName in panel.Subpanels) {
+        var subpanel = allPanels.Find(p => p.PanelName == subpanelName);
+        if (subpanel != null) {
+          CalculateLCLAndLML(subpanel, allPanels);
+          totalLCL += subpanel.LCL;
+          maxLML = Math.Max(maxLML, subpanel.LML);
+        }
+      }
+
+      panel.LCL = totalLCL;
+      panel.LML = maxLML;
     }
   }
 
