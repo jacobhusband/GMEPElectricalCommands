@@ -652,10 +652,17 @@ namespace ElectricalCommands {
       LCLLMLManager manager = new LCLLMLManager();
 
       foreach (PanelUserControl userControl in this.userControls) {
-        LCLLMLObject obj = new LCLLMLObject(userControl.Name);
-        obj.LCL = userControl.CalculateWattageSum("LCL");
-        obj.LML = userControl.CalculateWattageSum("LML");
+        LCLLMLObject obj = new LCLLMLObject(userControl.Name.Replace("'", ""));
 
+        obj.LCL = (int)Math.Round(userControl.CalculateWattageSum("LCL"));
+
+        List<PanelItem> lmlItems = userControl.StoreItemsAndWattage("LML");
+
+        obj.LML = lmlItems.Count > 0
+            ? (int)Math.Round(lmlItems.Max(item => item.Wattage) / 1.732)
+            : 0;
+
+        obj.Subpanels = userControl.GetSubPanels();
         manager.List.Add(obj);
       }
 
@@ -664,15 +671,15 @@ namespace ElectricalCommands {
   }
 
   public class LCLLMLObject {
-    public double LCL { get; set; }
-    public double LML { get; set; }
-    public List<string> Panels { get; set; }
+    public int LCL { get; set; }
+    public int LML { get; set; }
+    public List<string> Subpanels { get; set; }
     public string PanelName { get; }
 
     public LCLLMLObject(string panelName) {
       LCL = 0;
       LML = 0;
-      Panels = new List<string>();
+      Subpanels = new List<string>();
       PanelName = panelName;
     }
   }

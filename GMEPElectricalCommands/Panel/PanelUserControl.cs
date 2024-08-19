@@ -3,12 +3,14 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.GraphicsSystem;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OfficeOpenXml.Packaging.Ionic.Zlib;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -763,6 +765,130 @@ namespace ElectricalCommands {
 
     public string GetPanelName() {
       return PANEL_NAME_INPUT.Text;
+    }
+
+    public List<PanelItem> StoreItemsAndWattage(string note) {
+      int phaseCount = PHASE_SUM_GRID.ColumnCount;
+      string[] columnNames = GetColumnNames(phaseCount);
+
+      List<PanelItem> items = new List<PanelItem>();
+
+      // Process left side
+      ProcessSide(columnNames, true, items, note);
+
+      // Process right side
+      ProcessSide(columnNames, false, items, note);
+
+      return items;
+    }
+
+    private void ProcessSide(string[] columnNames, bool isLeftSide, List<PanelItem> items, string note) {
+      int startIndex = isLeftSide ? 0 : 1;
+      for (int rowIndex = 0; rowIndex < PANEL_GRID.Rows.Count; rowIndex++) {
+        DataGridViewRow row = PANEL_GRID.Rows[rowIndex];
+        for (int i = startIndex; i < columnNames.Length; i += 2) {
+          string colName = columnNames[i];
+          bool descriptionHasNote = DescriptionHasNote(row, isLeftSide, note);
+          int breakerValue = BreakerToInt(row, isLeftSide);
+
+          if (row.Cells[colName].Value != null && descriptionHasNote && breakerValue > 3) {
+            double phaseValue;
+            if (!TryParseDouble(row.Cells[colName].Value, out phaseValue)) {
+              continue;
+            }
+            string description = GetDescription(row, isLeftSide);
+            PanelItem item = new PanelItem { Description = description };
+
+            // Check for condition 1
+            if (rowIndex + 2 < PANEL_GRID.Rows.Count) {
+              DataGridViewRow secondRow = PANEL_GRID.Rows[rowIndex + 1];
+              DataGridViewRow thirdRow = PANEL_GRID.Rows[rowIndex + 2];
+              int secondBreakerValue = BreakerToInt(secondRow, isLeftSide);
+              string thirdBreakerValue = thirdRow.Cells[isLeftSide ? "breaker_left" : "breaker_right"].Value?.ToString();
+
+              if (secondBreakerValue == 0 && thirdBreakerValue == "3") {
+                item.Wattage = phaseValue * 3;
+                item.Poles = 3;
+                rowIndex += 2; // Skip 2 rows
+                items.Add(item);
+                continue;
+              }
+            }
+
+            // Check for condition 2
+            if (rowIndex + 1 < PANEL_GRID.Rows.Count) {
+              DataGridViewRow secondRow = PANEL_GRID.Rows[rowIndex + 1];
+              string secondBreakerValue = secondRow.Cells[isLeftSide ? "breaker_left" : "breaker_right"].Value?.ToString();
+
+              if (secondBreakerValue == "2") {
+                item.Wattage = phaseValue * 2;
+                item.Poles = 2;
+                rowIndex += 1; // Skip 1 row
+                items.Add(item);
+                continue;
+              }
+            }
+
+            // Condition 3 (default case)
+            item.Wattage = phaseValue;
+            item.Poles = 1;
+            items.Add(item);
+          }
+        }
+      }
+    }
+
+    private bool TryParseDouble(object value, out double result) {
+      result = 0;
+      if (value == null) return false;
+
+      string stringValue = value.ToString().Trim();
+      if (string.IsNullOrEmpty(stringValue)) return false;
+
+      // Try parsing with invariant culture (uses period as decimal separator)
+      if (double.TryParse(stringValue, NumberStyles.Any, CultureInfo.InvariantCulture, out result))
+        return true;
+
+      // If that fails, try parsing with the current culture
+      return double.TryParse(stringValue, NumberStyles.Any, CultureInfo.CurrentCulture, out result);
+    }
+
+    private bool DescriptionHasNote(DataGridViewRow row, bool isLeftSide, string note) {
+      string columnName = isLeftSide ? "description_left" : "description_right";
+      DataGridViewCell cell = row.Cells[columnName];
+
+      if (cell.Tag == null) {
+        return false;
+      }
+
+      string tagValue = cell.Tag.ToString();
+      return tagValue.Contains(note);
+    }
+
+    private int BreakerToInt(DataGridViewRow row, bool isLeftSide) {
+      string columnName = isLeftSide ? "breaker_left" : "breaker_right";
+      var cellValue = row.Cells[columnName].Value;
+
+      if (cellValue == null || string.IsNullOrEmpty(cellValue.ToString())) {
+        return 0;
+      }
+
+      string breakerValue = cellValue.ToString();
+
+      if (breakerValue.Contains(",")) {
+        breakerValue = breakerValue.Split(',')[0];
+      }
+
+      if (int.TryParse(breakerValue, out int result)) {
+        return result;
+      }
+
+      return 0;
+    }
+
+    private string GetDescription(DataGridViewRow row, bool isLeftSide) {
+      string columnPrefix = isLeftSide ? "left" : "right";
+      return row.Cells[$"description_{columnPrefix}"].Value?.ToString() ?? string.Empty;
     }
 
     public double CalculateWattageSum(string note) {
@@ -1897,6 +2023,23 @@ namespace ElectricalCommands {
             FEEDER_AMP_GRID.Rows[0].Cells[0].Value = CalculateFeederAmps(phA, phB, phC, lineVoltage);
           }
         }
+
+        // Save LCLLMLObject as JSON
+        SaveLCLLMLObjectAsJson(LCLLMLObject);
+      }
+    }
+
+    private void SaveLCLLMLObjectAsJson(object LCLLMLObject) {
+      string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+      string filePath = Path.Combine(desktopPath, "LCLLMLObject.json");
+
+      try {
+        string jsonString = JsonConvert.SerializeObject(LCLLMLObject, Formatting.Indented);
+        File.WriteAllText(filePath, jsonString);
+        Console.WriteLine("LCLLMLObject saved successfully.");
+      }
+      catch (Exception ex) {
+        Console.WriteLine($"Error saving LCLLMLObject: {ex.Message}");
       }
     }
 
@@ -2073,5 +2216,11 @@ namespace ElectricalCommands {
         }
       }
     }
+  }
+
+  public class PanelItem {
+    public string Description { get; set; }
+    public double Wattage { get; set; }
+    public int Poles { get; set; }
   }
 }
