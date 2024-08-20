@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace ElectricalCommands {
@@ -1070,59 +1071,66 @@ namespace ElectricalCommands {
       Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Database db = doc.Database;
       Editor ed = doc.Editor;
-
       try {
         // Prompt user to select text objects
         PromptSelectionOptions pso = new PromptSelectionOptions();
         pso.MessageForAdding = "Select DBText and MText objects: ";
         TypedValue[] filterList = new TypedValue[]
         {
-                new TypedValue((int)DxfCode.Start, "TEXT,MTEXT")
+            new TypedValue((int)DxfCode.Start, "TEXT,MTEXT")
         };
         SelectionFilter filter = new SelectionFilter(filterList);
         PromptSelectionResult selRes = ed.GetSelection(pso, filter);
-
         if (selRes.Status != PromptStatus.OK)
           return;
 
         // Prompt user for the increment value
         PromptIntegerOptions pio = new PromptIntegerOptions("Enter the value to add: ");
         PromptIntegerResult intRes = ed.GetInteger(pio);
-
         if (intRes.Status != PromptStatus.OK)
           return;
-
         int incrementValue = intRes.Value;
 
         // Process selected objects
         using (Transaction tr = db.TransactionManager.StartTransaction()) {
           SelectionSet ss = selRes.Value;
           ObjectId[] objIds = ss.GetObjectIds();
-
           foreach (ObjectId objId in objIds) {
             Entity ent = tr.GetObject(objId, OpenMode.ForWrite) as Entity;
-
             if (ent is DBText) {
               DBText text = ent as DBText;
-              if (int.TryParse(text.TextString, out int value)) {
-                text.TextString = (value + incrementValue).ToString();
-              }
+              text.TextString = ProcessText(text.TextString, incrementValue);
             }
             else if (ent is MText) {
               MText mtext = ent as MText;
-              if (int.TryParse(mtext.Contents, out int value)) {
-                mtext.Contents = (value + incrementValue).ToString();
-              }
+              mtext.Contents = ProcessText(mtext.Contents, incrementValue);
             }
           }
-
           tr.Commit();
         }
-
         ed.WriteMessage("\nCommand completed successfully.");
       }
       catch (System.Exception ex) {
         ed.WriteMessage("\nError: " + ex.Message);
+      }
+    }
+
+    private string ProcessText(string input, int increment) {
+      string dashedPattern = @"([A-Za-z]+)-(\d+)&(\d+)";
+
+      if (Regex.IsMatch(input, dashedPattern)) {
+        return Regex.Replace(input, dashedPattern, match => {
+          string prefix = match.Groups[1].Value;
+          int num1 = int.Parse(match.Groups[2].Value) + increment;
+          int num2 = int.Parse(match.Groups[3].Value) + increment;
+          return $"{prefix}-{num1}&{num2}";
+        });
+      }
+      else if (int.TryParse(input, out int value)) {
+        return (value + increment).ToString();
+      }
+      else {
+        return input;
       }
     }
 
