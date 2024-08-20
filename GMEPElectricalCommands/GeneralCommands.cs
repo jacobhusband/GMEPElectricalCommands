@@ -1116,19 +1116,37 @@ namespace ElectricalCommands {
     }
 
     private string ProcessText(string input, int increment) {
-      string dashedPattern = @"([A-Za-z]+)-(\d+)&(\d+)";
-
-      if (Regex.IsMatch(input, dashedPattern)) {
-        return Regex.Replace(input, dashedPattern, match => {
-          string prefix = match.Groups[1].Value;
-          int num1 = int.Parse(match.Groups[2].Value) + increment;
-          int num2 = int.Parse(match.Groups[3].Value) + increment;
-          return $"{prefix}-{num1}&{num2}";
-        });
+      // Case 1: Text matches the pattern "LB-1&3&5" (prefix with '&' separated values)
+      if (Regex.IsMatch(input, @"^[A-Za-z]+-\d+(&\d+)*$")) {
+        string[] parts = input.Split('-');
+        string prefix = parts[0];
+        string[] numbers = parts[1].Split('&');
+        string result = string.Join("&", numbers.Select(n => (int.Parse(n) + increment).ToString()));
+        return $"{prefix}-{result}";
       }
+      // Case 2: Text matches the pattern "1&3&5" (only '&' separated values without prefix)
+      else if (Regex.IsMatch(input, @"^\d+(&\d+)*$")) {
+        string[] numbers = input.Split('&');
+        return string.Join("&", numbers.Select(n => (int.Parse(n) + increment).ToString()));
+      }
+      // Case 3: Text matches the pattern "LB-1,3,5" (prefix with comma separated values)
+      else if (Regex.IsMatch(input, @"^[A-Za-z]+-\d+(,\d+)*$")) {
+        string[] parts = input.Split('-');
+        string prefix = parts[0];
+        string[] numbers = parts[1].Split(',');
+        string result = string.Join(",", numbers.Select(n => (int.Parse(n) + increment).ToString()));
+        return $"{prefix}-{result}";
+      }
+      // Case 4: Text matches the pattern "1,3,5" (only comma separated values without prefix)
+      else if (Regex.IsMatch(input, @"^\d+(,\d+)*$")) {
+        string[] numbers = input.Split(',');
+        return string.Join(",", numbers.Select(n => (int.Parse(n) + increment).ToString()));
+      }
+      // Case 5: Text contains only a single number
       else if (int.TryParse(input, out int value)) {
         return (value + increment).ToString();
       }
+      // If none of the conditions are met, return the original input
       else {
         return input;
       }
