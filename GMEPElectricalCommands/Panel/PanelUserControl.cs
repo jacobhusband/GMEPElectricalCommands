@@ -2033,7 +2033,7 @@ namespace ElectricalCommands {
       if (lineVoltageObj != null) {
         double lineVoltage = Convert.ToDouble(lineVoltageObj);
         if (lineVoltage != 0) {
-          if (string.IsNullOrEmpty(LCL.Text) || LCL.Text == "0 VA" && string.IsNullOrEmpty(LML.Text) || LML.Text == "0 VA") {
+          if (LCL.Text == "0 VA" && LML.Text == "0 VA") {
             FEEDER_AMP_GRID.Rows[0].Cells[0].Value = CalculateFeederAmps(phA, phB, phC, lineVoltage);
           }
           else {
