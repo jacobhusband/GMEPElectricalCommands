@@ -244,11 +244,10 @@ namespace ElectricalCommands {
           return comboBox.Text.ToUpper();
         }
         else {
-          return ""; // Default value or you can return null
+          return "";
         }
       }
 
-      // Add simple values in uppercase
       panel.Add("panel", "'" + PANEL_NAME_INPUT.Text.ToUpper() + "'");
       panel.Add("location", PANEL_LOCATION_INPUT.Text.ToUpper());
       panel.Add("voltage1", GetComboBoxValue(LINE_VOLTAGE_COMBOBOX));
@@ -294,7 +293,6 @@ namespace ElectricalCommands {
       panel.Add("feeder_amps", FEEDER_AMP_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
       panel.Add("custom_title", CUSTOM_TITLE_TEXT.Text.ToUpper());
 
-      // Add "A" to the bus rating value if it consists of digits only, then convert to uppercase
       string busRatingInput = BUS_RATING_INPUT.Text.ToLower();
 
       if (busRatingInput.Contains("amp")) {
@@ -2269,6 +2267,14 @@ namespace ElectricalCommands {
       };
       EXISTING_BUTTON.Click += new System.EventHandler(this.EXISTING_BUTTON_Click);
       RELOCATE_BUTTON.Click += new System.EventHandler(this.RELOCATE_BUTTON_Click);
+      LCL.TextChanged += new EventHandler(LCL_LML_TextChanged);
+      LML.TextChanged += new EventHandler(LCL_LML_TextChanged);
+    }
+
+    private void LCL_LML_TextChanged(object sender, EventArgs e) {
+      if (LCL_OVERRIDE.Checked || LML_OVERRIDE.Checked) {
+        UpdatePerCellValueChange();
+      }
     }
 
     private void LCL_OVERRIDE_CheckedChanged(object sender, EventArgs e) {
