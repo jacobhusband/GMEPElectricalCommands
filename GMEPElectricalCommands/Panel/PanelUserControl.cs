@@ -250,6 +250,8 @@ namespace ElectricalCommands {
       panel.Add("wire", GetComboBoxValue(WIRE_COMBOBOX));
       panel.Add("mounting", GetComboBoxValue(MOUNTING_COMBOBOX));
       panel.Add("existing", GetComboBoxValue(STATUS_COMBOBOX));
+      panel.Add("lcl_override", LCL_OVERRIDE.Checked);
+      panel.Add("lml_override", LML_OVERRIDE.Checked);
 
       panel.Add(
         "subtotal_a",
@@ -1082,6 +1084,18 @@ namespace ElectricalCommands {
         return selectedPanelData.TryGetValue(key, out object value) ? value?.ToString() ?? "" : "";
       }
 
+      bool GetSafeBoolean(string key) {
+        if (selectedPanelData.TryGetValue(key, out object value)) {
+          if (value is bool boolValue) {
+            return boolValue;
+          }
+          if (value is string stringValue) {
+            return bool.TryParse(stringValue, out bool result) && result;
+          }
+        }
+        return false;
+      }
+
       // Set TextBoxes
       MAIN_INPUT.Text = GetSafeString("main").Replace("AMP", "").Replace("A", "").Replace(" ", "");
       PANEL_NAME_INPUT.Text = GetSafeString("panel").Replace("'", "");
@@ -1089,6 +1103,10 @@ namespace ElectricalCommands {
       BUS_RATING_INPUT.Text = GetSafeString("bus_rating").Replace("AMP", "").Replace("A", "").Replace(" ", "");
       LCL.Text = GetSafeString("lcl");
       LML.Text = GetSafeString("lml");
+
+      // Set Checkboxes
+      LCL_OVERRIDE.Checked = GetSafeBoolean("lcl_override");
+      LML_OVERRIDE.Checked = GetSafeBoolean("lml_override");
 
       // Set ComboBoxes
       STATUS_COMBOBOX.SelectedItem = GetSafeString("existing");
