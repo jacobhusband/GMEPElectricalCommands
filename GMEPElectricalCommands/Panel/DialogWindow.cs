@@ -449,7 +449,7 @@ namespace ElectricalCommands {
       int selectedIndex = PANEL_TABS.SelectedIndex;
 
       if (selectedIndex >= 0) {
-        PANEL_TABS.TabPages[selectedIndex].Text = input.ToUpper();
+        PANEL_TABS.TabPages[selectedIndex].Text = "PANEL " + input.ToUpper();
       }
     }
 

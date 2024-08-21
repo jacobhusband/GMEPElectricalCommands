@@ -1991,13 +1991,13 @@ namespace ElectricalCommands {
       TOTAL_VA_GRID.Rows[0].Cells[0].Value = CalculateTotalVA(sum);
 
       // Handle LCL
-      if (!string.IsNullOrEmpty(LCL.Text) && LCL.Text != "0 VA") {
-        sum += Math.Round(Convert.ToDouble(LCL.Text.Split(' ')[0]) * 0.25, 0);
+      if (!string.IsNullOrEmpty(LCL.Text) && LCL.Text != "0") {
+        sum += Math.Round(Convert.ToDouble(LCL.Text) * 0.25, 0);
       }
 
       // Handle LML
-      if (!string.IsNullOrEmpty(LML.Text) && LML.Text != "0 VA") {
-        sum += Math.Round(Convert.ToDouble(LML.Text.Split(' ')[0]) * 0.25, 0);
+      if (!string.IsNullOrEmpty(LML.Text) && LML.Text != "0") {
+        sum += Math.Round(Convert.ToDouble(LML.Text) * 0.25, 0);
       }
 
       PANEL_LOAD_GRID.Rows[0].Cells[0].Value = CalculatePanelLoad(sum);
@@ -2006,7 +2006,7 @@ namespace ElectricalCommands {
       if (lineVoltageObj != null) {
         double lineVoltage = Convert.ToDouble(lineVoltageObj);
         if (lineVoltage != 0) {
-          if (LCL.Text == "0 VA" && LML.Text == "0 VA") {
+          if (LCL.Text == "0" && LML.Text == "0") {
             FEEDER_AMP_GRID.Rows[0].Cells[0].Value = CalculateFeederAmps(phA, phB, phC, lineVoltage);
           }
           else {
@@ -2026,8 +2026,8 @@ namespace ElectricalCommands {
     }
 
     public void UpdateLCLLMLLabels(int lcl, int lml) {
-      LCL.Text = $"{lcl} VA";
-      LML.Text = $"{lml} VA";
+      LCL.Text = $"{lcl}";
+      LML.Text = $"{lml}";
     }
 
     private void UpdatePanelLCLAndLMLValues(LCLLMLManager LCLLMLObject) {
@@ -2246,6 +2246,24 @@ namespace ElectricalCommands {
       };
       EXISTING_BUTTON.Click += new System.EventHandler(this.EXISTING_BUTTON_Click);
       RELOCATE_BUTTON.Click += new System.EventHandler(this.RELOCATE_BUTTON_Click);
+    }
+
+    private void LCL_OVERRIDE_CheckedChanged(object sender, EventArgs e) {
+      if (LCL.Enabled) {
+        LCL.Enabled = false;
+      }
+      else {
+        LCL.Enabled = true;
+      }
+    }
+
+    private void LML_OVERRIDE_CheckedChanged(object sender, EventArgs e) {
+      if (LML.Enabled) {
+        LML.Enabled = false;
+      }
+      else {
+        LML.Enabled = true;
+      }
     }
   }
 

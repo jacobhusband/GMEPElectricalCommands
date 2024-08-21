@@ -87,9 +87,13 @@
       this.FIND_LABEL = new System.Windows.Forms.Label();
       this.REPLACE_LABEL = new System.Windows.Forms.Label();
       this.REPLACE_BOX = new System.Windows.Forms.TextBox();
-      this.LCL = new System.Windows.Forms.Label();
       this.LARGEST_MOTOR_LOAD_LABEL = new System.Windows.Forms.Label();
-      this.LML = new System.Windows.Forms.Label();
+      this.LCL = new System.Windows.Forms.TextBox();
+      this.LML = new System.Windows.Forms.TextBox();
+      this.LCL_VA = new System.Windows.Forms.Label();
+      this.LML_VA = new System.Windows.Forms.Label();
+      this.LCL_OVERRIDE = new System.Windows.Forms.CheckBox();
+      this.LML_OVERRIDE = new System.Windows.Forms.CheckBox();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -635,17 +639,6 @@
       this.REPLACE_BOX.Size = new System.Drawing.Size(103, 20);
       this.REPLACE_BOX.TabIndex = 201;
       // 
-      // LCL
-      // 
-      this.LCL.Anchor = System.Windows.Forms.AnchorStyles.Right;
-      this.LCL.AutoSize = true;
-      this.LCL.Location = new System.Drawing.Point(203, 445);
-      this.LCL.Name = "LCL";
-      this.LCL.Size = new System.Drawing.Size(30, 13);
-      this.LCL.TabIndex = 203;
-      this.LCL.Text = "0 VA";
-      this.LCL.TextAlign = System.Drawing.ContentAlignment.TopRight;
-      // 
       // LARGEST_MOTOR_LOAD_LABEL
       // 
       this.LARGEST_MOTOR_LOAD_LABEL.AutoSize = true;
@@ -655,26 +648,78 @@
       this.LARGEST_MOTOR_LOAD_LABEL.TabIndex = 204;
       this.LARGEST_MOTOR_LOAD_LABEL.Text = "LARGEST MOTOR LOAD (LML @ 100%)";
       // 
+      // LCL
+      // 
+      this.LCL.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+      this.LCL.Enabled = false;
+      this.LCL.Location = new System.Drawing.Point(197, 439);
+      this.LCL.Name = "LCL";
+      this.LCL.Size = new System.Drawing.Size(83, 20);
+      this.LCL.TabIndex = 205;
+      // 
       // LML
       // 
-      this.LML.Anchor = System.Windows.Forms.AnchorStyles.Right;
-      this.LML.AutoSize = true;
-      this.LML.Location = new System.Drawing.Point(203, 492);
+      this.LML.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+      this.LML.Enabled = false;
+      this.LML.Location = new System.Drawing.Point(197, 485);
       this.LML.Name = "LML";
-      this.LML.RightToLeft = System.Windows.Forms.RightToLeft.No;
-      this.LML.Size = new System.Drawing.Size(30, 13);
-      this.LML.TabIndex = 205;
-      this.LML.Text = "0 VA";
-      this.LML.TextAlign = System.Drawing.ContentAlignment.TopRight;
+      this.LML.Size = new System.Drawing.Size(83, 20);
+      this.LML.TabIndex = 206;
+      // 
+      // LCL_VA
+      // 
+      this.LCL_VA.AutoSize = true;
+      this.LCL_VA.Location = new System.Drawing.Point(286, 441);
+      this.LCL_VA.Name = "LCL_VA";
+      this.LCL_VA.Size = new System.Drawing.Size(21, 13);
+      this.LCL_VA.TabIndex = 207;
+      this.LCL_VA.Text = "VA";
+      // 
+      // LML_VA
+      // 
+      this.LML_VA.AutoSize = true;
+      this.LML_VA.Location = new System.Drawing.Point(286, 487);
+      this.LML_VA.Name = "LML_VA";
+      this.LML_VA.Size = new System.Drawing.Size(21, 13);
+      this.LML_VA.TabIndex = 208;
+      this.LML_VA.Text = "VA";
+      // 
+      // LCL_OVERRIDE
+      // 
+      this.LCL_OVERRIDE.AutoSize = true;
+      this.LCL_OVERRIDE.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+      this.LCL_OVERRIDE.Location = new System.Drawing.Point(105, 441);
+      this.LCL_OVERRIDE.Name = "LCL_OVERRIDE";
+      this.LCL_OVERRIDE.Size = new System.Drawing.Size(82, 17);
+      this.LCL_OVERRIDE.TabIndex = 209;
+      this.LCL_OVERRIDE.Text = "OVERRIDE";
+      this.LCL_OVERRIDE.UseVisualStyleBackColor = true;
+      this.LCL_OVERRIDE.CheckedChanged += new System.EventHandler(this.LCL_OVERRIDE_CheckedChanged);
+      // 
+      // LML_OVERRIDE
+      // 
+      this.LML_OVERRIDE.AutoSize = true;
+      this.LML_OVERRIDE.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+      this.LML_OVERRIDE.Location = new System.Drawing.Point(105, 487);
+      this.LML_OVERRIDE.Name = "LML_OVERRIDE";
+      this.LML_OVERRIDE.Size = new System.Drawing.Size(82, 17);
+      this.LML_OVERRIDE.TabIndex = 210;
+      this.LML_OVERRIDE.Text = "OVERRIDE";
+      this.LML_OVERRIDE.UseVisualStyleBackColor = true;
+      this.LML_OVERRIDE.CheckedChanged += new System.EventHandler(this.LML_OVERRIDE_CheckedChanged);
       // 
       // PanelUserControl
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
+      this.Controls.Add(this.LML_OVERRIDE);
+      this.Controls.Add(this.LCL_OVERRIDE);
+      this.Controls.Add(this.LML_VA);
+      this.Controls.Add(this.LCL_VA);
       this.Controls.Add(this.LML);
-      this.Controls.Add(this.LARGEST_MOTOR_LOAD_LABEL);
       this.Controls.Add(this.LCL);
+      this.Controls.Add(this.LARGEST_MOTOR_LOAD_LABEL);
       this.Controls.Add(this.REPLACE_LABEL);
       this.Controls.Add(this.REPLACE_BOX);
       this.Controls.Add(this.FIND_LABEL);
@@ -792,8 +837,12 @@
     private System.Windows.Forms.Label FIND_LABEL;
     private System.Windows.Forms.Label REPLACE_LABEL;
     private System.Windows.Forms.TextBox REPLACE_BOX;
-    private System.Windows.Forms.Label LCL;
     private System.Windows.Forms.Label LARGEST_MOTOR_LOAD_LABEL;
-    private System.Windows.Forms.Label LML;
+    private System.Windows.Forms.TextBox LCL;
+    private System.Windows.Forms.TextBox LML;
+    private System.Windows.Forms.Label LCL_VA;
+    private System.Windows.Forms.Label LML_VA;
+    private System.Windows.Forms.CheckBox LCL_OVERRIDE;
+    private System.Windows.Forms.CheckBox LML_OVERRIDE;
   }
 }
