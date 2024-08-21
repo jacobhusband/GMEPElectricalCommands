@@ -82,7 +82,6 @@
       this.REMOVE_NOTE_BUTTON = new System.Windows.Forms.Button();
       this.RELOCATE_BUTTON = new System.Windows.Forms.Button();
       this.EXISTING_BUTTON = new System.Windows.Forms.Button();
-      this.COMMA_TO_SEMI = new System.Windows.Forms.Button();
       this.REPLACE_BUTTON = new System.Windows.Forms.Button();
       this.FIND_BOX = new System.Windows.Forms.TextBox();
       this.FIND_LABEL = new System.Windows.Forms.Label();
@@ -592,16 +591,6 @@
       this.EXISTING_BUTTON.Text = "(E)";
       this.EXISTING_BUTTON.UseVisualStyleBackColor = true;
       // 
-      // COMMA_TO_SEMI
-      // 
-      this.COMMA_TO_SEMI.Location = new System.Drawing.Point(611, 538);
-      this.COMMA_TO_SEMI.Name = "COMMA_TO_SEMI";
-      this.COMMA_TO_SEMI.Size = new System.Drawing.Size(151, 23);
-      this.COMMA_TO_SEMI.TabIndex = 195;
-      this.COMMA_TO_SEMI.Text = "COMMA TO SEMI-COLON";
-      this.COMMA_TO_SEMI.UseVisualStyleBackColor = true;
-      this.COMMA_TO_SEMI.Click += new System.EventHandler(this.COMMA_TO_SEMI_CLICK);
-      // 
       // REPLACE_BUTTON
       // 
       this.REPLACE_BUTTON.Location = new System.Drawing.Point(534, 588);
@@ -691,7 +680,6 @@
       this.Controls.Add(this.FIND_LABEL);
       this.Controls.Add(this.FIND_BOX);
       this.Controls.Add(this.REPLACE_BUTTON);
-      this.Controls.Add(this.COMMA_TO_SEMI);
       this.Controls.Add(this.EXISTING_BUTTON);
       this.Controls.Add(this.RELOCATE_BUTTON);
       this.Controls.Add(this.REMOVE_NOTE_BUTTON);
@@ -799,7 +787,6 @@
     private System.Windows.Forms.Button REMOVE_NOTE_BUTTON;
     private System.Windows.Forms.Button RELOCATE_BUTTON;
     private System.Windows.Forms.Button EXISTING_BUTTON;
-    private System.Windows.Forms.Button COMMA_TO_SEMI;
     private System.Windows.Forms.Button REPLACE_BUTTON;
     private System.Windows.Forms.TextBox FIND_BOX;
     private System.Windows.Forms.Label FIND_LABEL;

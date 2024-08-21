@@ -178,6 +178,7 @@ namespace ElectricalCommands {
           continue;
         }
 
+        userControl.AddListeners();
         userControl.UpdatePerCellValueChange();
       }
     }
@@ -445,13 +446,10 @@ namespace ElectricalCommands {
     }
 
     public void PANEL_NAME_INPUT_TextChanged(object sender, EventArgs e, string input) {
-      // Get the selected tab index
       int selectedIndex = PANEL_TABS.SelectedIndex;
 
-      // Check if there is a selected tab
       if (selectedIndex >= 0) {
-        // Rename the current selected tab
-        PANEL_TABS.TabPages[selectedIndex].Text = "Panel " + input;
+        PANEL_TABS.TabPages[selectedIndex].Text = input.ToUpper();
       }
     }
 

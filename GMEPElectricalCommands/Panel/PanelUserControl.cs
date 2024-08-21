@@ -55,36 +55,9 @@ namespace ElectricalCommands {
       change_size_of_phase_columns(is3PH);
       add_phase_sum_column(is3PH);
 
+      PANEL_NAME_INPUT.TextChanged += new EventHandler(this.PANEL_NAME_INPUT_TextChanged);
       PANEL_GRID.Rows.AddCopies(0, 21);
       PANEL_GRID.AllowUserToAddRows = false;
-      PANEL_GRID.KeyDown += new KeyEventHandler(this.PANEL_GRID_KeyDown);
-      PANEL_GRID.CellBeginEdit += new DataGridViewCellCancelEventHandler(
-        this.PANEL_GRID_CellBeginEdit
-      );
-      PANEL_GRID.CellValueChanged += new DataGridViewCellEventHandler(
-        this.PANEL_GRID_CellValueChanged
-      );
-      PHASE_SUM_GRID.CellValueChanged += new DataGridViewCellEventHandler(
-        this.PHASE_SUM_GRID_CellValueChanged
-      );
-      PANEL_NAME_INPUT.TextChanged += new EventHandler(this.PANEL_NAME_INPUT_TextChanged);
-      PANEL_GRID.CellFormatting += PANEL_GRID_CellFormatting;
-      PANEL_GRID.CellClick += new DataGridViewCellEventHandler(this.PANEL_GRID_CellClick);
-      PANEL_NAME_INPUT.Click += (sender, e) => {
-        PANEL_NAME_INPUT.SelectAll();
-      };
-      PANEL_LOCATION_INPUT.Click += (sender, e) => {
-        PANEL_LOCATION_INPUT.SelectAll();
-      };
-      PANEL_GRID.CellPainting += new DataGridViewCellPaintingEventHandler(PANEL_GRID_CellPainting);
-      MAIN_INPUT.Click += (sender, e) => {
-        MAIN_INPUT.SelectAll();
-      };
-      BUS_RATING_INPUT.Click += (sender, e) => {
-        BUS_RATING_INPUT.SelectAll();
-      };
-      EXISTING_BUTTON.Click += new System.EventHandler(this.EXISTING_BUTTON_Click);
-      RELOCATE_BUTTON.Click += new System.EventHandler(this.RELOCATE_BUTTON_Click);
 
       add_rows_to_datagrid();
       set_default_form_values(tabName);
@@ -2225,16 +2198,6 @@ namespace ElectricalCommands {
       UpdatePerCellValueChange();
     }
 
-    private void COMMA_TO_SEMI_CLICK(object sender, EventArgs e) {
-      foreach (DataGridViewRow row in PANEL_GRID.Rows) {
-        foreach (DataGridViewCell cell in row.Cells) {
-          if (cell.Value != null) {
-            cell.Value = cell.Value.ToString().Replace(',', ';');
-          }
-        }
-      }
-    }
-
     private void REPLACE_BUTTON_Click(object sender, EventArgs e) {
       string findText = FIND_BOX.Text;
       string replaceText = REPLACE_BOX.Text;
@@ -2253,6 +2216,36 @@ namespace ElectricalCommands {
 
     public string GetNewOrExisting() {
       return STATUS_COMBOBOX.Text;
+    }
+
+    public void AddListeners() {
+      PANEL_GRID.KeyDown += new KeyEventHandler(this.PANEL_GRID_KeyDown);
+      PANEL_GRID.CellBeginEdit += new DataGridViewCellCancelEventHandler(
+        this.PANEL_GRID_CellBeginEdit
+      );
+      PANEL_GRID.CellValueChanged += new DataGridViewCellEventHandler(
+        this.PANEL_GRID_CellValueChanged
+      );
+      PHASE_SUM_GRID.CellValueChanged += new DataGridViewCellEventHandler(
+        this.PHASE_SUM_GRID_CellValueChanged
+      );
+      PANEL_GRID.CellFormatting += PANEL_GRID_CellFormatting;
+      PANEL_GRID.CellClick += new DataGridViewCellEventHandler(this.PANEL_GRID_CellClick);
+      PANEL_NAME_INPUT.Click += (sender, e) => {
+        PANEL_NAME_INPUT.SelectAll();
+      };
+      PANEL_LOCATION_INPUT.Click += (sender, e) => {
+        PANEL_LOCATION_INPUT.SelectAll();
+      };
+      PANEL_GRID.CellPainting += new DataGridViewCellPaintingEventHandler(PANEL_GRID_CellPainting);
+      MAIN_INPUT.Click += (sender, e) => {
+        MAIN_INPUT.SelectAll();
+      };
+      BUS_RATING_INPUT.Click += (sender, e) => {
+        BUS_RATING_INPUT.SelectAll();
+      };
+      EXISTING_BUTTON.Click += new System.EventHandler(this.EXISTING_BUTTON_Click);
+      RELOCATE_BUTTON.Click += new System.EventHandler(this.RELOCATE_BUTTON_Click);
     }
   }
 
