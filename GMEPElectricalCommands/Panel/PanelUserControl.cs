@@ -201,6 +201,13 @@ namespace ElectricalCommands {
       PANEL_GRID.RowsAdded += new DataGridViewRowsAddedEventHandler(PANEL_GRID_RowsAdded);
     }
 
+    public static double SafeConvertToDouble(string value) {
+      if (double.TryParse(value, out double result)) {
+        return result;
+      }
+      return 0;
+    }
+
     public Dictionary<string, object> retrieve_data_from_modal() {
       // Create a new panel
       Dictionary<string, object> panel = new Dictionary<string, object>();
@@ -275,11 +282,11 @@ namespace ElectricalCommands {
         panel.Add("subtotal_c", "0");
       }
       panel.Add("total_va", TOTAL_VA_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
-      double lcl = Convert.ToDouble(LCL.Text.Split(' ')[0]);
+      double lcl = SafeConvertToDouble(LCL.Text);
       double lcl125 = Math.Round(lcl * 1.25, 0);
       panel.Add("lcl", lcl);
       panel.Add("lcl125", lcl125);
-      double lml = Convert.ToDouble(LML.Text.Split(' ')[0]);
+      double lml = SafeConvertToDouble(LML.Text);
       double lml125 = Math.Round(lml * 1.25, 0);
       panel.Add("lml", lml);
       panel.Add("lml125", lml125);
@@ -739,7 +746,7 @@ namespace ElectricalCommands {
       return PANEL_NAME_INPUT.Text;
     }
 
-    public List<PanelItem> StoreItemsAndWattage(string note) {
+    public double StoreItemsAndWattage(string note) {
       int phaseCount = PHASE_SUM_GRID.ColumnCount;
       string[] columnNames = GetColumnNames(phaseCount);
 
@@ -751,7 +758,9 @@ namespace ElectricalCommands {
       // Process right side
       ProcessSide(columnNames, false, items, note);
 
-      return items;
+      return items.Count > 0
+            ? items.Max(item => item.Wattage)
+            : 0;
     }
 
     private void ProcessSide(string[] columnNames, bool isLeftSide, List<PanelItem> items, string note) {
@@ -2279,6 +2288,36 @@ namespace ElectricalCommands {
       }
       else {
         LML.Enabled = true;
+      }
+    }
+
+    public double GetLCLOverride() {
+      if (LCL_OVERRIDE.Checked) {
+        double result;
+        if (double.TryParse(LCL.Text, out result)) {
+          return result;
+        }
+        else {
+          return 0;
+        }
+      }
+      else {
+        return 0;
+      }
+    }
+
+    public double GetLMLOverride() {
+      if (LML_OVERRIDE.Checked) {
+        double result;
+        if (double.TryParse(LML.Text, out result)) {
+          return result;
+        }
+        else {
+          return 0;
+        }
+      }
+      else {
+        return 0;
       }
     }
   }

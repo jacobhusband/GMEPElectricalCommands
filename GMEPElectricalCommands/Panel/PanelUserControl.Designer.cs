@@ -656,6 +656,7 @@
       this.LCL.Name = "LCL";
       this.LCL.Size = new System.Drawing.Size(83, 20);
       this.LCL.TabIndex = 205;
+      this.LCL.Text = "0";
       // 
       // LML
       // 
@@ -665,6 +666,7 @@
       this.LML.Name = "LML";
       this.LML.Size = new System.Drawing.Size(83, 20);
       this.LML.TabIndex = 206;
+      this.LML.Text = "0";
       // 
       // LCL_VA
       // 

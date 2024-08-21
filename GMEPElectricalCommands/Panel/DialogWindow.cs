@@ -663,11 +663,10 @@ namespace ElectricalCommands {
       // First pass: Collect initial data
       foreach (PanelUserControl userControl in this.userControls) {
         LCLLMLObject obj = new LCLLMLObject(userControl.Name.Replace("'", ""));
-        obj.LCL = (int)Math.Round(userControl.CalculateWattageSum("LCL"));
-        List<PanelItem> lmlItems = userControl.StoreItemsAndWattage("LML");
-        obj.LML = lmlItems.Count > 0
-            ? (int)Math.Round(lmlItems.Max(item => item.Wattage))
-            : 0;
+        var LCLOverride = (int)userControl.GetLCLOverride();
+        var LMLOverride = (int)userControl.GetLMLOverride();
+        obj.LCL = (LCLOverride != 0) ? LCLOverride : (int)Math.Round(userControl.CalculateWattageSum("LCL"));
+        obj.LML = (LMLOverride != 0) ? LMLOverride : (int)Math.Round(userControl.StoreItemsAndWattage("LML"));
         obj.Subpanels = userControl.GetSubPanels();
         manager.List.Add(obj);
       }
