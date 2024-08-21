@@ -277,12 +277,12 @@ namespace ElectricalCommands {
       panel.Add("total_va", TOTAL_VA_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
       double lcl = Convert.ToDouble(LCL.Text.Split(' ')[0]);
       double lcl125 = Math.Round(lcl * 1.25, 0);
-      panel.Add("lcl", lcl.ToString().ToUpper());
-      panel.Add("lcl125", lcl125.ToString().ToUpper());
+      panel.Add("lcl", lcl);
+      panel.Add("lcl125", lcl125);
       double lml = Convert.ToDouble(LML.Text.Split(' ')[0]);
       double lml125 = Math.Round(lml * 1.25, 0);
-      panel.Add("lml", lml.ToString().ToUpper());
-      panel.Add("lml125", lml125.ToString().ToUpper());
+      panel.Add("lml", lml);
+      panel.Add("lml125", lml125);
       panel.Add("kva", PANEL_LOAD_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
       panel.Add("feeder_amps", FEEDER_AMP_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
       panel.Add("custom_title", CUSTOM_TITLE_TEXT.Text.ToUpper());
@@ -2048,10 +2048,6 @@ namespace ElectricalCommands {
       LML.Text = $"{lml}";
     }
 
-    private void UpdatePanelLCLAndLMLValues(LCLLMLManager LCLLMLObject) {
-      throw new NotImplementedException();
-    }
-
     private void SaveLCLLMLObjectAsJson(object LCLLMLObject) {
       string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
       string filePath = Path.Combine(desktopPath, "LCLLMLObject.json");
@@ -2269,6 +2265,7 @@ namespace ElectricalCommands {
     private void LCL_OVERRIDE_CheckedChanged(object sender, EventArgs e) {
       if (LCL.Enabled) {
         LCL.Enabled = false;
+        UpdatePerCellValueChange();
       }
       else {
         LCL.Enabled = true;
@@ -2278,6 +2275,7 @@ namespace ElectricalCommands {
     private void LML_OVERRIDE_CheckedChanged(object sender, EventArgs e) {
       if (LML.Enabled) {
         LML.Enabled = false;
+        UpdatePerCellValueChange();
       }
       else {
         LML.Enabled = true;

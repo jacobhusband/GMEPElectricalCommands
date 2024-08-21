@@ -81,7 +81,6 @@ namespace ElectricalCommands {
       else {
         MakeTabsAndPopulate(panelStorage);
         this.initialized = true;
-        UpdateLCLLML();
       }
     }
 
