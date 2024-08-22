@@ -675,7 +675,8 @@ namespace ElectricalCommands {
 
       // Second pass: Calculate final LCL and LML values
       foreach (var panel in manager.List) {
-        CalculateLCLAndLML(panel, manager.List);
+        CalculateLCL(panel, manager.List);
+        CalculateLML(panel, manager.List);
       }
 
       // Third pass: Update user controls with calculated values
@@ -687,24 +688,36 @@ namespace ElectricalCommands {
       }
     }
 
-    private void CalculateLCLAndLML(LCLLMLObject panel, List<LCLLMLObject> allPanels) {
-      int totalLCL = panel.LCL;
-      int maxLML = panel.LML;
+    private void CalculateLCL(LCLLMLObject panel, List<LCLLMLObject> allPanels) {
+      if (panel.LCLOVERRIDE) return;
 
+      int totalLCL = panel.LCL;
       foreach (var subpanelName in panel.Subpanels) {
         var subpanel = allPanels.Find(p => p.PanelName == subpanelName);
         if (subpanel != null) {
-          if (!panel.LCLOVERRIDE) {
-            totalLCL += subpanel.LCL;
-          }
-          if (!panel.LMLOVERRIDE) {
-            maxLML = Math.Max(maxLML, subpanel.LML);
-          }
+          totalLCL += subpanel.LCL;
         }
       }
-
       panel.LCL = totalLCL;
+    }
+
+    private void CalculateLML(LCLLMLObject panel, List<LCLLMLObject> allPanels) {
+      if (panel.LMLOVERRIDE) return;
+
+      int maxLML = panel.LML;
+      maxLML = RecursiveCalculateLML(panel, allPanels, maxLML);
       panel.LML = maxLML;
+    }
+
+    private int RecursiveCalculateLML(LCLLMLObject panel, List<LCLLMLObject> allPanels, int currentMax) {
+      foreach (var subpanelName in panel.Subpanels) {
+        var subpanel = allPanels.Find(p => p.PanelName == subpanelName);
+        if (subpanel != null && !subpanel.LMLOVERRIDE) {
+          currentMax = Math.Max(currentMax, subpanel.LML);
+          currentMax = RecursiveCalculateLML(subpanel, allPanels, currentMax);
+        }
+      }
+      return currentMax;
     }
   }
 
