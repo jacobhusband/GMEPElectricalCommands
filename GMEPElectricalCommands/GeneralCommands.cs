@@ -1066,23 +1066,49 @@ namespace ElectricalCommands {
       }
     }
 
-    [CommandMethod("ADD2TXT")]
+    [CommandMethod("ADD2TXT", CommandFlags.UsePickSet)]
     public void Add2Txt() {
       Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Database db = doc.Database;
       Editor ed = doc.Editor;
+
       try {
-        // Prompt user to select text objects
-        PromptSelectionOptions pso = new PromptSelectionOptions();
-        pso.MessageForAdding = "Select DBText and MText objects: ";
-        TypedValue[] filterList = new TypedValue[]
-        {
-            new TypedValue((int)DxfCode.Start, "TEXT,MTEXT")
-        };
-        SelectionFilter filter = new SelectionFilter(filterList);
-        PromptSelectionResult selRes = ed.GetSelection(pso, filter);
-        if (selRes.Status != PromptStatus.OK)
+        SelectionSet sset;
+        PromptSelectionResult selRes = ed.SelectImplied();
+
+        if (selRes.Status == PromptStatus.OK) {
+          // Use the PickFirst selection
+          sset = selRes.Value;
+        }
+        else {
+          // If no PickFirst selection, prompt for selection
+          PromptSelectionOptions pso = new PromptSelectionOptions();
+          pso.MessageForAdding = "Select DBText and MText objects: ";
+          TypedValue[] filterList = new TypedValue[]
+          {
+                new TypedValue((int)DxfCode.Start, "TEXT,MTEXT")
+          };
+          SelectionFilter filter = new SelectionFilter(filterList);
+          selRes = ed.GetSelection(pso, filter);
+          if (selRes.Status != PromptStatus.OK)
+            return;
+          sset = selRes.Value;
+        }
+
+        // Filter for TEXT and MTEXT objects
+        ObjectId[] filteredIds;
+        using (Transaction tr = db.TransactionManager.StartTransaction()) {
+          filteredIds = sset.GetObjectIds().Where(id => {
+            var obj = tr.GetObject(id, OpenMode.ForRead);
+            return obj is DBText || obj is MText;
+          }).ToArray();
+          tr.Commit();
+        }
+
+        if (filteredIds.Length == 0) {
+          ed.WriteMessage("\nNo text objects selected.");
           return;
+        }
 
         // Prompt user for the increment value
         PromptIntegerOptions pio = new PromptIntegerOptions("Enter the value to add: ");
@@ -1093,22 +1119,24 @@ namespace ElectricalCommands {
 
         // Process selected objects
         using (Transaction tr = db.TransactionManager.StartTransaction()) {
-          SelectionSet ss = selRes.Value;
-          ObjectId[] objIds = ss.GetObjectIds();
-          foreach (ObjectId objId in objIds) {
+          int processedCount = 0;
+          foreach (ObjectId objId in filteredIds) {
             Entity ent = tr.GetObject(objId, OpenMode.ForWrite) as Entity;
-            if (ent is DBText) {
-              DBText text = ent as DBText;
+            if (ent is DBText text) {
               text.TextString = ProcessText(RemoveStyling(text.TextString), incrementValue);
+              processedCount++;
             }
-            else if (ent is MText) {
-              MText mtext = ent as MText;
+            else if (ent is MText mtext) {
               mtext.Contents = ProcessText(RemoveStyling(mtext.Contents), incrementValue);
+              processedCount++;
             }
           }
           tr.Commit();
+          ed.WriteMessage($"\nCommand completed successfully. Processed {processedCount} text object(s).");
         }
-        ed.WriteMessage("\nCommand completed successfully.");
+
+        // Clear the PickFirst selection set
+        ed.SetImpliedSelection(new ObjectId[0]);
       }
       catch (System.Exception ex) {
         ed.WriteMessage("\nError: " + ex.Message);
