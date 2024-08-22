@@ -1019,50 +1019,81 @@ namespace ElectricalCommands {
       }
     }
 
-    [CommandMethod("TXTNEW")]
+    [CommandMethod("TXTNEW", CommandFlags.UsePickSet)]
     public void TextNew() {
       Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Database db = doc.Database;
       Editor ed = doc.Editor;
 
-      // Prompt user to select text objects
-      PromptSelectionOptions pso = new PromptSelectionOptions();
-      pso.MessageForAdding = "Select text objects to modify:";
-      PromptSelectionResult psr = ed.GetSelection(pso);
+      try {
+        SelectionSet sset;
+        PromptSelectionResult selRes = ed.SelectImplied();
+        if (selRes.Status == PromptStatus.OK) {
+          // Use the PickFirst selection
+          sset = selRes.Value;
+        }
+        else {
+          // If no PickFirst selection, prompt for selection
+          PromptSelectionOptions pso = new PromptSelectionOptions();
+          pso.MessageForAdding = "Select text objects to modify:";
+          TypedValue[] filterList = new TypedValue[]
+          {
+                new TypedValue((int)DxfCode.Start, "TEXT,MTEXT")
+          };
+          SelectionFilter filter = new SelectionFilter(filterList);
+          selRes = ed.GetSelection(pso, filter);
+          if (selRes.Status != PromptStatus.OK) {
+            ed.WriteMessage("\nCommand canceled.");
+            return;
+          }
+          sset = selRes.Value;
+        }
 
-      if (psr.Status != PromptStatus.OK) {
-        ed.WriteMessage("\nCommand canceled.");
-        return;
-      }
+        // Filter for TEXT and MTEXT objects
+        ObjectId[] filteredIds;
+        using (Transaction tr = db.TransactionManager.StartTransaction()) {
+          filteredIds = sset.GetObjectIds().Where(id => {
+            var obj = tr.GetObject(id, OpenMode.ForRead);
+            return obj is DBText || obj is MText;
+          }).ToArray();
+          tr.Commit();
+        }
 
-      // Prompt user for new text content
-      PromptResult pr = ed.GetString("\nEnter new text content: ");
-      if (pr.Status != PromptStatus.OK) {
-        ed.WriteMessage("\nCommand canceled.");
-        return;
-      }
+        if (filteredIds.Length == 0) {
+          ed.WriteMessage("\nNo text objects selected.");
+          return;
+        }
 
-      string newContent = pr.StringResult;
+        // Prompt user for new text content
+        PromptResult pr = ed.GetString("\nEnter new text content: ");
+        if (pr.Status != PromptStatus.OK) {
+          ed.WriteMessage("\nCommand canceled.");
+          return;
+        }
+        string newContent = pr.StringResult;
 
-      using (Transaction tr = db.TransactionManager.StartTransaction()) {
-        try {
-          foreach (SelectedObject so in psr.Value) {
-            DBObject obj = tr.GetObject(so.ObjectId, OpenMode.ForWrite);
-            if (obj is DBText text) {
+        using (Transaction tr = db.TransactionManager.StartTransaction()) {
+          int processedCount = 0;
+          foreach (ObjectId objId in filteredIds) {
+            Entity ent = tr.GetObject(objId, OpenMode.ForWrite) as Entity;
+            if (ent is DBText text) {
               text.TextString = newContent;
+              processedCount++;
             }
-            else if (obj is MText mtext) {
+            else if (ent is MText mtext) {
               mtext.Contents = newContent;
+              processedCount++;
             }
           }
-
           tr.Commit();
-          ed.WriteMessage($"\n{psr.Value.Count} text object(s) modified.");
+          ed.WriteMessage($"\nCommand completed successfully. Modified {processedCount} text object(s).");
         }
-        catch (System.Exception ex) {
-          ed.WriteMessage($"\nError: {ex.Message}");
-          tr.Abort();
-        }
+
+        // Clear the PickFirst selection set
+        ed.SetImpliedSelection(new ObjectId[0]);
+      }
+      catch (System.Exception ex) {
+        ed.WriteMessage("\nError: " + ex.Message);
       }
     }
 
