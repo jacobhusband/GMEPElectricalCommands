@@ -56,6 +56,7 @@ namespace ElectricalCommands {
       add_phase_sum_column(is3PH);
 
       PANEL_NAME_INPUT.TextChanged += new EventHandler(this.PANEL_NAME_INPUT_TextChanged);
+      PANEL_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PANEL_GRID_CellValueChangedLink);
       PANEL_GRID.Rows.AddCopies(0, 21);
       PANEL_GRID.AllowUserToAddRows = false;
 
@@ -1718,6 +1719,7 @@ namespace ElectricalCommands {
               col,
               panelName
             );
+            UpdatePerCellValueChange();
           }
         }
       }
@@ -1805,14 +1807,16 @@ namespace ElectricalCommands {
         return;
       }
 
+      CalculateBreakerLoad();
+    }
+
+    private void PANEL_GRID_CellValueChangedLink(object sender, DataGridViewCellEventArgs e) {
       var cellValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
       var row = PANEL_GRID.Rows[e.RowIndex];
       var col = PANEL_GRID.Columns[e.ColumnIndex];
 
       auto_link_subpanels(cellValue, row, col);
       cellValue = calculate_cell_or_link_panel(e, cellValue, row, col);
-
-      CalculateBreakerLoad();
     }
 
     private void PANEL_GRID_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e) {
@@ -2051,8 +2055,12 @@ namespace ElectricalCommands {
     }
 
     public void UpdateLCLLMLLabels(int lcl, int lml) {
-      LCL.Text = $"{lcl}";
-      LML.Text = $"{lml}";
+      if (!LCL_OVERRIDE.Checked) {
+        LCL.Text = $"{lcl}";
+      }
+      if (!LML_OVERRIDE.Checked) {
+        LML.Text = $"{lml}";
+      }
     }
 
     private void SaveLCLLMLObjectAsJson(object LCLLMLObject) {

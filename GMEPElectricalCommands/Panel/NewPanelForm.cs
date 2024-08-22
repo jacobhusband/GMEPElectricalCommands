@@ -9,21 +9,18 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ElectricalCommands
-{
-  public partial class NewPanelForm : Form
-  {
+namespace ElectricalCommands {
+
+  public partial class NewPanelForm : Form {
     private MainForm _mainForm;
 
-    public NewPanelForm(MainForm mainForm)
-    {
+    public NewPanelForm(MainForm mainForm) {
       InitializeComponent();
       this.StartPosition = FormStartPosition.CenterParent;
       _mainForm = mainForm;
     }
 
-    private void CREATEPANEL_Click(object sender, EventArgs e)
-    {
+    private void CREATEPANEL_Click(object sender, EventArgs e) {
       // get the state of the checkbox
       bool is3PH = CHECKBOX3PH.Checked;
 
@@ -31,23 +28,21 @@ namespace ElectricalCommands
       string panelName = CREATEPANELNAME.Text;
 
       // check if the panel name already exists
-      if (_mainForm.panel_name_exists(panelName))
-      {
+      if (_mainForm.panel_name_exists(panelName)) {
         MessageBox.Show("Panel name already exists. Please choose another name.");
         return;
       }
 
       // check if the panel name is empty
-      if (panelName == "")
-      {
+      if (panelName == "") {
         MessageBox.Show("Panel name cannot be empty.");
         return;
       }
 
       // call a method on the main form
-      if (_mainForm != null)
-      {
-        _mainForm.create_new_panel_tab(panelName, is3PH);
+      if (_mainForm != null) {
+        var userControl = _mainForm.create_new_panel_tab(panelName, is3PH);
+        userControl.AddListeners();
       }
     }
   }
