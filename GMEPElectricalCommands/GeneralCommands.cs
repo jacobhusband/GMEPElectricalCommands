@@ -326,71 +326,24 @@ namespace ElectricalCommands {
       }
     }
 
-    [CommandMethod("SUMTEXT")]
+    [CommandMethod("SUMTEXT", CommandFlags.UsePickSet)]
     public void SUMTEXT() {
       var (doc, db, ed) = GeneralCommands.GetGlobals();
-
       PromptSelectionResult selection = ed.SelectImplied();
-
       if (selection.Status != PromptStatus.OK) {
         PromptSelectionOptions opts = new PromptSelectionOptions();
         opts.MessageForAdding = "Select text objects to sum: ";
         opts.AllowDuplicates = false;
         opts.RejectObjectsOnLockedLayers = true;
-
         selection = ed.GetSelection(opts);
         if (selection.Status != PromptStatus.OK)
           return;
       }
-
       double sum = 0.0;
       using (Transaction tr = db.TransactionManager.StartTransaction()) {
         foreach (SelectedObject so in selection.Value) {
           DBText text = tr.GetObject(so.ObjectId, OpenMode.ForRead) as DBText;
           MText mtext = tr.GetObject(so.ObjectId, OpenMode.ForRead) as MText;
-
-          if (text != null) {
-            double value;
-            string textString = text.TextString.Replace("sq ft", "").Trim();
-            if (Double.TryParse(textString, out value))
-              sum += value;
-          }
-          else if (mtext != null) {
-            double value;
-            string mTextContents = mtext.Contents.Replace("sq ft", "").Trim();
-            if (Double.TryParse(mTextContents, out value))
-              sum += value;
-          }
-        }
-        ed.WriteMessage($"\nThe sum of selected text objects is: {sum} sq ft");
-        tr.Commit();
-      }
-    }
-
-    [CommandMethod("SUMRESTEXT")]
-    public void SUMRESTEXT() {
-      var (doc, db, ed) = GeneralCommands.GetGlobals();
-
-      PromptSelectionResult selection = ed.SelectImplied();
-
-      if (selection.Status != PromptStatus.OK) {
-        PromptSelectionOptions opts = new PromptSelectionOptions();
-        opts.MessageForAdding = "Select text objects to sum: ";
-        opts.AllowDuplicates = false;
-        opts.RejectObjectsOnLockedLayers = true;
-
-        selection = ed.GetSelection(opts);
-        if (selection.Status != PromptStatus.OK)
-          return;
-      }
-
-      double sum = 0.0;
-
-      using (Transaction tr = db.TransactionManager.StartTransaction()) {
-        foreach (SelectedObject so in selection.Value) {
-          DBText text = tr.GetObject(so.ObjectId, OpenMode.ForRead) as DBText;
-          MText mtext = tr.GetObject(so.ObjectId, OpenMode.ForRead) as MText;
-
           if (text != null) {
             double value;
             string textString = text
@@ -401,11 +354,9 @@ namespace ElectricalCommands {
                 .Replace("}", "")
                 .Replace("\\I", "")
                 .Trim();
-
             textString = new string(
                 textString.Where(c => char.IsDigit(c) || c == '.').ToArray()
             );
-
             if (textString.Contains("VA")) {
               string[] sections = textString.Split(
                   new string[] { "VA" },
@@ -431,7 +382,6 @@ namespace ElectricalCommands {
                 .Replace("}", "")
                 .Replace("\\I", "")
                 .Trim();
-
             if (mTextContents.Contains("VA")) {
               string[] sections = mTextContents.Split(
                   new string[] { "VA" },
@@ -462,6 +412,8 @@ namespace ElectricalCommands {
         ed.WriteMessage($"\nThe sum of selected text objects is: {sum}");
         tr.Commit();
       }
+      // Clear the PickFirst selection set
+      ed.SetImpliedSelection(new ObjectId[0]);
     }
 
     [CommandMethod("AREACALCULATOR", CommandFlags.UsePickSet)]
