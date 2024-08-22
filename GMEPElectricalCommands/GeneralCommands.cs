@@ -17,7 +17,7 @@ namespace ElectricalCommands {
 
   public class GeneralCommands {
 
-    [CommandMethod("KEYEDPLAN")]
+    [CommandMethod("KEYEDPLAN", CommandFlags.UsePickSet)]
     public static void KEYEDPLAN() {
       Document doc = Autodesk
           .AutoCAD
@@ -27,10 +27,18 @@ namespace ElectricalCommands {
           .MdiActiveDocument;
       Database db = doc.Database;
       Editor ed = doc.Editor;
-
       Entity imageEntity = null; // This will store RasterImage, Image, or OLE2Frame
 
-      PromptSelectionResult selectionResult = ed.GetSelection();
+      // First, try to get the implied selection (PickFirst)
+      PromptSelectionResult selectionResult = ed.SelectImplied();
+
+      // If no implied selection, prompt the user to select objects
+      if (selectionResult.Status != PromptStatus.OK) {
+        PromptSelectionOptions pso = new PromptSelectionOptions();
+        pso.MessageForAdding = "Select objects for KEYEDPLAN: ";
+        selectionResult = ed.GetSelection(pso);
+      }
+
       if (selectionResult.Status == PromptStatus.OK) {
         SelectionSet selectionSet = selectionResult.Value;
         using (Transaction trans = db.TransactionManager.StartTransaction()) {
@@ -42,14 +50,12 @@ namespace ElectricalCommands {
               break; // Once found, break out of the loop
             }
           }
-
           // If imageEntity is null, it means no appropriate image entity was found in the selection
           if (imageEntity == null) {
             ed.WriteMessage(
                 "\nNote: No appropriate image entity was found in the selection. Leaders for 'AREA OF WORK' will not be created."
             );
           }
-
           // Now, let's handle the other entities
           foreach (SelectedObject selObj in selectionSet) {
             Entity ent = trans.GetObject(selObj.ObjectId, OpenMode.ForRead) as Entity;
@@ -59,7 +65,6 @@ namespace ElectricalCommands {
               ed.WriteMessage(
                   $"\nSelected Object: Handle = {handle}, Type = {objectType}"
               );
-
               if (ent is DBText || ent is MText) {
                 WipeoutAroundText(selObj.ObjectId);
                 if (imageEntity != null) // Only proceed if imageEntity is not null
@@ -94,7 +99,6 @@ namespace ElectricalCommands {
               {
                 Extents3d extents;
                 Point3d endPoint;
-
                 if (ent is RasterImage rasterImg) {
                   extents = rasterImg.GeometricExtents;
                 }
@@ -108,9 +112,7 @@ namespace ElectricalCommands {
                   // If none match, continue to the next iteration
                   continue;
                 }
-
                 endPoint = new Point3d(extents.MinPoint.X, extents.MinPoint.Y, 0); // Bottom left corner
-
                 CreateEntitiesAtEndPoint(
                     trans,
                     extents,
@@ -127,6 +129,9 @@ namespace ElectricalCommands {
       else {
         ed.WriteMessage("\nNo objects were selected.");
       }
+
+      // Clear the PickFirst selection set
+      ed.SetImpliedSelection(new ObjectId[0]);
     }
 
     [CommandMethod("T24")]
