@@ -947,7 +947,7 @@ namespace ElectricalCommands {
       }
     }
 
-    [CommandMethod("INCREMENTER")]
+    [CommandMethod("INCREMENTER", CommandFlags.UsePickSet)]
     public void Incrementer() {
       Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Database db = doc.Database;
@@ -960,11 +960,27 @@ namespace ElectricalCommands {
         int endNum = Convert.ToInt32(ed.GetString("\nEnter end number: ").StringResult);
         string oddEven = ed.GetString("\nEnter 'O' for odd or 'E' for even: ").StringResult.ToUpper();
 
-        // Prompt user to select MText and DBText objects
-        PromptSelectionOptions pso = new PromptSelectionOptions();
-        pso.MessageForAdding = "\nSelect MText and DBText objects: ";
-        PromptSelectionResult psr = ed.GetSelection(pso);
-        if (psr.Status != PromptStatus.OK) return;
+        // Handle selection
+        SelectionSet sset;
+        PromptSelectionResult selRes = ed.SelectImplied();
+        if (selRes.Status == PromptStatus.OK) {
+          // Use the PickFirst selection
+          sset = selRes.Value;
+        }
+        else {
+          // If no PickFirst selection, prompt for selection
+          PromptSelectionOptions pso = new PromptSelectionOptions();
+          pso.MessageForAdding = "\nSelect MText and DBText objects: ";
+          TypedValue[] filterList = new TypedValue[]
+          {
+                new TypedValue((int)DxfCode.Start, "TEXT,MTEXT")
+          };
+          SelectionFilter filter = new SelectionFilter(filterList);
+          selRes = ed.GetSelection(pso, filter);
+          if (selRes.Status != PromptStatus.OK)
+            return;
+          sset = selRes.Value;
+        }
 
         // Get point from user
         PromptPointResult ppr = ed.GetPoint("\nSelect a reference point: ");
@@ -974,7 +990,7 @@ namespace ElectricalCommands {
         // Collect selected MText and DBText objects
         List<(Entity entity, double distance)> textObjects = new List<(Entity, double)>();
         using (Transaction tr = db.TransactionManager.StartTransaction()) {
-          foreach (ObjectId objId in psr.Value.GetObjectIds()) {
+          foreach (ObjectId objId in sset.GetObjectIds()) {
             Entity ent = tr.GetObject(objId, OpenMode.ForRead) as Entity;
             if (ent is MText || ent is DBText) {
               double dist = ent.GeometricExtents.MinPoint.DistanceTo(selectedPoint);
@@ -990,7 +1006,6 @@ namespace ElectricalCommands {
           foreach (var (ent, _) in textObjects) {
             ent.UpgradeOpen();
             string newText = $"{prefix}{currentNum}";
-
             if (ent is MText mtext) {
               mtext.Contents = newText;
             }
@@ -1002,7 +1017,6 @@ namespace ElectricalCommands {
               do {
                 currentNum++;
               } while ((oddEven == "O" && currentNum % 2 == 0) || (oddEven == "E" && currentNum % 2 != 0));
-
               if (currentNum > endNum) {
                 currentNum = endNum;
               }
@@ -1012,7 +1026,10 @@ namespace ElectricalCommands {
           tr.Commit();
         }
 
-        ed.WriteMessage("\nINCREMENTER command completed successfully.");
+        ed.WriteMessage($"\nINCREMENTER command completed successfully. Modified {textObjects.Count} text object(s).");
+
+        // Clear the PickFirst selection set
+        ed.SetImpliedSelection(new ObjectId[0]);
       }
       catch (System.Exception ex) {
         ed.WriteMessage($"\nError: {ex.Message}");
