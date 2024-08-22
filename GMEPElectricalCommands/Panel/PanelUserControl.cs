@@ -1699,9 +1699,12 @@ namespace ElectricalCommands {
       if (col.Name.Contains("description")) {
         if (cellValue.ToLower().Contains("panel")) {
           var panelName = cellValue.ToLower().Split(' ').Last();
+
           if (panelName.Contains("'") || panelName.Contains("`")) {
             panelName = panelName.Replace("'", "").Replace("`", "");
           }
+
+          if (panelName.ToUpper() == PANEL_NAME_INPUT.Text.ToUpper()) return;
 
           var isPanelReal = this.mainForm.panel_name_exists(panelName);
 

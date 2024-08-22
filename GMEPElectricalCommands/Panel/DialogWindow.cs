@@ -665,6 +665,8 @@ namespace ElectricalCommands {
         LCLLMLObject obj = new LCLLMLObject(userControl.Name.Replace("'", ""));
         var LCLOverride = (int)userControl.GetLCLOverride();
         var LMLOverride = (int)userControl.GetLMLOverride();
+        obj.LCLOVERRIDE = LCLOverride != 0;
+        obj.LMLOVERRIDE = LMLOverride != 0;
         obj.LCL = (LCLOverride != 0) ? LCLOverride : (int)Math.Round(userControl.CalculateWattageSum("LCL"));
         obj.LML = (LMLOverride != 0) ? LMLOverride : (int)Math.Round(userControl.StoreItemsAndWattage("LML"));
         obj.Subpanels = userControl.GetSubPanels();
@@ -692,9 +694,12 @@ namespace ElectricalCommands {
       foreach (var subpanelName in panel.Subpanels) {
         var subpanel = allPanels.Find(p => p.PanelName == subpanelName);
         if (subpanel != null) {
-          CalculateLCLAndLML(subpanel, allPanels);
-          totalLCL += subpanel.LCL;
-          maxLML = Math.Max(maxLML, subpanel.LML);
+          if (!panel.LCLOVERRIDE) {
+            totalLCL += subpanel.LCL;
+          }
+          if (!panel.LMLOVERRIDE) {
+            maxLML = Math.Max(maxLML, subpanel.LML);
+          }
         }
       }
 
@@ -706,6 +711,8 @@ namespace ElectricalCommands {
   public class LCLLMLObject {
     public int LCL { get; set; }
     public int LML { get; set; }
+    public bool LCLOVERRIDE { get; set; }
+    public bool LMLOVERRIDE { get; set; }
     public List<string> Subpanels { get; set; }
     public string PanelName { get; }
 
