@@ -1099,11 +1099,11 @@ namespace ElectricalCommands {
             Entity ent = tr.GetObject(objId, OpenMode.ForWrite) as Entity;
             if (ent is DBText) {
               DBText text = ent as DBText;
-              text.TextString = ProcessText(text.TextString, incrementValue);
+              text.TextString = ProcessText(RemoveStyling(text.TextString), incrementValue);
             }
             else if (ent is MText) {
               MText mtext = ent as MText;
-              mtext.Contents = ProcessText(mtext.Contents, incrementValue);
+              mtext.Contents = ProcessText(RemoveStyling(mtext.Contents), incrementValue);
             }
           }
           tr.Commit();
@@ -1113,6 +1113,17 @@ namespace ElectricalCommands {
       catch (System.Exception ex) {
         ed.WriteMessage("\nError: " + ex.Message);
       }
+    }
+
+    private string RemoveStyling(string input) {
+      string withoutBrackets = Regex.Replace(input, @"\{[^}]*\}", "");
+
+      int semicolonIndex = withoutBrackets.IndexOf(';');
+      if (semicolonIndex != -1) {
+        withoutBrackets = withoutBrackets.Substring(semicolonIndex + 1);
+      }
+
+      return withoutBrackets.Trim();
     }
 
     private string ProcessText(string input, int increment) {
