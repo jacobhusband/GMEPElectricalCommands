@@ -464,75 +464,98 @@ namespace ElectricalCommands {
       }
     }
 
-    [CommandMethod("AREACALCULATOR")]
+    [CommandMethod("AREACALCULATOR", CommandFlags.UsePickSet)]
     public void AREACALCULATOR() {
-      var (doc, _, ed) = GeneralCommands.GetGlobals();
+      var (doc, db, ed) = GeneralCommands.GetGlobals();
 
-      PromptSelectionOptions opts = new PromptSelectionOptions();
-      opts.MessageForAdding = "Select polylines or rectangles: ";
-      opts.AllowDuplicates = false;
-      opts.RejectObjectsOnLockedLayers = true;
-
-      PromptSelectionResult selection = ed.GetSelection(opts);
-      if (selection.Status != PromptStatus.OK)
-        return;
-
-      using (Transaction tr = doc.TransactionManager.StartTransaction()) {
-        foreach (ObjectId objId in selection.Value.GetObjectIds()) {
-          var obj = tr.GetObject(objId, OpenMode.ForWrite) as Entity;
-          if (obj == null) {
-            ed.WriteMessage("\nSelected object is not a valid entity.");
-            continue;
-          }
-
-          Autodesk.AutoCAD.DatabaseServices.Polyline polyline =
-              obj as Autodesk.AutoCAD.DatabaseServices.Polyline;
-          if (polyline != null) {
-            double area = polyline.Area;
-            area /= 144; // Converting from square inches to square feet
-            ed.WriteMessage(
-                "\nThe area of the selected polyline is: " + area + " sq ft"
-            );
-
-            // Get the bounding box of the polyline
-            Extents3d bounds = (Extents3d)polyline.Bounds;
-
-            // Calculate the center of the bounding box
-            Point3d center = new Point3d(
-                (bounds.MinPoint.X + bounds.MaxPoint.X) / 2,
-                (bounds.MinPoint.Y + bounds.MaxPoint.Y) / 2,
-                0
-            );
-
-            // Check if the center of the bounding box lies within the polyline. If not, use the first vertex.
-            if (!IsPointInside(polyline, center)) {
-              center = polyline.GetPoint3dAt(0);
-            }
-
-            DBText text = new DBText {
-              Height = 9,
-              TextString = Math.Ceiling(area) + " sq ft",
-              Rotation = 0,
-              HorizontalMode = TextHorizontalMode.TextCenter,
-              VerticalMode = TextVerticalMode.TextVerticalMid,
-              Layer = "0"
-            };
-
-            text.Position = center;
-            text.AlignmentPoint = center;
-
-            var currentSpace = (BlockTableRecord)
-                tr.GetObject(doc.Database.CurrentSpaceId, OpenMode.ForWrite);
-            currentSpace.AppendEntity(text);
-            tr.AddNewlyCreatedDBObject(text, true);
-          }
-          else {
-            ed.WriteMessage("\nSelected object is not a polyline.");
-            continue;
-          }
+      try {
+        SelectionSet sset;
+        PromptSelectionResult selRes = ed.SelectImplied();
+        if (selRes.Status == PromptStatus.OK) {
+          // Use the PickFirst selection
+          sset = selRes.Value;
+        }
+        else {
+          // If no PickFirst selection, prompt for selection
+          PromptSelectionOptions opts = new PromptSelectionOptions();
+          opts.MessageForAdding = "Select polylines or rectangles: ";
+          opts.AllowDuplicates = false;
+          opts.RejectObjectsOnLockedLayers = true;
+          TypedValue[] filterList = new TypedValue[]
+          {
+                new TypedValue((int)DxfCode.Start, "LWPOLYLINE")
+          };
+          SelectionFilter filter = new SelectionFilter(filterList);
+          selRes = ed.GetSelection(opts, filter);
+          if (selRes.Status != PromptStatus.OK)
+            return;
+          sset = selRes.Value;
         }
 
-        tr.Commit();
+        using (Transaction tr = doc.TransactionManager.StartTransaction()) {
+          int processedCount = 0;
+          foreach (ObjectId objId in sset.GetObjectIds()) {
+            var obj = tr.GetObject(objId, OpenMode.ForWrite) as Entity;
+            if (obj == null) {
+              ed.WriteMessage("\nSelected object is not a valid entity.");
+              continue;
+            }
+
+            Autodesk.AutoCAD.DatabaseServices.Polyline polyline =
+                obj as Autodesk.AutoCAD.DatabaseServices.Polyline;
+            if (polyline != null) {
+              double area = polyline.Area;
+              area /= 144; // Converting from square inches to square feet
+              ed.WriteMessage(
+                  $"\nThe area of the selected polyline is: {area:F2} sq ft"
+              );
+
+              // Get the bounding box of the polyline
+              Extents3d bounds = (Extents3d)polyline.Bounds;
+              // Calculate the center of the bounding box
+              Point3d center = new Point3d(
+                  (bounds.MinPoint.X + bounds.MaxPoint.X) / 2,
+                  (bounds.MinPoint.Y + bounds.MaxPoint.Y) / 2,
+                  0
+              );
+
+              // Check if the center of the bounding box lies within the polyline. If not, use the first vertex.
+              if (!IsPointInside(polyline, center)) {
+                center = polyline.GetPoint3dAt(0);
+              }
+
+              DBText text = new DBText {
+                Height = 9,
+                TextString = $"{Math.Ceiling(area)} sq ft",
+                Rotation = 0,
+                HorizontalMode = TextHorizontalMode.TextCenter,
+                VerticalMode = TextVerticalMode.TextVerticalMid,
+                Layer = "0"
+              };
+              text.Position = center;
+              text.AlignmentPoint = center;
+
+              var currentSpace = (BlockTableRecord)
+                  tr.GetObject(doc.Database.CurrentSpaceId, OpenMode.ForWrite);
+              currentSpace.AppendEntity(text);
+              tr.AddNewlyCreatedDBObject(text, true);
+
+              processedCount++;
+            }
+            else {
+              ed.WriteMessage("\nSelected object is not a polyline.");
+              continue;
+            }
+          }
+          tr.Commit();
+          ed.WriteMessage($"\nAREACALCULATOR command completed successfully. Processed {processedCount} polyline(s).");
+        }
+
+        // Clear the PickFirst selection set
+        ed.SetImpliedSelection(new ObjectId[0]);
+      }
+      catch (System.Exception ex) {
+        ed.WriteMessage($"\nError: {ex.Message}");
       }
     }
 
