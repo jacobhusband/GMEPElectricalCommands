@@ -1,9 +1,9 @@
 ﻿using Autodesk.AutoCAD.Runtime;
 
-namespace ElectricalCommands
-{
-  public class CreationMethods
-  {
+namespace ElectricalCommands {
+
+  public class CreationMethods {
+
     [CommandMethod("dc")]
     public static void dc() => CADObjectCommands.JsonBlockCreator("dc");
 
@@ -121,9 +121,6 @@ namespace ElectricalCommands
     [CommandMethod("emw")]
     public static void emw() => CADObjectCommands.JsonBlockCreator("emw");
 
-    [CommandMethod("exist")]
-    public static void exist() => CADObjectCommands.JsonBlockCreator("exist");
-
     [CommandMethod("fn")]
     public static void fn() => CADObjectCommands.JsonBlockCreator("fn");
 
@@ -195,9 +192,6 @@ namespace ElectricalCommands
 
     [CommandMethod("n9")]
     public static void n9() => CADObjectCommands.JsonObjectCreator("n9");
-
-    [CommandMethod("new")]
-    public static void @new() => CADObjectCommands.JsonBlockCreator("new");
 
     [CommandMethod("oc")]
     public static void oc() => CADObjectCommands.JsonBlockCreator("oc");
@@ -390,9 +384,6 @@ namespace ElectricalCommands
 
     [CommandMethod("rcwmw")]
     public static void rcwmw() => CADObjectCommands.JsonBlockCreator("rcwmw");
-
-    [CommandMethod("reloc")]
-    public static void reloc() => CADObjectCommands.JsonBlockCreator("reloc");
 
     [CommandMethod("sw")]
     public static void sw() => CADObjectCommands.JsonBlockCreator("sw");
