@@ -787,9 +787,9 @@ namespace ElectricalCommands {
               string thirdBreakerValue = thirdRow.Cells[isLeftSide ? "breaker_left" : "breaker_right"].Value?.ToString();
 
               if (secondBreakerValue == 0 && thirdBreakerValue == "3") {
-                item.Wattage = phaseValue * 1.732;
+                item.Wattage = phaseValue * 3;
                 item.Poles = 3;
-                rowIndex += 2; // Skip 2 rows
+                rowIndex += 2;
                 items.Add(item);
                 continue;
               }
