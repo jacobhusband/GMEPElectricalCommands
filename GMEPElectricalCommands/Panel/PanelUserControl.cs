@@ -1814,12 +1814,19 @@ namespace ElectricalCommands {
     }
 
     private void PANEL_GRID_CellValueChangedLink(object sender, DataGridViewCellEventArgs e) {
-      var cellValue = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
+      var cell = PANEL_GRID.Rows[e.RowIndex].Cells[e.ColumnIndex];
+      if (cell == null) {
+        return;
+      }
+
+      string cellValue = cell.Value?.ToString() ?? string.Empty;
       var row = PANEL_GRID.Rows[e.RowIndex];
       var col = PANEL_GRID.Columns[e.ColumnIndex];
 
-      auto_link_subpanels(cellValue, row, col);
-      cellValue = calculate_cell_or_link_panel(e, cellValue, row, col);
+      if (row != null && col != null) {
+        auto_link_subpanels(cellValue, row, col);
+        cellValue = calculate_cell_or_link_panel(e, cellValue, row, col);
+      }
     }
 
     private void PANEL_GRID_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e) {
