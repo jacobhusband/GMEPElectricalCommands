@@ -7,6 +7,7 @@ using Autodesk.AutoCAD.Runtime;
 using ElectricalCommands.Lighting;
 using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -776,15 +777,25 @@ namespace ElectricalCommands {
         }
 
         using (Transaction tr = db.TransactionManager.StartTransaction()) {
-          // Get the layout dictionary
-          DBDictionary layoutDict =
-              tr.GetObject(db.LayoutDictionaryId, OpenMode.ForRead) as DBDictionary;
+          DBDictionary layoutDict = tr.GetObject(db.LayoutDictionaryId, OpenMode.ForRead) as DBDictionary;
+
+          // Process the input sheet name
+          string processedInput = inputSheetName;
+          if (processedInput.Contains("-")) {
+            processedInput = processedInput.Split('-').Last().Trim();
+          }
+          if (!processedInput.Contains(".")) {
+            processedInput += ".";
+          }
 
           foreach (var layoutEntry in layoutDict) {
             string layoutName = layoutEntry.Key;
-            if (layoutName.StartsWith("E-") && layoutName.Contains(inputSheetName)) {
-              matchedLayoutName = layoutName;
-              break;
+            if (layoutName.StartsWith("E-", StringComparison.OrdinalIgnoreCase)) {
+              string layoutNumber = layoutName.Split('-').Last().Trim();
+              if (layoutNumber.StartsWith(processedInput, StringComparison.OrdinalIgnoreCase)) {
+                matchedLayoutName = layoutName;
+                break;
+              }
             }
           }
 
@@ -793,12 +804,6 @@ namespace ElectricalCommands {
             return;
           }
 
-          if (!layoutDict.Contains(matchedLayoutName)) {
-            ed.WriteMessage(
-                $"Sheet (Layout) named '{matchedLayoutName}' not found in the drawing."
-            );
-            return;
-          }
           ObjectId layoutId = layoutDict.GetAt(matchedLayoutName);
           Layout layout = tr.GetObject(layoutId, OpenMode.ForRead) as Layout;
 
