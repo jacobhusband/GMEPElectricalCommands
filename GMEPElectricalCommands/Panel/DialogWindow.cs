@@ -170,48 +170,23 @@ namespace ElectricalCommands {
       set_up_cell_values_from_panel_data(panelStorage);
       set_up_tags_from_panel_data(panelStorage);
 
-      foreach (Dictionary<string, object> panel in panelStorage) {
+      var sortedPanels = panelStorage.OrderBy(panel => panel["panel"].ToString()).ToList();
+
+      foreach (Dictionary<string, object> panel in sortedPanels) {
         string panelName = panel["panel"].ToString();
         PanelUserControl userControl = (PanelUserControl)findUserControl(panelName);
         if (userControl == null) {
           continue;
         }
-
         userControl.AddListeners();
         userControl.UpdatePerCellValueChange();
       }
     }
 
-    public static void put_in_json_file(object thing) {
-      string json = JsonConvert.SerializeObject(thing, Formatting.Indented);
-      string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
-      var doc = Autodesk
-          .AutoCAD
-          .ApplicationServices
-          .Application
-          .DocumentManager
-          .MdiActiveDocument;
-
-      string baseFileName = "Test";
-
-      if (string.IsNullOrEmpty(baseFileName)) {
-        baseFileName = "panel_data";
-      }
-      string extension = ".json";
-      string path = Path.Combine(desktopPath, baseFileName + extension);
-
-      int count = 1;
-      while (File.Exists(path)) {
-        string tempFileName = string.Format("{0}({1})", baseFileName, count++);
-        path = Path.Combine(desktopPath, tempFileName + extension);
-      }
-
-      File.WriteAllText(path, json);
-    }
-
     private void set_up_cell_values_from_panel_data(List<Dictionary<string, object>> panelStorage) {
-      foreach (Dictionary<string, object> panel in panelStorage) {
+      var sortedPanels = panelStorage.OrderBy(panel => panel["panel"].ToString()).ToList();
+
+      foreach (Dictionary<string, object> panel in sortedPanels) {
         string panelName = panel["panel"].ToString();
         bool is3PH = panel.ContainsKey("phase_c_left");
         PanelUserControl userControl1 = create_new_panel_tab(panelName, is3PH, true);
@@ -338,6 +313,34 @@ namespace ElectricalCommands {
 
       // Add the user control to the controls of the tab page
       tabPage.Controls.Add(control);
+    }
+
+    public static void put_in_json_file(object thing) {
+      string json = JsonConvert.SerializeObject(thing, Formatting.Indented);
+      string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
+      var doc = Autodesk
+          .AutoCAD
+          .ApplicationServices
+          .Application
+          .DocumentManager
+          .MdiActiveDocument;
+
+      string baseFileName = "Test";
+
+      if (string.IsNullOrEmpty(baseFileName)) {
+        baseFileName = "panel_data";
+      }
+      string extension = ".json";
+      string path = Path.Combine(desktopPath, baseFileName + extension);
+
+      int count = 1;
+      while (File.Exists(path)) {
+        string tempFileName = string.Format("{0}({1})", baseFileName, count++);
+        path = Path.Combine(desktopPath, tempFileName + extension);
+      }
+
+      File.WriteAllText(path, json);
     }
 
     public PanelUserControl create_new_panel_tab(string tabName, bool is3PH, bool isLoadingData = false) {
