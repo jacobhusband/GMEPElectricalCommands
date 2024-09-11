@@ -2,6 +2,7 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.GraphicsSystem;
+using Emgu.CV.ImgHash;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OfficeOpenXml.Packaging.Ionic.Zlib;
@@ -18,6 +19,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Media.Media3D;
+using static OfficeOpenXml.ExcelErrorValue;
 
 namespace ElectricalCommands {
 
@@ -2343,6 +2345,462 @@ namespace ElectricalCommands {
       else {
         return 0;
       }
+    }
+    private string ConvertHPtoVA(string hpValue, int numPhases, string voltage) {
+      string sanitized = Regex.Replace(hpValue, @" +HP", "HP");
+      sanitized = Regex.Replace(sanitized, @"\p{Zs}+", "+");
+      sanitized = Regex.Replace(sanitized, @"-+", "+");
+      sanitized = sanitized.Replace("HP", "");
+      if (!Regex.IsMatch(sanitized, @"^\d+(\+\d\/\d)?$")) {
+        return "-1";
+      }
+      System.Data.DataTable dt = new System.Data.DataTable();
+      double sumObject = Convert.ToDouble(dt.Compute(sanitized, null));
+      string phaseVA = "";
+
+      if (numPhases == 1) {
+        Console.WriteLine("num phases = 1");
+        switch (sumObject) {
+          case var _ when sumObject > 7.5: { // 10
+              if (voltage == "120") {
+                phaseVA = "12000";
+              }
+              if (voltage == "208") {
+                phaseVA = "5720";
+              }
+              if (voltage == "240") {
+                phaseVA = "6000";
+              }
+              break;
+            };
+          case var _ when sumObject > 5: { // 7.5
+              if (voltage == "120") {
+                phaseVA = "9600";
+              }
+              if (voltage == "208") {
+                phaseVA = "4576";
+              }
+              if (voltage == "240") {
+                phaseVA = "4800";
+              }
+              break;
+            };
+          case var _ when sumObject > 3: { // 5
+              if (voltage == "120") {
+                phaseVA = "6720";
+              }
+              if (voltage == "208") {
+                phaseVA = "3220";
+              }
+              if (voltage == "240") {
+                phaseVA = "3360";
+              }
+              break;
+            };
+          case var _ when sumObject > 2: { // 3
+              if (voltage == "120") {
+                phaseVA = "4080";
+              }
+              if (voltage == "208") {
+                phaseVA = "1945";
+              }
+              if (voltage == "240") {
+                phaseVA = "2040";
+              }
+              break;
+            };
+          case var _ when sumObject > 1.5: { // 2
+              if (voltage == "120") {
+                phaseVA = "2880";
+              }
+              if (voltage == "208") {
+                phaseVA = "1373";
+              }
+              if (voltage == "240") {
+                phaseVA = "2040";
+              }
+              break;
+            };
+          case var _ when sumObject > 1: { // 1 1/2
+              if (voltage == "120") {
+                phaseVA = "2400";
+              }
+              if (voltage == "208") {
+                phaseVA = "1144";
+              }
+              if (voltage == "240") {
+                phaseVA = "1200";
+              }
+              break;
+            };
+          case var _ when sumObject > 0.75: { // 1
+              if (voltage == "120") {
+                phaseVA = "1920";
+              }
+              if (voltage == "208") {
+                phaseVA = "915";
+              }
+              if (voltage == "240") {
+                phaseVA = "960";
+              }
+              break;
+            };
+          case var _ when sumObject > 0.5: { // 3/4
+              if (voltage == "120") {
+                phaseVA = "1656";
+              }
+              if (voltage == "208") {
+                phaseVA = "791";
+              }
+              if (voltage == "240") {
+                phaseVA = "828";
+              }
+              break;
+            };
+          case var _ when sumObject > 0.34: { // 1/2
+              if (voltage == "120") {
+                phaseVA = "1176";
+              }
+              if (voltage == "208") {
+                phaseVA = "562";
+              }
+              if (voltage == "240") {
+                phaseVA = "588";
+              }
+              break;
+            };
+          case var _ when sumObject > 0.25: { // 1/3
+              if (voltage == "120") {
+                phaseVA = "864";
+              }
+              if (voltage == "208") {
+                phaseVA = "416";
+              }
+              if (voltage == "240") {
+                phaseVA = "432";
+              }
+              break;
+            };
+          case var _ when sumObject > 0.167: { // 1/4
+              if (voltage == "120") {
+                phaseVA = "696";
+              }
+              if (voltage == "208") {
+                phaseVA = "333";
+              }
+              if (voltage == "240") {
+                phaseVA = "348";
+              }
+              break;
+            };
+          case var _ when sumObject <= 0.167: { // 1/6
+              if (voltage == "120") {
+                phaseVA = "528";
+              }
+              if (voltage == "208") {
+                phaseVA = "250";
+              }
+              if (voltage == "240") {
+                phaseVA = "264";
+              }
+              break;
+            };
+        }
+      }
+
+      if (numPhases == 3) {
+        switch (sumObject) {
+          case var _ when sumObject > 15: { // 20
+              if (voltage == "208") {
+                phaseVA = Math.Round(59.4 * 208.0).ToString();
+              }
+              if (voltage == "480") {
+                phaseVA = Math.Round(27 * 460.0).ToString();
+              }
+              break;
+            }
+          case var _ when sumObject > 10: { // 15
+              if (voltage == "208") {
+                phaseVA = Math.Round(46.2 * 208.0).ToString();
+              }
+              if (voltage == "480") {
+                phaseVA = Math.Round(21.0 * 460.0).ToString();
+              }
+              break;
+            };
+          case var _ when sumObject > 7.5: { // 10
+              if (voltage == "208") {
+                phaseVA = Math.Round(30.8 * 208.0).ToString();
+              }
+              if (voltage == "480") {
+                phaseVA = Math.Round(14.0 * 460.0).ToString();
+              }
+              break;
+            };
+          case var _ when sumObject > 5: { // 7 1/2
+              if (voltage == "208") {
+                phaseVA = Math.Round(24.2 * 208.0).ToString();
+              }
+              if (voltage == "480") {
+                phaseVA = Math.Round(11.0 * 460.0).ToString();
+              }
+              break;
+            };
+          case var _ when sumObject > 3: { // 5
+              if (voltage == "208") {
+                phaseVA = Math.Round(16.7 * 208.0).ToString();
+              }
+              if (voltage == "480") {
+                phaseVA = Math.Round(7.6 * 460.0).ToString();
+              }
+              break;
+            };
+          case var _ when sumObject > 2: { // 3
+              if (voltage == "208") {
+                phaseVA = Math.Round(10.6 * 208.0).ToString();
+              }
+              if (voltage == "480") {
+                phaseVA = Math.Round(4.8 * 460.0).ToString();
+              }
+              break;
+            };
+          case var _ when sumObject > 1.5: { // 2
+              if (voltage == "208") {
+                phaseVA = Math.Round(7.5 * 208.0).ToString();
+              }
+              if (voltage == "480") {
+                phaseVA = Math.Round(3.4 * 460.0).ToString();
+              }
+              break;
+            };
+          case var _ when sumObject > 1: { // 1 1/2
+              if (voltage == "208") {
+                phaseVA = Math.Round(6.6 * 208.0).ToString();
+              }
+              if (voltage == "480") {
+                phaseVA = Math.Round(3.0 * 460.0).ToString();
+              }
+              break;
+            };
+          case var _ when sumObject > 0.75: { // 1
+              if (voltage == "208") {
+                phaseVA = Math.Round(4.6 * 208.0).ToString();
+              }
+              if (voltage == "480") {
+                phaseVA = Math.Round(2.1 * 460.0).ToString();
+              }
+              break;
+            };
+          case var _ when sumObject > 0.5: { // 3/4
+              if (voltage == "208") {
+                phaseVA = Math.Round(3.5 * 208.0).ToString();
+              }
+              if (voltage == "480") {
+                phaseVA = Math.Round(1.6 * 460.0).ToString();
+              }
+              break;
+            };
+          case var _ when sumObject <= 0.5: { // 1/2
+              if (voltage == "208") {
+                phaseVA = Math.Round(2.4 * 208.0).ToString();
+              }
+              if (voltage == "480") {
+                phaseVA = Math.Round(1.1 * 460.0).ToString();
+              }
+              break;
+            };
+        }
+      }
+      Console.WriteLine($"phaseVA {phaseVA}");
+      return phaseVA;
+    }
+
+    private void ConvertHpToVaBySide3Ph(string side) {
+      int i = 0;
+      while (i < PANEL_GRID.Rows.Count) {
+        string phaseA = PANEL_GRID.Rows[i].Cells[$"phase_a_{side}"].Value?.ToString().ToUpper().Replace("\r", "");
+        string phaseB = PANEL_GRID.Rows[i].Cells[$"phase_b_{side}"].Value?.ToString().ToUpper().Replace("\r", "");
+        string phaseC = PANEL_GRID.Rows[i].Cells[$"phase_c_{side}"].Value?.ToString().ToUpper().Replace("\r", "");
+
+        if (!String.IsNullOrEmpty(phaseA) && phaseA.EndsWith("HP")) {
+          if (i + 1 < PANEL_GRID.Rows.Count && PANEL_GRID.Rows[i + 1].Cells[$"breaker_{side}"].Value as string == "2") {
+            phaseA = ConvertHPtoVA(phaseA, 1, PHASE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            phaseB = phaseA;
+            if (phaseA == "-1" || phaseB == "-1") {
+              return;
+            }
+            // set values of PANEL_GRID phase_a_{side} and phase_b_{side}
+            PANEL_GRID.Rows[i].Cells[$"phase_a_{side}"].Value = phaseA;
+            PANEL_GRID.Rows[i + 1].Cells[$"phase_b_{side}"].Value = phaseB;
+            i += 2;
+          }
+          else if (i + 2 < PANEL_GRID.Rows.Count && PANEL_GRID.Rows[i + 2].Cells[$"breaker_{side}"].Value as string == "3") {
+            phaseA = ConvertHPtoVA(phaseA, 3, PHASE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            phaseB = phaseA;
+            phaseC = phaseA;
+            if (phaseA == "-1" || phaseB == "-1" || phaseC == "-1") {
+              return;
+            }
+            // set values of PANEL_GRID phase_a_{side}, phase_b_{side}, phase_c_{side}
+            PANEL_GRID.Rows[i].Cells[$"phase_a_{side}"].Value = phaseA;
+            PANEL_GRID.Rows[i + 1].Cells[$"phase_b_{side}"].Value = phaseB;
+            PANEL_GRID.Rows[i + 2].Cells[$"phase_c_{side}"].Value = phaseC;
+            i += 3;
+          }
+          else {
+            phaseA = ConvertHPtoVA(phaseA, 1, LINE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            if (phaseA == "-1") {
+              return;
+            }
+            // set values of PANEL_GRID phase_a_{side}
+            PANEL_GRID.Rows[i].Cells[$"phase_a_{side}"].Value = phaseA;
+            i++;
+          }
+        }
+        if (!String.IsNullOrEmpty(phaseB) && phaseB.EndsWith("HP")) {
+          if (i + 1 < PANEL_GRID.Rows.Count && PANEL_GRID.Rows[i + 1].Cells[$"breaker_{side}"].Value as string == "2") {
+            phaseB = ConvertHPtoVA(phaseB, 1, PHASE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            phaseC = phaseB;
+            if (phaseB == "-1" || phaseC == "-1") {
+              return;
+            }
+            // set values of PANEL_GRID phase_a_{side} and phase_b_{side}
+            PANEL_GRID.Rows[i].Cells[$"phase_b_{side}"].Value = phaseB;
+            PANEL_GRID.Rows[i + 1].Cells[$"phase_c_{side}"].Value = phaseC;
+            i += 2;
+          }
+          else if (i + 2 < PANEL_GRID.Rows.Count && PANEL_GRID.Rows[i + 2].Cells[$"breaker_{side}"].Value as string == "3") {
+            phaseB = ConvertHPtoVA(phaseB, 3, PHASE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            phaseC = phaseB;
+            phaseA = phaseB;
+            if (phaseB == "-1" || phaseC == "-1" || phaseA == "-1") {
+              return;
+            }
+            // set values of PANEL_GRID phase_a_{side}, phase_b_{side}, phase_c_{side}
+            PANEL_GRID.Rows[i].Cells[$"phase_b_{side}"].Value = phaseB;
+            PANEL_GRID.Rows[i + 1].Cells[$"phase_c_{side}"].Value = phaseC;
+            PANEL_GRID.Rows[i + 2].Cells[$"phase_a_{side}"].Value = phaseA;
+            i += 3;
+          }
+          else {
+            phaseB = ConvertHPtoVA(phaseB, 1, LINE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            if (phaseB == "-1") {
+              return;
+            }
+            // set values of PANEL_GRID phase_a_{side}
+            PANEL_GRID.Rows[i].Cells[$"phase_b_{side}"].Value = phaseB;
+            i++;
+          }
+        }
+        if (!String.IsNullOrEmpty(phaseC) && phaseC.EndsWith("HP")) {
+          if (i + 1 < PANEL_GRID.Rows.Count && PANEL_GRID.Rows[i + 1].Cells[$"breaker_{side}"].Value as string == "2") {
+            phaseC = ConvertHPtoVA(phaseC, 1, PHASE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            phaseA = phaseC;
+            if (phaseC == "-1" || phaseA == "-1") {
+              return;
+            }
+            // set values of PANEL_GRID phase_a_{side} and phase_b_{side}
+            PANEL_GRID.Rows[i].Cells[$"phase_c_{side}"].Value = phaseC;
+            PANEL_GRID.Rows[i + 1].Cells[$"phase_a_{side}"].Value = phaseA;
+            i += 2;
+          }
+          else if (i + 2 < PANEL_GRID.Rows.Count && PANEL_GRID.Rows[i + 2].Cells[$"breaker_{side}"].Value as string == "3") {
+            phaseC = ConvertHPtoVA(phaseC, 3, PHASE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            phaseA = phaseC;
+            phaseB = phaseC;
+            if (phaseC == "-1" || phaseA == "-1" || phaseB == "-1") {
+              return;
+            }
+            // set values of PANEL_GRID phase_a_{side}, phase_b_{side}, phase_c_{side}
+            PANEL_GRID.Rows[i].Cells[$"phase_c_{side}"].Value = phaseC;
+            PANEL_GRID.Rows[i + 1].Cells[$"phase_a_{side}"].Value = phaseA;
+            PANEL_GRID.Rows[i + 2].Cells[$"phase_b_{side}"].Value = phaseB;
+            i += 3;
+          }
+          else {
+            phaseC = ConvertHPtoVA(phaseC, 1, LINE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            if (phaseC == "-1") {
+              return;
+            }
+            // set values of PANEL_GRID phase_a_{side}
+            PANEL_GRID.Rows[i].Cells[$"phase_c_{side}"].Value = phaseC;
+            i++;
+          }
+        }
+        else {
+          i += 1;
+        }
+      }
+
+    }
+
+    private void ConvertHpToVaBySide2Ph(string side) {
+      int i = 0;
+      while (i < PANEL_GRID.Rows.Count) {
+        string phaseA = PANEL_GRID.Rows[i].Cells[$"phase_a_{side}"].Value?.ToString().ToUpper().Replace("\r", "");
+        string phaseB = PANEL_GRID.Rows[i].Cells[$"phase_b_{side}"].Value?.ToString().ToUpper().Replace("\r", "");
+
+        if (!String.IsNullOrEmpty(phaseA) && phaseA.EndsWith("HP")) {
+          if (i + 1 < PANEL_GRID.Rows.Count && PANEL_GRID.Rows[i + 1].Cells[$"breaker_{side}"].Value as string == "2") {
+            phaseA = ConvertHPtoVA(phaseA, 1, PHASE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            phaseB = phaseA;
+            if (phaseA == "-1" || phaseB == "-1") {
+              return;
+            }
+            // set values of PANEL_GRID phase_a_{side} and phase_b_{side}
+            PANEL_GRID.Rows[i].Cells[$"phase_a_{side}"].Value = phaseA;
+            PANEL_GRID.Rows[i + 1].Cells[$"phase_b_{side}"].Value = phaseB;
+            i += 2;
+          }
+          else {
+            phaseA = ConvertHPtoVA(phaseA, 1, LINE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            if (phaseA == "-1") {
+              return;
+            }
+            // set values of PANEL_GRID phase_a_{side}
+            PANEL_GRID.Rows[i].Cells[$"phase_a_{side}"].Value = phaseA;
+            i++;
+          }
+        }
+        if (!String.IsNullOrEmpty(phaseB) && phaseB.EndsWith("HP")) {
+          if (i + 1 < PANEL_GRID.Rows.Count && PANEL_GRID.Rows[i + 1].Cells[$"breaker_{side}"].Value as string == "2") {
+            phaseB = ConvertHPtoVA(phaseB, 1, PHASE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            phaseA = phaseB;
+            if (phaseA == "-1" || phaseB == "-1") {
+              return;
+            }
+            // set values of PANEL_GRID phase_a_{side} and phase_b_{side}
+            PANEL_GRID.Rows[i].Cells[$"phase_b_{side}"].Value = phaseB;
+            PANEL_GRID.Rows[i + 1].Cells[$"phase_a_{side}"].Value = phaseA;
+            i += 2;
+          }
+          else {
+            phaseB = ConvertHPtoVA(phaseB, 1, LINE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            if (phaseB == "-1") {
+              return;
+            }
+            // set values of PANEL_GRID phase_a_{side}
+            PANEL_GRID.Rows[i].Cells[$"phase_b_{side}"].Value = phaseB;
+            i++;
+          }
+        }
+        else {
+          i += 1;
+        }
+      }
+
+    }
+
+    private void ConvertHpToVa_Click(object sender, EventArgs e) {
+      if (PANEL_GRID.Columns["phase_c_left"] != null) {
+        ConvertHpToVaBySide3Ph("left");
+        ConvertHpToVaBySide3Ph("right");
+      }
+      else {
+        ConvertHpToVaBySide2Ph("left");
+        ConvertHpToVaBySide2Ph("right");
+      }
+
     }
   }
 
