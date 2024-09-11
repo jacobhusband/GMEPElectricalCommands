@@ -2051,6 +2051,22 @@ namespace ElectricalCommands {
           else {
             FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(sum / (lineVoltage * 3), 1);
           }
+          if (Convert.ToDouble(FEEDER_AMP_GRID.Rows[0].Cells[0].Value) > Convert.ToDouble(BUS_RATING_INPUT.Text)) {
+            // turn bg red
+            FEEDER_AMP_GRID.BackgroundColor = Color.Red;
+          }
+          else if (Convert.ToDouble(FEEDER_AMP_GRID.Rows[0].Cells[0].Value) > 0.8 * Convert.ToDouble(BUS_RATING_INPUT.Text)) {
+            // turn bg orange
+            FEEDER_AMP_GRID.BackgroundColor = Color.Orange;
+          }
+          else if (Convert.ToDouble(FEEDER_AMP_GRID.Rows[0].Cells[0].Value) > 0.6 * Convert.ToDouble(BUS_RATING_INPUT.Text)) {
+            // turn bg yellow
+            FEEDER_AMP_GRID.BackgroundColor = Color.Yellow;
+          }
+          else {
+            // turn bg white
+            FEEDER_AMP_GRID.BackgroundColor = Color.White;
+          }
         }
       }
     }
