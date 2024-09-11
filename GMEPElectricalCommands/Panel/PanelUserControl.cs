@@ -2351,6 +2351,9 @@ namespace ElectricalCommands {
       sanitized = Regex.Replace(sanitized, @"\p{Zs}+", "+");
       sanitized = Regex.Replace(sanitized, @"-+", "+");
       sanitized = sanitized.Replace("HP", "");
+      if (!Regex.IsMatch(sanitized, @"^\d+(\+\d\/\d)?$")) {
+        return "-1";
+      }
       System.Data.DataTable dt = new System.Data.DataTable();
       double sumObject = Convert.ToDouble(dt.Compute(sanitized, null));
       string phaseVA = "";
@@ -2623,6 +2626,9 @@ namespace ElectricalCommands {
           if (i + 1 < PANEL_GRID.Rows.Count && PANEL_GRID.Rows[i + 1].Cells[$"breaker_{side}"].Value as string == "2") {
             phaseA = ConvertHPtoVA(phaseA, 1, PHASE_VOLTAGE_COMBOBOX.SelectedItem as string);
             phaseB = phaseA;
+            if (phaseA == "-1" || phaseB == "-1") {
+              return;
+            }
             // set values of PANEL_GRID phase_a_{side} and phase_b_{side}
             PANEL_GRID.Rows[i].Cells[$"phase_a_{side}"].Value = phaseA;
             PANEL_GRID.Rows[i + 1].Cells[$"phase_b_{side}"].Value = phaseB;
@@ -2632,6 +2638,9 @@ namespace ElectricalCommands {
             phaseA = ConvertHPtoVA(phaseA, 3, PHASE_VOLTAGE_COMBOBOX.SelectedItem as string);
             phaseB = phaseA;
             phaseC = phaseA;
+            if (phaseA == "-1" || phaseB == "-1" || phaseC == "-1") {
+              return;
+            }
             // set values of PANEL_GRID phase_a_{side}, phase_b_{side}, phase_c_{side}
             PANEL_GRID.Rows[i].Cells[$"phase_a_{side}"].Value = phaseA;
             PANEL_GRID.Rows[i + 1].Cells[$"phase_b_{side}"].Value = phaseB;
@@ -2640,6 +2649,9 @@ namespace ElectricalCommands {
           }
           else {
             phaseA = ConvertHPtoVA(phaseA, 1, LINE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            if (phaseA == "-1") {
+              return;
+            }
             // set values of PANEL_GRID phase_a_{side}
             PANEL_GRID.Rows[i].Cells[$"phase_a_{side}"].Value = phaseA;
             i++;
@@ -2649,6 +2661,9 @@ namespace ElectricalCommands {
           if (i + 1 < PANEL_GRID.Rows.Count && PANEL_GRID.Rows[i + 1].Cells[$"breaker_{side}"].Value as string == "2") {
             phaseB = ConvertHPtoVA(phaseB, 1, PHASE_VOLTAGE_COMBOBOX.SelectedItem as string);
             phaseC = phaseB;
+            if (phaseB == "-1" || phaseC == "-1") {
+              return;
+            }
             // set values of PANEL_GRID phase_a_{side} and phase_b_{side}
             PANEL_GRID.Rows[i].Cells[$"phase_b_{side}"].Value = phaseB;
             PANEL_GRID.Rows[i + 1].Cells[$"phase_c_{side}"].Value = phaseC;
@@ -2658,6 +2673,9 @@ namespace ElectricalCommands {
             phaseB = ConvertHPtoVA(phaseB, 3, PHASE_VOLTAGE_COMBOBOX.SelectedItem as string);
             phaseC = phaseB;
             phaseA = phaseB;
+            if (phaseB == "-1" || phaseC == "-1" || phaseA == "-1") {
+              return;
+            }
             // set values of PANEL_GRID phase_a_{side}, phase_b_{side}, phase_c_{side}
             PANEL_GRID.Rows[i].Cells[$"phase_b_{side}"].Value = phaseB;
             PANEL_GRID.Rows[i + 1].Cells[$"phase_c_{side}"].Value = phaseC;
@@ -2666,6 +2684,9 @@ namespace ElectricalCommands {
           }
           else {
             phaseB = ConvertHPtoVA(phaseB, 1, LINE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            if (phaseB == "-1") {
+              return;
+            }
             // set values of PANEL_GRID phase_a_{side}
             PANEL_GRID.Rows[i].Cells[$"phase_b_{side}"].Value = phaseB;
             i++;
@@ -2675,6 +2696,9 @@ namespace ElectricalCommands {
           if (i + 1 < PANEL_GRID.Rows.Count && PANEL_GRID.Rows[i + 1].Cells[$"breaker_{side}"].Value as string == "2") {
             phaseC = ConvertHPtoVA(phaseC, 1, PHASE_VOLTAGE_COMBOBOX.SelectedItem as string);
             phaseA = phaseC;
+            if (phaseC == "-1" || phaseA == "-1") {
+              return;
+            }
             // set values of PANEL_GRID phase_a_{side} and phase_b_{side}
             PANEL_GRID.Rows[i].Cells[$"phase_c_{side}"].Value = phaseC;
             PANEL_GRID.Rows[i + 1].Cells[$"phase_a_{side}"].Value = phaseA;
@@ -2684,6 +2708,9 @@ namespace ElectricalCommands {
             phaseC = ConvertHPtoVA(phaseC, 3, PHASE_VOLTAGE_COMBOBOX.SelectedItem as string);
             phaseA = phaseC;
             phaseB = phaseC;
+            if (phaseC == "-1" || phaseA == "-1" || phaseB == "-1") {
+              return;
+            }
             // set values of PANEL_GRID phase_a_{side}, phase_b_{side}, phase_c_{side}
             PANEL_GRID.Rows[i].Cells[$"phase_c_{side}"].Value = phaseC;
             PANEL_GRID.Rows[i + 1].Cells[$"phase_a_{side}"].Value = phaseA;
@@ -2692,6 +2719,9 @@ namespace ElectricalCommands {
           }
           else {
             phaseC = ConvertHPtoVA(phaseC, 1, LINE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            if (phaseC == "-1") {
+              return;
+            }
             // set values of PANEL_GRID phase_a_{side}
             PANEL_GRID.Rows[i].Cells[$"phase_c_{side}"].Value = phaseC;
             i++;
@@ -2714,6 +2744,9 @@ namespace ElectricalCommands {
           if (i + 1 < PANEL_GRID.Rows.Count && PANEL_GRID.Rows[i + 1].Cells[$"breaker_{side}"].Value as string == "2") {
             phaseA = ConvertHPtoVA(phaseA, 1, PHASE_VOLTAGE_COMBOBOX.SelectedItem as string);
             phaseB = phaseA;
+            if (phaseA == "-1" || phaseB == "-1") {
+              return;
+            }
             // set values of PANEL_GRID phase_a_{side} and phase_b_{side}
             PANEL_GRID.Rows[i].Cells[$"phase_a_{side}"].Value = phaseA;
             PANEL_GRID.Rows[i + 1].Cells[$"phase_b_{side}"].Value = phaseB;
@@ -2721,6 +2754,9 @@ namespace ElectricalCommands {
           }
           else {
             phaseA = ConvertHPtoVA(phaseA, 1, LINE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            if (phaseA == "-1") {
+              return;
+            }
             // set values of PANEL_GRID phase_a_{side}
             PANEL_GRID.Rows[i].Cells[$"phase_a_{side}"].Value = phaseA;
             i++;
@@ -2730,6 +2766,9 @@ namespace ElectricalCommands {
           if (i + 1 < PANEL_GRID.Rows.Count && PANEL_GRID.Rows[i + 1].Cells[$"breaker_{side}"].Value as string == "2") {
             phaseB = ConvertHPtoVA(phaseB, 1, PHASE_VOLTAGE_COMBOBOX.SelectedItem as string);
             phaseA = phaseB;
+            if (phaseA == "-1" || phaseB == "-1") {
+              return;
+            }
             // set values of PANEL_GRID phase_a_{side} and phase_b_{side}
             PANEL_GRID.Rows[i].Cells[$"phase_b_{side}"].Value = phaseB;
             PANEL_GRID.Rows[i + 1].Cells[$"phase_a_{side}"].Value = phaseA;
@@ -2737,6 +2776,9 @@ namespace ElectricalCommands {
           }
           else {
             phaseB = ConvertHPtoVA(phaseB, 1, LINE_VOLTAGE_COMBOBOX.SelectedItem as string);
+            if (phaseB == "-1") {
+              return;
+            }
             // set values of PANEL_GRID phase_a_{side}
             PANEL_GRID.Rows[i].Cells[$"phase_b_{side}"].Value = phaseB;
             i++;
