@@ -2046,28 +2046,51 @@ namespace ElectricalCommands {
       object lineVoltageObj = LINE_VOLTAGE_COMBOBOX.SelectedItem;
       if (lineVoltageObj != null) {
         double lineVoltage = Convert.ToDouble(lineVoltageObj);
-        if (lineVoltage != 0) {
-          if (LCL.Text == "0" && LML.Text == "0") {
-            FEEDER_AMP_GRID.Rows[0].Cells[0].Value = CalculateFeederAmps(phA, phB, phC, lineVoltage);
+        double feederAmps = 0;
+        double busRating = Convert.ToDouble(BUS_RATING_INPUT.Text);
+        double mainRating = Convert.ToDouble(MAIN_INPUT.Text);
+        if (LCL.Text == "0" && LML.Text == "0") {
+          feederAmps = CalculateFeederAmps(phA, phB, phC, lineVoltage);
+          FEEDER_AMP_GRID.Rows[0].Cells[0].Value = feederAmps;
+        }
+        else {
+          feederAmps = Math.Round(sum / (lineVoltage * 3), 1);
+          FEEDER_AMP_GRID.Rows[0].Cells[0].Value = feederAmps;
+        }
+        if (feederAmps > busRating || feederAmps > mainRating) {
+          // turn bg red
+          foreach (DataGridViewRow row in FEEDER_AMP_GRID.Rows) {
+            foreach (DataGridViewCell cell in row.Cells) {
+              cell.Style.SelectionBackColor = Color.Crimson;
+              cell.Style.SelectionForeColor = Color.White;
+            }
           }
-          else {
-            FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(sum / (lineVoltage * 3), 1);
+        }
+        else if (feederAmps > 0.8 * busRating || feederAmps > 0.8 * mainRating) {
+          // turn bg orange
+          foreach (DataGridViewRow row in FEEDER_AMP_GRID.Rows) {
+            foreach (DataGridViewCell cell in row.Cells) {
+              cell.Style.SelectionBackColor = Color.Orange;
+              cell.Style.SelectionForeColor = Color.Black;
+            }
           }
-          if (Convert.ToDouble(FEEDER_AMP_GRID.Rows[0].Cells[0].Value) > Convert.ToDouble(BUS_RATING_INPUT.Text)) {
-            // turn bg red
-            FEEDER_AMP_GRID.BackgroundColor = Color.Red;
+        }
+        else if (feederAmps > 0.6 * busRating || feederAmps > 0.6 * mainRating) {
+          // turn bg yellow
+          foreach (DataGridViewRow row in FEEDER_AMP_GRID.Rows) {
+            foreach (DataGridViewCell cell in row.Cells) {
+              cell.Style.SelectionBackColor = Color.Gold;
+              cell.Style.SelectionForeColor = Color.Black;
+            }
           }
-          else if (Convert.ToDouble(FEEDER_AMP_GRID.Rows[0].Cells[0].Value) > 0.8 * Convert.ToDouble(BUS_RATING_INPUT.Text)) {
-            // turn bg orange
-            FEEDER_AMP_GRID.BackgroundColor = Color.Orange;
-          }
-          else if (Convert.ToDouble(FEEDER_AMP_GRID.Rows[0].Cells[0].Value) > 0.6 * Convert.ToDouble(BUS_RATING_INPUT.Text)) {
-            // turn bg yellow
-            FEEDER_AMP_GRID.BackgroundColor = Color.Yellow;
-          }
-          else {
-            // turn bg white
-            FEEDER_AMP_GRID.BackgroundColor = Color.White;
+        }
+        else {
+          // turn bg white
+          foreach (DataGridViewRow row in FEEDER_AMP_GRID.Rows) {
+            foreach (DataGridViewCell cell in row.Cells) {
+              cell.Style.SelectionBackColor = Color.DarkSeaGreen;
+              cell.Style.SelectionForeColor = Color.Black;
+            }
           }
         }
       }
