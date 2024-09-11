@@ -94,6 +94,7 @@
       this.LML_VA = new System.Windows.Forms.Label();
       this.LCL_OVERRIDE = new System.Windows.Forms.CheckBox();
       this.LML_OVERRIDE = new System.Windows.Forms.CheckBox();
+      this.HP_TO_VA = new System.Windows.Forms.Button();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -710,11 +711,22 @@
       this.LML_OVERRIDE.UseVisualStyleBackColor = true;
       this.LML_OVERRIDE.CheckedChanged += new System.EventHandler(this.LML_OVERRIDE_CheckedChanged);
       // 
+      // HP_TO_VA
+      // 
+      this.HP_TO_VA.Location = new System.Drawing.Point(611, 538);
+      this.HP_TO_VA.Name = "HP_TO_VA";
+      this.HP_TO_VA.Size = new System.Drawing.Size(75, 23);
+      this.HP_TO_VA.TabIndex = 211;
+      this.HP_TO_VA.Text = "HP TO VA";
+      this.HP_TO_VA.UseVisualStyleBackColor = true;
+      this.HP_TO_VA.Click += new System.EventHandler(this.ConvertHpToVa_Click);
+      // 
       // PanelUserControl
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
+      this.Controls.Add(this.HP_TO_VA);
       this.Controls.Add(this.LML_OVERRIDE);
       this.Controls.Add(this.LCL_OVERRIDE);
       this.Controls.Add(this.LML_VA);
@@ -846,5 +858,6 @@
     private System.Windows.Forms.Label LML_VA;
     private System.Windows.Forms.CheckBox LCL_OVERRIDE;
     private System.Windows.Forms.CheckBox LML_OVERRIDE;
+    private System.Windows.Forms.Button HP_TO_VA;
   }
 }
