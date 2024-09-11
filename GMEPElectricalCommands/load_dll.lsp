@@ -1,1 +1,1 @@
-(command "netload" "C:/Users/JacobH/source/repos/GMEPElectricalCommands/GMEPElectricalCommands/bin/Debug/ElectricalCommands.dll")
+(command "netload" "D:/Steven Grenrock/My Documents/GMEPElectricalCommands/GMEPElectricalCommands/bin/Debug/ElectricalCommands.dll")
