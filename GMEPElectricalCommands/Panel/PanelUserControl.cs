@@ -2048,7 +2048,6 @@ namespace ElectricalCommands {
         double lineVoltage = Convert.ToDouble(lineVoltageObj);
         double feederAmps = 0;
         double busRating = Convert.ToDouble(BUS_RATING_INPUT.Text);
-        double mainRating = Convert.ToDouble(MAIN_INPUT.Text);
         if (LCL.Text == "0" && LML.Text == "0") {
           feederAmps = CalculateFeederAmps(phA, phB, phC, lineVoltage);
           FEEDER_AMP_GRID.Rows[0].Cells[0].Value = feederAmps;
@@ -2057,7 +2056,7 @@ namespace ElectricalCommands {
           feederAmps = Math.Round(sum / (lineVoltage * 3), 1);
           FEEDER_AMP_GRID.Rows[0].Cells[0].Value = feederAmps;
         }
-        if (feederAmps > busRating || feederAmps > mainRating) {
+        if (feederAmps > busRating) {
           // turn bg red
           foreach (DataGridViewRow row in FEEDER_AMP_GRID.Rows) {
             foreach (DataGridViewCell cell in row.Cells) {
@@ -2066,7 +2065,7 @@ namespace ElectricalCommands {
             }
           }
         }
-        else if (feederAmps > 0.8 * busRating || feederAmps > 0.8 * mainRating) {
+        else if (feederAmps > 0.8 * busRating) {
           // turn bg orange
           foreach (DataGridViewRow row in FEEDER_AMP_GRID.Rows) {
             foreach (DataGridViewCell cell in row.Cells) {
@@ -2075,7 +2074,7 @@ namespace ElectricalCommands {
             }
           }
         }
-        else if (feederAmps > 0.6 * busRating || feederAmps > 0.6 * mainRating) {
+        else if (feederAmps > 0.6 * busRating) {
           // turn bg yellow
           foreach (DataGridViewRow row in FEEDER_AMP_GRID.Rows) {
             foreach (DataGridViewCell cell in row.Cells) {
