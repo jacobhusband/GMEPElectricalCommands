@@ -2347,13 +2347,12 @@ namespace ElectricalCommands {
       }
     }
     private string ConvertHPtoVA(string hpValue, int numPhases, string voltage) {
-      string sanitized = hpValue.Replace(" HP", "HP").Replace(" ", "+").Replace("-", "+").Replace("HP", "");
-      Console.WriteLine($"sanitized {sanitized}");
+      string sanitized = Regex.Replace(hpValue, @" +HP", "HP");
+      sanitized = Regex.Replace(sanitized, @"\p{Zs}+", "+");
+      sanitized = Regex.Replace(sanitized, @"-+", "+");
+      sanitized = sanitized.Replace("HP", "");
       System.Data.DataTable dt = new System.Data.DataTable();
       double sumObject = Convert.ToDouble(dt.Compute(sanitized, null));
-      Console.WriteLine($"sumObject {sumObject}");
-      Console.WriteLine($"numPhases {numPhases}");
-      Console.WriteLine($"voltage {voltage}");
       string phaseVA = "";
 
       if (numPhases == 1) {
@@ -2432,11 +2431,7 @@ namespace ElectricalCommands {
               break;
             };
           case var _ when sumObject > 0.75: { // 1
-
-              Console.WriteLine("sum object = 1");
               if (voltage == "120") {
-
-                Console.WriteLine("voltage = 120");
                 phaseVA = "1920";
               }
               if (voltage == "208") {
@@ -2728,7 +2723,6 @@ namespace ElectricalCommands {
             phaseA = ConvertHPtoVA(phaseA, 1, LINE_VOLTAGE_COMBOBOX.SelectedItem as string);
             // set values of PANEL_GRID phase_a_{side}
             PANEL_GRID.Rows[i].Cells[$"phase_a_{side}"].Value = phaseA;
-            Console.WriteLine(phaseA);
             i++;
           }
         }
