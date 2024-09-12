@@ -3,6 +3,7 @@ using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
+using Autodesk.AutoCAD.Internal;
 using Autodesk.AutoCAD.Runtime;
 using ElectricalCommands.Lighting;
 using Newtonsoft.Json;
@@ -11,6 +12,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -141,18 +143,117 @@ namespace ElectricalCommands {
       acCurDb = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Database;
       Editor ed = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Editor;
 
-      using (Transaction acTrans = acCurDb.TransactionManager.StartTransaction()) {
-        // Get the user to select a PNG file
-        OpenFileDialog ofd = new OpenFileDialog();
-        ofd.Filter = "PNG Files (*.png)|*.png";
-        if (ofd.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+      OpenFileDialog ofd = new OpenFileDialog();
+      ofd.Filter = "PDF Files (*.pdf)|*.pdf|PNG Files (*.png)|*.png";
+      if (ofd.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+        return;
+
+      string strFileName = ofd.FileName;
+      // Determine the parent folder of the selected file
+      string parentFolder = Path.GetDirectoryName(strFileName);
+      Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      Database db = doc.Database;
+      if (strFileName.EndsWith(".pdf")) {
+        // todo: check for address set
+        if (String.IsNullOrEmpty(CADObjectCommands.Address)) {
+          CADObjectCommands.SetAddress();
+        }
+        bool completed = false;
+        int pageNumber = 1;
+        Point3d endPoint = new Point3d();
+        while (!completed) {
+          using (Transaction acTrans = acCurDb.TransactionManager.StartTransaction()) {
+            DBDictionary nod =
+              (DBDictionary)acTrans.GetObject(db.NamedObjectsDictionaryId, OpenMode.ForWrite);
+            string defDictKey = UnderlayDefinition.GetDictionaryKey(typeof(PdfDefinition));
+            if (!nod.Contains(defDictKey)) {
+              using (DBDictionary dict = new DBDictionary()) {
+                nod.SetAt(defDictKey, dict);
+                acTrans.AddNewlyCreatedDBObject(dict, true);
+              }
+
+            }
+            ObjectId idPdfDef;
+            DBDictionary pdfDict = (DBDictionary)acTrans.GetObject(nod.GetAt(defDictKey), OpenMode.ForWrite);
+            try {
+              using (PdfDefinition pdfDef = new PdfDefinition()) {
+                pdfDef.SourceFileName = strFileName;
+                idPdfDef = pdfDict.SetAt(Path.GetFileNameWithoutExtension(strFileName) + $"_{pageNumber}", pdfDef);
+                acTrans.AddNewlyCreatedDBObject(pdfDef, true);
+              }
+              BlockTable bt = (BlockTable)acTrans.GetObject(db.BlockTableId, OpenMode.ForRead);
+              BlockTableRecord btr = (BlockTableRecord)acTrans.GetObject(bt[BlockTableRecord.PaperSpace], OpenMode.ForWrite);
+              using (PdfReference pdf = new PdfReference()) {
+                pdf.DefinitionId = idPdfDef;
+                pdf.NameOfSheet = pageNumber.ToString();
+                btr.AppendEntity(pdf);
+                acTrans.AddNewlyCreatedDBObject(pdf, true);
+                pdf.Width = pdf.Width * 0.8;
+                double transformFactor = 1.0 - 22.0 * Math.Floor((pageNumber - 1) / 9.0);
+                double leftMargin = 1.0;
+                switch (pageNumber % 9) {
+                  case 1: pdf.Position = new Point3d(pdf.Width * 2 + leftMargin, pdf.Height * 2 + transformFactor, 0); break;
+                  case 2: pdf.Position = new Point3d(pdf.Width * 1 + leftMargin, pdf.Height * 2 + transformFactor, 0); break;
+                  case 3: pdf.Position = new Point3d(pdf.Width * 0 + leftMargin, pdf.Height * 2 + transformFactor, 0); break;
+                  case 4: pdf.Position = new Point3d(pdf.Width * 2 + leftMargin, pdf.Height * 1 + transformFactor, 0); break;
+                  case 5: pdf.Position = new Point3d(pdf.Width * 1 + leftMargin, pdf.Height * 1 + transformFactor, 0); break;
+                  case 6: pdf.Position = new Point3d(pdf.Width * 0 + leftMargin, pdf.Height * 1 + transformFactor, 0); break;
+                  case 7: pdf.Position = new Point3d(pdf.Width * 2 + leftMargin, pdf.Height * 0 + transformFactor, 0); break;
+                  case 8: pdf.Position = new Point3d(pdf.Width * 1 + leftMargin, pdf.Height * 0 + transformFactor, 0); break;
+                  case 0: pdf.Position = new Point3d(pdf.Width * 0 + leftMargin, pdf.Height * 0 + transformFactor, 0); break;
+                }
+                Point3d pos = pdf.Position;
+                endPoint = pos;
+              }
+              acTrans.Commit();
+              pageNumber++;
+            }
+            catch (Autodesk.AutoCAD.Runtime.Exception ex) {
+              acTrans.Abort();
+              completed = true;
+            }
+          }
+        }
+        // add signature and other info
+        using (Transaction tr = acCurDb.TransactionManager.StartTransaction()) {
+          BlockTable bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
+          BlockTableRecord btr = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.PaperSpace], OpenMode.ForWrite);
+
+          string date = DateTime.UtcNow.Date.ToString("MM/dd/yyyy");
+          CreateAndPositionText(tr, "26439 RANCHO PARKWAY S., STE 120", "section title", 0.0876943284922549, 0.85, 2, "E-TXT1", new Point3d(endPoint.X + 0.616030703269718, endPoint.Y + 4.50630858013255, 0));
+          CreateAndPositionText(tr, "LAKE FOREST / CA / 92630", "section title", 0.0876943284922549, 0.85, 2, "E-TXT1", new Point3d(endPoint.X + 0.830140069102175, endPoint.Y + 4.36949614021856, 0));
+          CreateAndPositionText(tr, date, "section title", 0.0876943284922549, 0.85, 2, "E-TXT1", new Point3d(endPoint.X + 4.42666777063172, endPoint.Y + 4.66189987763855, 0));
+          CreateAndPositionText(tr, "949-267-9095", "section title", 0.0876943284922549, 0.85, 2, "E-TXT1", new Point3d(endPoint.X + 4.71352182336645, endPoint.Y + 4.35886418478551, 0));
+          CreateAndPositionText(tr, "GANGI ZHOU", "section title", 0.0876943284922549, 0.85, 2, "E-TXT1", new Point3d(endPoint.X + 1.33142902358651, endPoint.Y + 3.01601014439938, 0));
+          CreateAndPositionText(tr, "GMEP ENGINEERS", "section title", 0.0876943284922549, 0.85, 2, "E-TXT1", new Point3d(endPoint.X + 0.668423993870732, endPoint.Y + 2.88028724160062, 0));
+          CreateAndPositionText(tr, "26439 RANCHO PARKWAY S., STE 120", "section title", 0.0876943284922549, 0.85, 2, "E-TXT1", new Point3d(endPoint.X + 0.62227730526692, endPoint.Y + 2.74045851853929, 0));
+          CreateAndPositionText(tr, "LAKE FOREST / CA / 92630", "section title", 0.0876943284922549, 0.85, 2, "E-TXT1", new Point3d(endPoint.X + 0.836386671099376, endPoint.Y + 2.6036460786253, 0));
+          CreateAndPositionText(tr, date, "section title", 0.0876943284922549, 0.85, 2, "E-TXT1", new Point3d(endPoint.X + 4.91476322910475, endPoint.Y + 2.88367464681008, 0));
+          CreateAndPositionText(tr, "018959", "section title", 0.0876943284922549, 0.85, 2, "E-TXT1", new Point3d(endPoint.X + 4.73138762315727, endPoint.Y + 2.73999545901736, 0));
+          CreateAndPositionText(tr, "949-267-9095", "section title", 0.0876943284922549, 0.85, 2, "E-TXT1", new Point3d(endPoint.X + 4.72812369339329, endPoint.Y + 2.60470667575825, 0));
+          CreateAndPositionText(tr, CADObjectCommands.Address, "section title", 0.0876943284922549, 0.85, 2, "E-TXT1", new Point3d(endPoint.X + 1.12034937319065, endPoint.Y + 5.90348576586952, 0));
+          CreateAndPositionText(tr, CADObjectCommands.Address, "section title", 0.0876943284922549, 0.85, 2, "E-TXT1", new Point3d(19.6189747396865, 20.0676917313362, 0));
+
+          // create the signature from the block
+          ObjectId signatureId = bt["signature"];
+          using(BlockReference acBlkRef = new BlockReference(new Point3d(endPoint.X + 6.0, endPoint.Y + 4.85, 0), signatureId)) {
+            BlockTableRecord acCurSpaceBlkTblRec;
+            acCurSpaceBlkTblRec = tr.GetObject(db.CurrentSpaceId, OpenMode.ForWrite) as BlockTableRecord;
+            acCurSpaceBlkTblRec.AppendEntity(acBlkRef);
+            tr.AddNewlyCreatedDBObject(acBlkRef, true);
+          }
+          using (BlockReference acBlkRef = new BlockReference(new Point3d(endPoint.X + 5.63283327671465, endPoint.Y + 2.9, 0), signatureId)) {
+            BlockTableRecord acCurSpaceBlkTblRec;
+            acCurSpaceBlkTblRec = tr.GetObject(db.CurrentSpaceId, OpenMode.ForWrite) as BlockTableRecord;
+            acCurSpaceBlkTblRec.AppendEntity(acBlkRef);
+            tr.AddNewlyCreatedDBObject(acBlkRef, true);
+          }
+
+          tr.Commit();
+        }
           return;
-
-        string strFileName = ofd.FileName;
-
-        // Determine the parent folder of the selected file
-        string parentFolder = Path.GetDirectoryName(strFileName);
-
+      }
+      using (Transaction acTrans = acCurDb.TransactionManager.StartTransaction()) {
         // Fetch all relevant files in the folder
         string[] allFiles = Directory
             .GetFiles(parentFolder, "*.png")

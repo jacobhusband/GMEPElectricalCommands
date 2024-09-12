@@ -14,6 +14,8 @@ namespace ElectricalCommands {
   public class CADObjectCommands {
     public static double Scale { get; set; } = -1.0;
 
+    public static string Address = "";
+
     public static Point3d PanelLocation { get; set; } = new Point3d(0, 0, 0);
 
     [CommandMethod("StoreBlockData")]
@@ -170,6 +172,19 @@ namespace ElectricalCommands {
           SaveDataToJsonFile(data, jsonFilePath);
         }
       }
+    }
+
+    [CommandMethod("SetAddress")]
+    public static void SetAddress() {
+      var doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      var ed = doc.Editor;
+
+      var promptStringOptions = new PromptStringOptions(
+        "\nEnter the project address: "
+      );
+      promptStringOptions.AllowSpaces = true;
+      var promptStringResult = ed.GetString(promptStringOptions);
+      Address = promptStringResult.StringResult.ToUpper();
     }
 
     [CommandMethod("SetScale")]
