@@ -154,7 +154,6 @@ namespace ElectricalCommands {
       Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Database db = doc.Database;
       if (strFileName.EndsWith(".pdf")) {
-        // todo: check for address set
         if (String.IsNullOrEmpty(CADObjectCommands.Address)) {
           CADObjectCommands.SetAddress();
         }
@@ -251,7 +250,7 @@ namespace ElectricalCommands {
 
           tr.Commit();
         }
-          return;
+        return;
       }
       using (Transaction acTrans = acCurDb.TransactionManager.StartTransaction()) {
         // Fetch all relevant files in the folder
