@@ -15,6 +15,8 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using DocumentFormat.OpenXml.Wordprocessing;
+using DocumentFormat.OpenXml.Packaging;
 
 namespace ElectricalCommands {
 
@@ -22,7 +24,7 @@ namespace ElectricalCommands {
 
     [CommandMethod("KEYEDPLAN", CommandFlags.UsePickSet)]
     public static void KEYEDPLAN() {
-      Document doc = Autodesk
+      Autodesk.AutoCAD.ApplicationServices.Document doc = Autodesk
           .AutoCAD
           .ApplicationServices
           .Application
@@ -151,9 +153,26 @@ namespace ElectricalCommands {
       string strFileName = ofd.FileName;
       // Determine the parent folder of the selected file
       string parentFolder = Path.GetDirectoryName(strFileName);
-      Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      Autodesk.AutoCAD.ApplicationServices.Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Database db = doc.Database;
       if (strFileName.EndsWith(".pdf")) {
+        
+        string projFilePath = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.CurrentDocument.Database.Filename;
+        int dirIndex = projFilePath.LastIndexOf("\\ELEC\\");
+        if (dirIndex > -1) {
+          projFilePath = projFilePath.Substring(0, dirIndex);
+          projFilePath += "\\ARCH\\";
+          string[] files = Directory.GetFiles(projFilePath, "SCOPE AND NOTES.docx", SearchOption.AllDirectories);
+          if (files != null && files.Length == 1) {
+            string address;
+            using (WordprocessingDocument wordDocument = WordprocessingDocument.Open(files[0], false)) {
+              DocumentFormat.OpenXml.Wordprocessing.Body body = wordDocument.MainDocumentPart.Document.Body;
+              address = Regex.Replace(body.InnerText, ".+Project Address:", "");
+              address = Regex.Replace(address, "Client.+", "");
+              CADObjectCommands.Address = address.ToUpper().Trim();
+            }
+          }
+        }
         if (String.IsNullOrEmpty(CADObjectCommands.Address)) {
           CADObjectCommands.SetAddress();
         }
@@ -234,21 +253,24 @@ namespace ElectricalCommands {
           CreateAndPositionText(tr, CADObjectCommands.Address, "section title", 0.0876943284922549, 0.85, 2, "E-TXT1", new Point3d(19.6189747396865, 20.0676917313362, 0));
 
           // create the signature from the block
-          ObjectId signatureId = bt["signature"];
-          using(BlockReference acBlkRef = new BlockReference(new Point3d(endPoint.X + 6.0, endPoint.Y + 4.85, 0), signatureId)) {
-            BlockTableRecord acCurSpaceBlkTblRec;
-            acCurSpaceBlkTblRec = tr.GetObject(db.CurrentSpaceId, OpenMode.ForWrite) as BlockTableRecord;
-            acCurSpaceBlkTblRec.AppendEntity(acBlkRef);
-            tr.AddNewlyCreatedDBObject(acBlkRef, true);
+          try {
+            ObjectId signatureId = bt["signature"];
+            using (BlockReference acBlkRef = new BlockReference(new Point3d(endPoint.X + 6.0, endPoint.Y + 4.85, 0), signatureId)) {
+              BlockTableRecord acCurSpaceBlkTblRec;
+              acCurSpaceBlkTblRec = tr.GetObject(db.CurrentSpaceId, OpenMode.ForWrite) as BlockTableRecord;
+              acCurSpaceBlkTblRec.AppendEntity(acBlkRef);
+              tr.AddNewlyCreatedDBObject(acBlkRef, true);
+            }
+            using (BlockReference acBlkRef = new BlockReference(new Point3d(endPoint.X + 5.63283327671465, endPoint.Y + 2.9, 0), signatureId)) {
+              BlockTableRecord acCurSpaceBlkTblRec;
+              acCurSpaceBlkTblRec = tr.GetObject(db.CurrentSpaceId, OpenMode.ForWrite) as BlockTableRecord;
+              acCurSpaceBlkTblRec.AppendEntity(acBlkRef);
+              tr.AddNewlyCreatedDBObject(acBlkRef, true);
+            }
+            tr.Commit();
+          } catch (Autodesk.AutoCAD.Runtime.Exception ex) {
+            tr.Commit();
           }
-          using (BlockReference acBlkRef = new BlockReference(new Point3d(endPoint.X + 5.63283327671465, endPoint.Y + 2.9, 0), signatureId)) {
-            BlockTableRecord acCurSpaceBlkTblRec;
-            acCurSpaceBlkTblRec = tr.GetObject(db.CurrentSpaceId, OpenMode.ForWrite) as BlockTableRecord;
-            acCurSpaceBlkTblRec.AppendEntity(acBlkRef);
-            tr.AddNewlyCreatedDBObject(acBlkRef, true);
-          }
-
-          tr.Commit();
         }
         return;
       }
@@ -524,7 +546,7 @@ namespace ElectricalCommands {
 
     [CommandMethod("SUMTEXTEXPORT", CommandFlags.UsePickSet)]
     public void SumTextExport() {
-      Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      Autodesk.AutoCAD.ApplicationServices.Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Database db = doc.Database;
       Editor ed = doc.Editor;
       try {
@@ -779,7 +801,7 @@ namespace ElectricalCommands {
 
     [CommandMethod("VP")]
     public void CREATEVIEWPORTFROMREGION() {
-      Document doc = Autodesk
+      Autodesk.AutoCAD.ApplicationServices.Document doc = Autodesk
           .AutoCAD
           .ApplicationServices
           .Application
@@ -918,7 +940,7 @@ namespace ElectricalCommands {
           if (!layerTable.Has("DEFPOINTS")) {
             LayerTableRecord layerRecord = new LayerTableRecord {
               Name = "DEFPOINTS",
-              Color = Color.FromColorIndex(ColorMethod.ByAci, 7) // White color
+              Color = Autodesk.AutoCAD.Colors.Color.FromColorIndex(ColorMethod.ByAci, 7) // White color
             };
 
             layerTable.UpgradeOpen(); // Switch to write mode
@@ -1011,7 +1033,7 @@ namespace ElectricalCommands {
 
     [CommandMethod("INCREMENTER", CommandFlags.UsePickSet)]
     public void Incrementer() {
-      Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      Autodesk.AutoCAD.ApplicationServices.Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Database db = doc.Database;
       Editor ed = doc.Editor;
 
@@ -1100,7 +1122,7 @@ namespace ElectricalCommands {
 
     [CommandMethod("TXTNEW", CommandFlags.UsePickSet)]
     public void TextNew() {
-      Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      Autodesk.AutoCAD.ApplicationServices.Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Database db = doc.Database;
       Editor ed = doc.Editor;
 
@@ -1178,7 +1200,7 @@ namespace ElectricalCommands {
 
     [CommandMethod("ADD2TXT", CommandFlags.UsePickSet)]
     public void Add2Txt() {
-      Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      Autodesk.AutoCAD.ApplicationServices.Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Database db = doc.Database;
       Editor ed = doc.Editor;
 
@@ -1255,7 +1277,7 @@ namespace ElectricalCommands {
 
     [CommandMethod("WO", CommandFlags.UsePickSet)]
     public static void WO() {
-      Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+      Autodesk.AutoCAD.ApplicationServices.Document doc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
       Database db = doc.Database;
       Editor ed = doc.Editor;
 
@@ -1285,7 +1307,7 @@ namespace ElectricalCommands {
               else if (ent is MText mText) {
                 wo = CreateWipeoutForText(mText, 0.25);
               }
-              else if (ent is Table table) {
+              else if (ent is Autodesk.AutoCAD.DatabaseServices.Table table) {
                 wo = CreateWipeoutForTable(table);
               }
               else if (ent is Polyline pline) {
@@ -1326,7 +1348,7 @@ namespace ElectricalCommands {
       return CreateWipeoutFromPoints(minPt, maxPt);
     }
 
-    private static Wipeout CreateWipeoutForTable(Table table) {
+    private static Wipeout CreateWipeoutForTable(Autodesk.AutoCAD.DatabaseServices.Table table) {
       Extents3d extents = table.GeometricExtents;
       return CreateWipeoutFromPoints(new Point2d(extents.MinPoint.X, extents.MinPoint.Y),
                                      new Point2d(extents.MaxPoint.X, extents.MaxPoint.Y));
@@ -1356,7 +1378,7 @@ namespace ElectricalCommands {
     }
 
     public static void WipeoutAroundText(ObjectId? textObjectId = null) {
-      Document doc = Autodesk
+      Autodesk.AutoCAD.ApplicationServices.Document doc = Autodesk
           .AutoCAD
           .ApplicationServices
           .Application
@@ -1606,7 +1628,7 @@ namespace ElectricalCommands {
     }
 
     public static void HatchSelectedPolyline(ObjectId? polyId = null) {
-      Document acDoc = Autodesk
+      Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk
           .AutoCAD
           .ApplicationServices
           .Application
@@ -1675,7 +1697,7 @@ namespace ElectricalCommands {
       }
     }
 
-    public static (Document doc, Database db, Editor ed) GetGlobals() {
+    public static (Autodesk.AutoCAD.ApplicationServices.Document doc, Database db, Editor ed) GetGlobals() {
       var doc = Autodesk
           .AutoCAD
           .ApplicationServices
@@ -1744,7 +1766,7 @@ namespace ElectricalCommands {
 
       // Polyline
       CreatePolyline(
-          Color.FromColorIndex(ColorMethod.ByAci, 2),
+          Autodesk.AutoCAD.Colors.Color.FromColorIndex(ColorMethod.ByAci, 2),
           "E-TXT1",
           new Point2d[]
           {
@@ -1945,8 +1967,8 @@ namespace ElectricalCommands {
       return new Point3d(0, 0, 0);
     }
 
-    public static void CreatePolyline(Color color, string layer, Point2d[] vertices, double startWidth, double endWidth) {
-      Document acDoc = Autodesk
+    public static void CreatePolyline(Autodesk.AutoCAD.Colors.Color color, string layer, Point2d[] vertices, double startWidth, double endWidth) {
+      Autodesk.AutoCAD.ApplicationServices.Document acDoc = Autodesk
           .AutoCAD
           .ApplicationServices
           .Application

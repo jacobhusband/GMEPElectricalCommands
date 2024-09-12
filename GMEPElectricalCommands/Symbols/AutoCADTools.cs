@@ -180,7 +180,7 @@ namespace ElectricalCommands {
       var ed = doc.Editor;
 
       var promptStringOptions = new PromptStringOptions(
-        "\nEnter the project address: "
+        "\nEnter the project address (do not paste): "
       );
       promptStringOptions.AllowSpaces = true;
       var promptStringResult = ed.GetString(promptStringOptions);
