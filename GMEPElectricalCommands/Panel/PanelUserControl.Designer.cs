@@ -787,7 +787,7 @@
       ((System.ComponentModel.ISupportInitialize)(this.PHASE_SUM_GRID)).EndInit();
       this.ResumeLayout(false);
       this.PerformLayout();
-
+      this.ID = System.Guid.NewGuid().ToString();
     }
 
     #endregion
@@ -859,5 +859,6 @@
     private System.Windows.Forms.CheckBox LCL_OVERRIDE;
     private System.Windows.Forms.CheckBox LML_OVERRIDE;
     private System.Windows.Forms.Button HP_TO_VA;
+    private string ID;
   }
 }

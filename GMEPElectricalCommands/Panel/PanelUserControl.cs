@@ -215,6 +215,8 @@ namespace ElectricalCommands {
       // Create a new panel
       Dictionary<string, object> panel = new Dictionary<string, object>();
 
+      panel.Add("id", ID);
+
       // Get the value from the main input
       string mainInput = MAIN_INPUT.Text.ToLower();
 
@@ -1139,6 +1141,11 @@ namespace ElectricalCommands {
       // Set Custom Title if it exists
       if (selectedPanelData.TryGetValue("custom_title", out object customTitle)) {
         CUSTOM_TITLE_TEXT.Text = customTitle?.ToString() ?? "";
+      }
+
+      // Set Custom Title if it exists
+      if (selectedPanelData.TryGetValue("id", out object id)) {
+        ID = id?.ToString() ?? System.Guid.NewGuid().ToString();
       }
 
       List<string> multi_row_datagrid_keys = new List<string>
