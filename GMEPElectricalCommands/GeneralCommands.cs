@@ -159,6 +159,15 @@ namespace ElectricalCommands {
         
         string projFilePath = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.CurrentDocument.Database.Filename;
         int dirIndex = projFilePath.LastIndexOf("\\ELEC\\");
+        if (dirIndex == -1) {
+          dirIndex = projFilePath.LastIndexOf("\\MECH\\");
+        }
+        if (dirIndex == -1) {
+          dirIndex = projFilePath.LastIndexOf("\\PLBG\\");
+        }
+        if (dirIndex == -1) {
+          dirIndex = projFilePath.LastIndexOf("\\STRU\\");
+        }
         if (dirIndex > -1) {
           projFilePath = projFilePath.Substring(0, dirIndex);
           projFilePath += "\\ARCH\\";
