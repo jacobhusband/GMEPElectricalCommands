@@ -95,6 +95,8 @@
       this.LCL_OVERRIDE = new System.Windows.Forms.CheckBox();
       this.LML_OVERRIDE = new System.Windows.Forms.CheckBox();
       this.HP_TO_VA = new System.Windows.Forms.Button();
+      this.FED_FROM_LABEL = new System.Windows.Forms.Label();
+      this.FED_FROM_COMBO_BOX = new System.Windows.Forms.ComboBox();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -196,7 +198,7 @@
       // LARGEST_LCL_LABEL
       // 
       this.LARGEST_LCL_LABEL.AutoSize = true;
-      this.LARGEST_LCL_LABEL.Location = new System.Drawing.Point(72, 423);
+      this.LARGEST_LCL_LABEL.Location = new System.Drawing.Point(72, 451);
       this.LARGEST_LCL_LABEL.Name = "LARGEST_LCL_LABEL";
       this.LARGEST_LCL_LABEL.Size = new System.Drawing.Size(215, 13);
       this.LARGEST_LCL_LABEL.TabIndex = 175;
@@ -205,7 +207,7 @@
       // label16
       // 
       this.label16.AutoSize = true;
-      this.label16.Location = new System.Drawing.Point(141, 123);
+      this.label16.Location = new System.Drawing.Point(141, 151);
       this.label16.Name = "label16";
       this.label16.Size = new System.Drawing.Size(50, 13);
       this.label16.TabIndex = 165;
@@ -214,7 +216,7 @@
       // label15
       // 
       this.label15.AutoSize = true;
-      this.label15.Location = new System.Drawing.Point(102, 149);
+      this.label15.Location = new System.Drawing.Point(102, 177);
       this.label15.Name = "label15";
       this.label15.Size = new System.Drawing.Size(89, 13);
       this.label15.TabIndex = 166;
@@ -233,7 +235,7 @@
       // label14
       // 
       this.label14.AutoSize = true;
-      this.label14.Location = new System.Drawing.Point(70, 175);
+      this.label14.Location = new System.Drawing.Point(70, 203);
       this.label14.Name = "label14";
       this.label14.Size = new System.Drawing.Size(100, 13);
       this.label14.TabIndex = 167;
@@ -246,7 +248,7 @@
       this.FEEDER_AMP_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.FEEDER_AMP_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.FEEDER_AMPS});
-      this.FEEDER_AMP_GRID.Location = new System.Drawing.Point(122, 567);
+      this.FEEDER_AMP_GRID.Location = new System.Drawing.Point(122, 595);
       this.FEEDER_AMP_GRID.Name = "FEEDER_AMP_GRID";
       this.FEEDER_AMP_GRID.ReadOnly = true;
       this.FEEDER_AMP_GRID.Size = new System.Drawing.Size(175, 40);
@@ -262,7 +264,7 @@
       // label13
       // 
       this.label13.AutoSize = true;
-      this.label13.Location = new System.Drawing.Point(58, 201);
+      this.label13.Location = new System.Drawing.Point(58, 229);
       this.label13.Name = "label13";
       this.label13.Size = new System.Drawing.Size(112, 13);
       this.label13.TabIndex = 168;
@@ -275,7 +277,7 @@
       this.PANEL_LOAD_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.PANEL_LOAD_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.PANEL_LOAD});
-      this.PANEL_LOAD_GRID.Location = new System.Drawing.Point(114, 518);
+      this.PANEL_LOAD_GRID.Location = new System.Drawing.Point(114, 546);
       this.PANEL_LOAD_GRID.Name = "PANEL_LOAD_GRID";
       this.PANEL_LOAD_GRID.ReadOnly = true;
       this.PANEL_LOAD_GRID.Size = new System.Drawing.Size(183, 43);
@@ -291,7 +293,7 @@
       // label12
       // 
       this.label12.AutoSize = true;
-      this.label12.Location = new System.Drawing.Point(130, 227);
+      this.label12.Location = new System.Drawing.Point(130, 255);
       this.label12.Name = "label12";
       this.label12.Size = new System.Drawing.Size(43, 13);
       this.label12.TabIndex = 169;
@@ -300,7 +302,7 @@
       // label11
       // 
       this.label11.AutoSize = true;
-      this.label11.Location = new System.Drawing.Point(137, 254);
+      this.label11.Location = new System.Drawing.Point(137, 282);
       this.label11.Name = "label11";
       this.label11.Size = new System.Drawing.Size(36, 13);
       this.label11.TabIndex = 170;
@@ -309,7 +311,7 @@
       // label10
       // 
       this.label10.AutoSize = true;
-      this.label10.Location = new System.Drawing.Point(107, 280);
+      this.label10.Location = new System.Drawing.Point(107, 308);
       this.label10.Name = "label10";
       this.label10.Size = new System.Drawing.Size(66, 13);
       this.label10.TabIndex = 171;
@@ -322,7 +324,7 @@
       this.TOTAL_VA_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.TOTAL_VA_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.TOTAL_VA});
-      this.TOTAL_VA_GRID.Location = new System.Drawing.Point(153, 369);
+      this.TOTAL_VA_GRID.Location = new System.Drawing.Point(153, 397);
       this.TOTAL_VA_GRID.Name = "TOTAL_VA_GRID";
       this.TOTAL_VA_GRID.ReadOnly = true;
       this.TOTAL_VA_GRID.Size = new System.Drawing.Size(144, 42);
@@ -350,7 +352,7 @@
       this.PHASE_SUM_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.TOTAL_PH_A,
             this.TOTAL_PH_B});
-      this.PHASE_SUM_GRID.Location = new System.Drawing.Point(52, 319);
+      this.PHASE_SUM_GRID.Location = new System.Drawing.Point(52, 347);
       this.PHASE_SUM_GRID.Name = "PHASE_SUM_GRID";
       this.PHASE_SUM_GRID.ReadOnly = true;
       this.PHASE_SUM_GRID.Size = new System.Drawing.Size(245, 44);
@@ -391,7 +393,7 @@
       // MAIN_INPUT
       // 
       this.MAIN_INPUT.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-      this.MAIN_INPUT.Location = new System.Drawing.Point(197, 120);
+      this.MAIN_INPUT.Location = new System.Drawing.Point(197, 148);
       this.MAIN_INPUT.Name = "MAIN_INPUT";
       this.MAIN_INPUT.Size = new System.Drawing.Size(100, 20);
       this.MAIN_INPUT.TabIndex = 147;
@@ -409,7 +411,7 @@
       // BUS_RATING_INPUT
       // 
       this.BUS_RATING_INPUT.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-      this.BUS_RATING_INPUT.Location = new System.Drawing.Point(197, 146);
+      this.BUS_RATING_INPUT.Location = new System.Drawing.Point(197, 174);
       this.BUS_RATING_INPUT.Name = "BUS_RATING_INPUT";
       this.BUS_RATING_INPUT.Size = new System.Drawing.Size(100, 20);
       this.BUS_RATING_INPUT.TabIndex = 148;
@@ -421,7 +423,7 @@
       this.LINE_VOLTAGE_COMBOBOX.Items.AddRange(new object[] {
             "120",
             "277"});
-      this.LINE_VOLTAGE_COMBOBOX.Location = new System.Drawing.Point(176, 172);
+      this.LINE_VOLTAGE_COMBOBOX.Location = new System.Drawing.Point(176, 200);
       this.LINE_VOLTAGE_COMBOBOX.Name = "LINE_VOLTAGE_COMBOBOX";
       this.LINE_VOLTAGE_COMBOBOX.Size = new System.Drawing.Size(121, 21);
       this.LINE_VOLTAGE_COMBOBOX.TabIndex = 149;
@@ -443,7 +445,7 @@
             "208",
             "240",
             "480"});
-      this.PHASE_VOLTAGE_COMBOBOX.Location = new System.Drawing.Point(176, 198);
+      this.PHASE_VOLTAGE_COMBOBOX.Location = new System.Drawing.Point(176, 226);
       this.PHASE_VOLTAGE_COMBOBOX.Name = "PHASE_VOLTAGE_COMBOBOX";
       this.PHASE_VOLTAGE_COMBOBOX.Size = new System.Drawing.Size(121, 21);
       this.PHASE_VOLTAGE_COMBOBOX.TabIndex = 150;
@@ -469,7 +471,7 @@
       this.PHASE_COMBOBOX.Items.AddRange(new object[] {
             "1",
             "3"});
-      this.PHASE_COMBOBOX.Location = new System.Drawing.Point(176, 224);
+      this.PHASE_COMBOBOX.Location = new System.Drawing.Point(176, 252);
       this.PHASE_COMBOBOX.Name = "PHASE_COMBOBOX";
       this.PHASE_COMBOBOX.Size = new System.Drawing.Size(121, 21);
       this.PHASE_COMBOBOX.TabIndex = 151;
@@ -480,7 +482,7 @@
       this.MOUNTING_COMBOBOX.Items.AddRange(new object[] {
             "SURFACE",
             "RECESSED"});
-      this.MOUNTING_COMBOBOX.Location = new System.Drawing.Point(176, 276);
+      this.MOUNTING_COMBOBOX.Location = new System.Drawing.Point(176, 304);
       this.MOUNTING_COMBOBOX.Name = "MOUNTING_COMBOBOX";
       this.MOUNTING_COMBOBOX.Size = new System.Drawing.Size(121, 21);
       this.MOUNTING_COMBOBOX.TabIndex = 153;
@@ -492,7 +494,7 @@
       this.WIRE_COMBOBOX.Items.AddRange(new object[] {
             "3",
             "4"});
-      this.WIRE_COMBOBOX.Location = new System.Drawing.Point(176, 250);
+      this.WIRE_COMBOBOX.Location = new System.Drawing.Point(176, 278);
       this.WIRE_COMBOBOX.Name = "WIRE_COMBOBOX";
       this.WIRE_COMBOBOX.Size = new System.Drawing.Size(121, 21);
       this.WIRE_COMBOBOX.TabIndex = 152;
@@ -643,7 +645,7 @@
       // LARGEST_MOTOR_LOAD_LABEL
       // 
       this.LARGEST_MOTOR_LOAD_LABEL.AutoSize = true;
-      this.LARGEST_MOTOR_LOAD_LABEL.Location = new System.Drawing.Point(82, 469);
+      this.LARGEST_MOTOR_LOAD_LABEL.Location = new System.Drawing.Point(82, 497);
       this.LARGEST_MOTOR_LOAD_LABEL.Name = "LARGEST_MOTOR_LOAD_LABEL";
       this.LARGEST_MOTOR_LOAD_LABEL.Size = new System.Drawing.Size(205, 13);
       this.LARGEST_MOTOR_LOAD_LABEL.TabIndex = 204;
@@ -653,7 +655,7 @@
       // 
       this.LCL.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
       this.LCL.Enabled = false;
-      this.LCL.Location = new System.Drawing.Point(197, 439);
+      this.LCL.Location = new System.Drawing.Point(197, 467);
       this.LCL.Name = "LCL";
       this.LCL.Size = new System.Drawing.Size(83, 20);
       this.LCL.TabIndex = 205;
@@ -663,7 +665,7 @@
       // 
       this.LML.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
       this.LML.Enabled = false;
-      this.LML.Location = new System.Drawing.Point(197, 485);
+      this.LML.Location = new System.Drawing.Point(197, 513);
       this.LML.Name = "LML";
       this.LML.Size = new System.Drawing.Size(83, 20);
       this.LML.TabIndex = 206;
@@ -691,7 +693,7 @@
       // 
       this.LCL_OVERRIDE.AutoSize = true;
       this.LCL_OVERRIDE.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-      this.LCL_OVERRIDE.Location = new System.Drawing.Point(105, 441);
+      this.LCL_OVERRIDE.Location = new System.Drawing.Point(105, 469);
       this.LCL_OVERRIDE.Name = "LCL_OVERRIDE";
       this.LCL_OVERRIDE.Size = new System.Drawing.Size(82, 17);
       this.LCL_OVERRIDE.TabIndex = 209;
@@ -703,7 +705,7 @@
       // 
       this.LML_OVERRIDE.AutoSize = true;
       this.LML_OVERRIDE.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-      this.LML_OVERRIDE.Location = new System.Drawing.Point(105, 487);
+      this.LML_OVERRIDE.Location = new System.Drawing.Point(105, 515);
       this.LML_OVERRIDE.Name = "LML_OVERRIDE";
       this.LML_OVERRIDE.Size = new System.Drawing.Size(82, 17);
       this.LML_OVERRIDE.TabIndex = 210;
@@ -721,11 +723,30 @@
       this.HP_TO_VA.UseVisualStyleBackColor = true;
       this.HP_TO_VA.Click += new System.EventHandler(this.ConvertHpToVa_Click);
       // 
+      // FED_FROM_LABEL
+      // 
+      this.FED_FROM_LABEL.AutoSize = true;
+      this.FED_FROM_LABEL.Location = new System.Drawing.Point(111, 124);
+      this.FED_FROM_LABEL.Name = "FED_FROM_LABEL";
+      this.FED_FROM_LABEL.Size = new System.Drawing.Size(62, 13);
+      this.FED_FROM_LABEL.TabIndex = 213;
+      this.FED_FROM_LABEL.Text = "FED FROM";
+      // 
+      // FED_FROM_COMBO_BOX
+      // 
+      this.FED_FROM_COMBO_BOX.FormattingEnabled = true;
+      this.FED_FROM_COMBO_BOX.Location = new System.Drawing.Point(176, 121);
+      this.FED_FROM_COMBO_BOX.Name = "FED_FROM_COMBO_BOX";
+      this.FED_FROM_COMBO_BOX.Size = new System.Drawing.Size(121, 21);
+      this.FED_FROM_COMBO_BOX.TabIndex = 214;
+      // 
       // PanelUserControl
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
+      this.Controls.Add(this.FED_FROM_COMBO_BOX);
+      this.Controls.Add(this.FED_FROM_LABEL);
       this.Controls.Add(this.HP_TO_VA);
       this.Controls.Add(this.LML_OVERRIDE);
       this.Controls.Add(this.LCL_OVERRIDE);
@@ -787,7 +808,7 @@
       ((System.ComponentModel.ISupportInitialize)(this.PHASE_SUM_GRID)).EndInit();
       this.ResumeLayout(false);
       this.PerformLayout();
-      this.ID = System.Guid.NewGuid().ToString();
+
     }
 
     #endregion
@@ -860,5 +881,7 @@
     private System.Windows.Forms.CheckBox LML_OVERRIDE;
     private System.Windows.Forms.Button HP_TO_VA;
     private string ID;
+    private System.Windows.Forms.Label FED_FROM_LABEL;
+    private System.Windows.Forms.ComboBox FED_FROM_COMBO_BOX;
   }
 }

@@ -177,6 +177,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Load Summary\DialogWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Load Summary\DialogWindow.Designer.cs">
+      <DependentUpon>DialogWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="Lighting\Commands.cs" />
     <Compile Include="Lighting\Initialize Lighting Form.cs">
       <SubType>Form</SubType>
@@ -189,6 +195,25 @@
     </Compile>
     <Compile Include="Lighting\Polyline Lighting Form.Designer.cs">
       <DependentUpon>Polyline Lighting Form.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Load Summary\LoadSummaryCommands.cs" />
+    <Compile Include="Load Summary\LoadSummaryForm.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Load Summary\LoadSummaryForm.Designer.cs">
+      <DependentUpon>LoadSummaryForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Load Summary\LoadSummaryListElement.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Load Summary\LoadSummaryListElement.Designer.cs">
+      <DependentUpon>LoadSummaryListElement.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Load Summary\NewLoadSummaryForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Load Summary\NewLoadSummaryForm.Designer.cs">
+      <DependentUpon>NewLoadSummaryForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Panel\CADtoFormImport.cs" />
     <Compile Include="Panel\HelpForm.cs">
@@ -235,6 +260,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Lighting\Polyline Lighting Form.resx">
       <DependentUpon>Polyline Lighting Form.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Load Summary\DialogWindow.resx">
+      <DependentUpon>DialogWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Load Summary\LoadSummaryForm.resx">
+      <DependentUpon>LoadSummaryForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Load Summary\LoadSummaryListElement.resx">
+      <DependentUpon>LoadSummaryListElement.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Load Summary\NewLoadSummaryForm.resx">
+      <DependentUpon>NewLoadSummaryForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Panel\DialogWindow.resx" />
     <EmbeddedResource Include="Panel\HelpForm.resx">
