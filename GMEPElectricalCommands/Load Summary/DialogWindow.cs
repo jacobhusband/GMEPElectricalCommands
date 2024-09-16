@@ -63,7 +63,7 @@ namespace ElectricalCommands.Load_Summary {
             loadSummaryStorage.Add(userControl.retrieve_data_from_modal());
           }
 
-          StoreDataInJsonFile(panelStorage);
+          //StoreDataInJsonFile(panelStorage);
         }
       }
     }
@@ -86,7 +86,7 @@ namespace ElectricalCommands.Load_Summary {
       }
       else {
         MakeTabsAndPopulate(loadSummaryStorage);
-        this.initialized = true;
+        //this.initialized = true;
       }
     }
 
@@ -119,18 +119,18 @@ namespace ElectricalCommands.Load_Summary {
       return allLoadSummaryData;
     }
     private void MakeTabsAndPopulate(List<Dictionary<string, object>> loadSummaryStorage) {
-      set_up_field_values_from_load_summary_data(panelStorage);
+      //set_up_field_values_from_load_summary_data(panelStorage);
 
       var sortedPanels = loadSummaryStorage.OrderBy(panel => panel["panel"].ToString()).ToList();
 
       foreach (Dictionary<string, object> panel in sortedPanels) {
         string panelName = panel["panel"].ToString();
-        PanelUserControl userControl = (PanelUserControl)findUserControl(panelName);
-        if (userControl == null) {
-          continue;
-        }
-        userControl.AddListeners();
-        userControl.UpdatePerCellValueChange();
+        //PanelUserControl userControl = (PanelUserControl)findUserControl(panelName);
+        //if (userControl == null) {
+        //  continue;
+        //}
+        //userControl.AddListeners();
+        //userControl.UpdatePerCellValueChange();
       }
     }
 
@@ -140,10 +140,10 @@ namespace ElectricalCommands.Load_Summary {
       foreach (Dictionary<string, object> loadSummary in sortedLoadSummaries) {
         string loadSummaryName = loadSummary["load_summary"].ToString();
         LoadSummaryForm loadSummaryForm = create_new_load_summary_tab(loadSummaryName);
-        loadSummaryForm.clear_modal_and_remove_rows(loadSummary);
-        loadSummaryForm.populate_modal_with_panel_data(loadSummary);
+        //loadSummaryForm.clear_modal_and_remove_rows(loadSummary);
+        //loadSummaryForm.populate_modal_with_panel_data(loadSummary);
         var notes = JsonConvert.DeserializeObject<List<string>>(loadSummary["notes"].ToString());
-        loadSummaryForm.update_notes_storage(notes);
+        //loadSummaryForm.update_notes_storage(notes);
       }
     }
 
@@ -174,13 +174,13 @@ namespace ElectricalCommands.Load_Summary {
     }
     public void clear_modal_and_remove_rows(Dictionary<string, object> selectedLoadSummaryData) {
       clear_current_modal_data();
-      remove_rows();
+      //remove_rows();
 
-      int numberOfRows =
-        ((Newtonsoft.Json.Linq.JArray)selectedPanelData["description_left"])
-          .ToObject<List<string>>()
-          .Count / 2;
-      PANEL_GRID.Rows.Add(numberOfRows);
+      //int numberOfRows =
+      //  ((Newtonsoft.Json.Linq.JArray)selectedPanelData["description_left"])
+      //    .ToObject<List<string>>()
+      //    .Count / 2;
+      //PANEL_GRID.Rows.Add(numberOfRows);
     }
 
     private void clear_current_modal_data() {

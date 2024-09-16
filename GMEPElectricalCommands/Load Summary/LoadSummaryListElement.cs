@@ -12,7 +12,6 @@ namespace ElectricalCommands.Load_Summary {
   public partial class LoadSummaryListElement : UserControl {
     public LoadSummaryListElement() {
       InitializeComponent();
-      string loadNa
     }
 
     private void splitContainer1_Panel2_Paint(object sender, PaintEventArgs e) {

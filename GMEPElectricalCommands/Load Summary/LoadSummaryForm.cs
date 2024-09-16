@@ -72,7 +72,8 @@ namespace ElectricalCommands.Load_Summary {
         id: <panel-uuid>,
         enabled: bool,
         subpanels: [{
-          id: <panel-uuid>
+          id: <panel-uuid>,
+          enabled: bool
         }]
       }
 

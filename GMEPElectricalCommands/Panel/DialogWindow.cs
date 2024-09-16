@@ -447,11 +447,16 @@ namespace ElectricalCommands {
       SavePanelDataToLocalJsonFile();
     }
 
-    public void PANEL_NAME_INPUT_TextChanged(object sender, EventArgs e, string input) {
+    public void PANEL_NAME_INPUT_TextChanged(object sender, EventArgs e, string input, bool distribSect = false) {
       int selectedIndex = PANEL_TABS.SelectedIndex;
 
       if (selectedIndex >= 0) {
-        PANEL_TABS.TabPages[selectedIndex].Text = "PANEL " + input.ToUpper();
+        if (distribSect) {
+          PANEL_TABS.TabPages[selectedIndex].Text = "DISTRIB. " + input.ToUpper();
+        }
+        else {
+          PANEL_TABS.TabPages[selectedIndex].Text = "PANEL " + input.ToUpper();
+        }
       }
     }
 

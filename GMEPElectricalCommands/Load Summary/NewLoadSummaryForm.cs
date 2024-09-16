@@ -29,7 +29,7 @@ namespace ElectricalCommands.Load_Summary {
       }
       if (this.dialogWindow != null) {
         var userControl = this.dialogWindow.create_new_load_summary_tab(loadSummaryName);
-        userControl.AddListeners();
+        //userControl.AddListeners();
       }
     }
   }

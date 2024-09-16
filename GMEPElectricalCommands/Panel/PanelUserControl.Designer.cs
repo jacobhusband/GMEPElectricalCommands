@@ -39,7 +39,7 @@
       this.phase_a_right = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.phase_b_right = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.description_right = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.label18 = new System.Windows.Forms.Label();
+      this.PANEL_NAME_LABEL = new System.Windows.Forms.Label();
       this.label17 = new System.Windows.Forms.Label();
       this.LARGEST_LCL_LABEL = new System.Windows.Forms.Label();
       this.label16 = new System.Windows.Forms.Label();
@@ -97,6 +97,7 @@
       this.HP_TO_VA = new System.Windows.Forms.Button();
       this.FED_FROM_LABEL = new System.Windows.Forms.Label();
       this.FED_FROM_COMBO_BOX = new System.Windows.Forms.ComboBox();
+      this.DISTRIBUTION_SECTION_CHECKBOX = new System.Windows.Forms.CheckBox();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -177,14 +178,14 @@
       this.description_right.HeaderText = "DESCRIPTION";
       this.description_right.Name = "description_right";
       // 
-      // label18
+      // PANEL_NAME_LABEL
       // 
-      this.label18.AutoSize = true;
-      this.label18.Location = new System.Drawing.Point(150, 74);
-      this.label18.Name = "label18";
-      this.label18.Size = new System.Drawing.Size(42, 13);
-      this.label18.TabIndex = 163;
-      this.label18.Text = "PANEL";
+      this.PANEL_NAME_LABEL.AutoSize = true;
+      this.PANEL_NAME_LABEL.Location = new System.Drawing.Point(57, 72);
+      this.PANEL_NAME_LABEL.Name = "PANEL_NAME_LABEL";
+      this.PANEL_NAME_LABEL.Size = new System.Drawing.Size(134, 13);
+      this.PANEL_NAME_LABEL.TabIndex = 163;
+      this.PANEL_NAME_LABEL.Text = "DISTRIBUTION SECTION";
       // 
       // label17
       // 
@@ -740,11 +741,24 @@
       this.FED_FROM_COMBO_BOX.Size = new System.Drawing.Size(121, 21);
       this.FED_FROM_COMBO_BOX.TabIndex = 214;
       // 
+      // DISTRIBUTION_SECTION_CHECKBOX
+      // 
+      this.DISTRIBUTION_SECTION_CHECKBOX.AutoSize = true;
+      this.DISTRIBUTION_SECTION_CHECKBOX.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+      this.DISTRIBUTION_SECTION_CHECKBOX.Location = new System.Drawing.Point(144, 21);
+      this.DISTRIBUTION_SECTION_CHECKBOX.Name = "DISTRIBUTION_SECTION_CHECKBOX";
+      this.DISTRIBUTION_SECTION_CHECKBOX.Size = new System.Drawing.Size(153, 17);
+      this.DISTRIBUTION_SECTION_CHECKBOX.TabIndex = 215;
+      this.DISTRIBUTION_SECTION_CHECKBOX.Text = "DISTRIBUTION SECTION";
+      this.DISTRIBUTION_SECTION_CHECKBOX.UseVisualStyleBackColor = true;
+      this.DISTRIBUTION_SECTION_CHECKBOX.CheckedChanged += new System.EventHandler(this.DISTRIBUTION_SECTION_CHECKBOX_Checked);
+      // 
       // PanelUserControl
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
+      this.Controls.Add(this.DISTRIBUTION_SECTION_CHECKBOX);
       this.Controls.Add(this.FED_FROM_COMBO_BOX);
       this.Controls.Add(this.FED_FROM_LABEL);
       this.Controls.Add(this.HP_TO_VA);
@@ -771,7 +785,7 @@
       this.Controls.Add(this.INFO_LABEL);
       this.Controls.Add(this.DELETE_PANEL_BUTTON);
       this.Controls.Add(this.PANEL_GRID);
-      this.Controls.Add(this.label18);
+      this.Controls.Add(this.PANEL_NAME_LABEL);
       this.Controls.Add(this.label17);
       this.Controls.Add(this.LARGEST_LCL_LABEL);
       this.Controls.Add(this.label16);
@@ -824,7 +838,7 @@
     private System.Windows.Forms.DataGridViewTextBoxColumn phase_a_right;
     private System.Windows.Forms.DataGridViewTextBoxColumn phase_b_right;
     private System.Windows.Forms.DataGridViewTextBoxColumn description_right;
-    private System.Windows.Forms.Label label18;
+    private System.Windows.Forms.Label PANEL_NAME_LABEL;
     private System.Windows.Forms.Label label17;
     private System.Windows.Forms.Label LARGEST_LCL_LABEL;
     private System.Windows.Forms.Label label16;
@@ -883,5 +897,6 @@
     private string ID;
     private System.Windows.Forms.Label FED_FROM_LABEL;
     private System.Windows.Forms.ComboBox FED_FROM_COMBO_BOX;
+    private System.Windows.Forms.CheckBox DISTRIBUTION_SECTION_CHECKBOX;
   }
 }

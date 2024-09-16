@@ -56,6 +56,7 @@ namespace ElectricalCommands {
 
       change_size_of_phase_columns(is3PH);
       add_phase_sum_column(is3PH);
+      listen_for_distribution_section_checked(null, null);
 
       PANEL_NAME_INPUT.TextChanged += new EventHandler(this.PANEL_NAME_INPUT_TextChanged);
       PANEL_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PANEL_GRID_CellValueChangedLink);
@@ -263,6 +264,7 @@ namespace ElectricalCommands {
       panel.Add("existing", GetComboBoxValue(STATUS_COMBOBOX));
       panel.Add("lcl_override", LCL_OVERRIDE.Checked);
       panel.Add("lml_override", LML_OVERRIDE.Checked);
+      panel.Add("distribution_section", DISTRIBUTION_SECTION_CHECKBOX.Checked);
 
       panel.Add(
         "subtotal_a",
@@ -1069,6 +1071,34 @@ namespace ElectricalCommands {
       }
     }
 
+    private void listen_for_distribution_section_checked(object sender, EventArgs e) {
+      if (DISTRIBUTION_SECTION_CHECKBOX.Checked) {
+        for (int i = 0; i < PANEL_GRID.Rows.Count; i++) {
+          PANEL_GRID.Rows[i].Cells["circuit_left"].Style.BackColor = Color.LightGray;
+          PANEL_GRID.Rows[i].Cells["circuit_right"].Style.BackColor = Color.LightGray;
+          PANEL_GRID.Rows[i].Cells["circuit_left"].Style.ForeColor = Color.LightGray;
+          PANEL_GRID.Rows[i].Cells["circuit_right"].Style.ForeColor = Color.LightGray;
+          PANEL_GRID.Rows[i].Cells["circuit_left"].ReadOnly = true;
+          PANEL_GRID.Rows[i].Cells["circuit_right"].ReadOnly = true;
+          PANEL_NAME_LABEL.Text = "DISTRIBUTION SECTION";
+          PANEL_NAME_LABEL.Location = new Point(57, 74);
+          this.mainForm.PANEL_NAME_INPUT_TextChanged(sender, e, PANEL_NAME_INPUT.Text, true);
+        }
+      } else {
+        for (int i = 0; i < PANEL_GRID.Rows.Count; i++) {
+          PANEL_GRID.Rows[i].Cells["circuit_left"].Style.BackColor = Color.White;
+          PANEL_GRID.Rows[i].Cells["circuit_right"].Style.BackColor = Color.White;
+          PANEL_GRID.Rows[i].Cells["circuit_left"].Style.ForeColor = Color.Black;
+          PANEL_GRID.Rows[i].Cells["circuit_right"].Style.ForeColor = Color.Black;
+          PANEL_GRID.Rows[i].Cells["circuit_left"].ReadOnly = false;
+          PANEL_GRID.Rows[i].Cells["circuit_right"].ReadOnly = false;
+          PANEL_NAME_LABEL.Text = "PANEL";
+          PANEL_NAME_LABEL.Location = new Point(150, 74);
+          this.mainForm.PANEL_NAME_INPUT_TextChanged(sender, e, PANEL_NAME_INPUT.Text);
+        }
+      }
+    }
+
     public void clear_modal_and_remove_rows(Dictionary<string, object> selectedPanelData) {
       clear_current_modal_data();
       remove_rows();
@@ -1794,7 +1824,7 @@ namespace ElectricalCommands {
     }
 
     private void PANEL_NAME_INPUT_TextChanged(object sender, EventArgs e) {
-      this.mainForm.PANEL_NAME_INPUT_TextChanged(sender, e, PANEL_NAME_INPUT.Text.ToUpper());
+      this.mainForm.PANEL_NAME_INPUT_TextChanged(sender, e, PANEL_NAME_INPUT.Text.ToUpper(), DISTRIBUTION_SECTION_CHECKBOX.Checked);
     }
 
     private void PANEL_GRID_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e) {
@@ -1804,6 +1834,10 @@ namespace ElectricalCommands {
       else {
         listen_for_2P_rows_added(e);
       }
+    }
+
+    private void DISTRIBUTION_SECTION_CHECKBOX_Checked(object sender, EventArgs e) {
+      listen_for_distribution_section_checked(sender, e);
     }
 
     private void PANEL_GRID_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e) {
