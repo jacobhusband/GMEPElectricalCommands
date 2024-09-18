@@ -98,6 +98,10 @@
       this.FED_FROM_LABEL = new System.Windows.Forms.Label();
       this.FED_FROM_COMBO_BOX = new System.Windows.Forms.ComboBox();
       this.DISTRIBUTION_SECTION_CHECKBOX = new System.Windows.Forms.CheckBox();
+      this.SAFETY_FACTOR_CHECKBOX = new System.Windows.Forms.CheckBox();
+      this.SAFETY_FACTOR_TEXTBOX = new System.Windows.Forms.TextBox();
+      this.ADD_ALL_PANELS_BUTTON = new System.Windows.Forms.Button();
+      this.CREATE_LOAD_SUMMARY_BUTTON = new System.Windows.Forms.Button();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -199,7 +203,7 @@
       // LARGEST_LCL_LABEL
       // 
       this.LARGEST_LCL_LABEL.AutoSize = true;
-      this.LARGEST_LCL_LABEL.Location = new System.Drawing.Point(72, 451);
+      this.LARGEST_LCL_LABEL.Location = new System.Drawing.Point(72, 437);
       this.LARGEST_LCL_LABEL.Name = "LARGEST_LCL_LABEL";
       this.LARGEST_LCL_LABEL.Size = new System.Drawing.Size(215, 13);
       this.LARGEST_LCL_LABEL.TabIndex = 175;
@@ -225,7 +229,7 @@
       // 
       // CREATE_PANEL_BUTTON
       // 
-      this.CREATE_PANEL_BUTTON.Location = new System.Drawing.Point(396, 538);
+      this.CREATE_PANEL_BUTTON.Location = new System.Drawing.Point(583, 538);
       this.CREATE_PANEL_BUTTON.Name = "CREATE_PANEL_BUTTON";
       this.CREATE_PANEL_BUTTON.Size = new System.Drawing.Size(103, 23);
       this.CREATE_PANEL_BUTTON.TabIndex = 157;
@@ -249,7 +253,7 @@
       this.FEEDER_AMP_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.FEEDER_AMP_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.FEEDER_AMPS});
-      this.FEEDER_AMP_GRID.Location = new System.Drawing.Point(122, 595);
+      this.FEEDER_AMP_GRID.Location = new System.Drawing.Point(122, 581);
       this.FEEDER_AMP_GRID.Name = "FEEDER_AMP_GRID";
       this.FEEDER_AMP_GRID.ReadOnly = true;
       this.FEEDER_AMP_GRID.Size = new System.Drawing.Size(175, 40);
@@ -278,7 +282,7 @@
       this.PANEL_LOAD_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.PANEL_LOAD_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.PANEL_LOAD});
-      this.PANEL_LOAD_GRID.Location = new System.Drawing.Point(114, 546);
+      this.PANEL_LOAD_GRID.Location = new System.Drawing.Point(114, 532);
       this.PANEL_LOAD_GRID.Name = "PANEL_LOAD_GRID";
       this.PANEL_LOAD_GRID.ReadOnly = true;
       this.PANEL_LOAD_GRID.Size = new System.Drawing.Size(183, 43);
@@ -325,7 +329,7 @@
       this.TOTAL_VA_GRID.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.TOTAL_VA_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.TOTAL_VA});
-      this.TOTAL_VA_GRID.Location = new System.Drawing.Point(153, 397);
+      this.TOTAL_VA_GRID.Location = new System.Drawing.Point(153, 385);
       this.TOTAL_VA_GRID.Name = "TOTAL_VA_GRID";
       this.TOTAL_VA_GRID.ReadOnly = true;
       this.TOTAL_VA_GRID.Size = new System.Drawing.Size(144, 42);
@@ -353,7 +357,7 @@
       this.PHASE_SUM_GRID.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.TOTAL_PH_A,
             this.TOTAL_PH_B});
-      this.PHASE_SUM_GRID.Location = new System.Drawing.Point(52, 347);
+      this.PHASE_SUM_GRID.Location = new System.Drawing.Point(52, 335);
       this.PHASE_SUM_GRID.Name = "PHASE_SUM_GRID";
       this.PHASE_SUM_GRID.ReadOnly = true;
       this.PHASE_SUM_GRID.Size = new System.Drawing.Size(245, 44);
@@ -583,7 +587,7 @@
       // 
       // RELOCATE_BUTTON
       // 
-      this.RELOCATE_BUTTON.Location = new System.Drawing.Point(558, 538);
+      this.RELOCATE_BUTTON.Location = new System.Drawing.Point(449, 538);
       this.RELOCATE_BUTTON.Name = "RELOCATE_BUTTON";
       this.RELOCATE_BUTTON.Size = new System.Drawing.Size(47, 23);
       this.RELOCATE_BUTTON.TabIndex = 193;
@@ -592,7 +596,7 @@
       // 
       // EXISTING_BUTTON
       // 
-      this.EXISTING_BUTTON.Location = new System.Drawing.Point(505, 538);
+      this.EXISTING_BUTTON.Location = new System.Drawing.Point(396, 538);
       this.EXISTING_BUTTON.Name = "EXISTING_BUTTON";
       this.EXISTING_BUTTON.Size = new System.Drawing.Size(47, 23);
       this.EXISTING_BUTTON.TabIndex = 194;
@@ -646,7 +650,7 @@
       // LARGEST_MOTOR_LOAD_LABEL
       // 
       this.LARGEST_MOTOR_LOAD_LABEL.AutoSize = true;
-      this.LARGEST_MOTOR_LOAD_LABEL.Location = new System.Drawing.Point(82, 497);
+      this.LARGEST_MOTOR_LOAD_LABEL.Location = new System.Drawing.Point(82, 483);
       this.LARGEST_MOTOR_LOAD_LABEL.Name = "LARGEST_MOTOR_LOAD_LABEL";
       this.LARGEST_MOTOR_LOAD_LABEL.Size = new System.Drawing.Size(205, 13);
       this.LARGEST_MOTOR_LOAD_LABEL.TabIndex = 204;
@@ -656,7 +660,7 @@
       // 
       this.LCL.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
       this.LCL.Enabled = false;
-      this.LCL.Location = new System.Drawing.Point(197, 467);
+      this.LCL.Location = new System.Drawing.Point(197, 453);
       this.LCL.Name = "LCL";
       this.LCL.Size = new System.Drawing.Size(83, 20);
       this.LCL.TabIndex = 205;
@@ -666,7 +670,7 @@
       // 
       this.LML.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
       this.LML.Enabled = false;
-      this.LML.Location = new System.Drawing.Point(197, 513);
+      this.LML.Location = new System.Drawing.Point(197, 499);
       this.LML.Name = "LML";
       this.LML.Size = new System.Drawing.Size(83, 20);
       this.LML.TabIndex = 206;
@@ -675,7 +679,7 @@
       // LCL_VA
       // 
       this.LCL_VA.AutoSize = true;
-      this.LCL_VA.Location = new System.Drawing.Point(286, 441);
+      this.LCL_VA.Location = new System.Drawing.Point(289, 456);
       this.LCL_VA.Name = "LCL_VA";
       this.LCL_VA.Size = new System.Drawing.Size(21, 13);
       this.LCL_VA.TabIndex = 207;
@@ -684,7 +688,7 @@
       // LML_VA
       // 
       this.LML_VA.AutoSize = true;
-      this.LML_VA.Location = new System.Drawing.Point(286, 487);
+      this.LML_VA.Location = new System.Drawing.Point(289, 502);
       this.LML_VA.Name = "LML_VA";
       this.LML_VA.Size = new System.Drawing.Size(21, 13);
       this.LML_VA.TabIndex = 208;
@@ -694,7 +698,7 @@
       // 
       this.LCL_OVERRIDE.AutoSize = true;
       this.LCL_OVERRIDE.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-      this.LCL_OVERRIDE.Location = new System.Drawing.Point(105, 469);
+      this.LCL_OVERRIDE.Location = new System.Drawing.Point(105, 455);
       this.LCL_OVERRIDE.Name = "LCL_OVERRIDE";
       this.LCL_OVERRIDE.Size = new System.Drawing.Size(82, 17);
       this.LCL_OVERRIDE.TabIndex = 209;
@@ -706,7 +710,7 @@
       // 
       this.LML_OVERRIDE.AutoSize = true;
       this.LML_OVERRIDE.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-      this.LML_OVERRIDE.Location = new System.Drawing.Point(105, 515);
+      this.LML_OVERRIDE.Location = new System.Drawing.Point(105, 501);
       this.LML_OVERRIDE.Name = "LML_OVERRIDE";
       this.LML_OVERRIDE.Size = new System.Drawing.Size(82, 17);
       this.LML_OVERRIDE.TabIndex = 210;
@@ -716,7 +720,7 @@
       // 
       // HP_TO_VA
       // 
-      this.HP_TO_VA.Location = new System.Drawing.Point(611, 538);
+      this.HP_TO_VA.Location = new System.Drawing.Point(502, 538);
       this.HP_TO_VA.Name = "HP_TO_VA";
       this.HP_TO_VA.Size = new System.Drawing.Size(75, 23);
       this.HP_TO_VA.TabIndex = 211;
@@ -753,11 +757,54 @@
       this.DISTRIBUTION_SECTION_CHECKBOX.UseVisualStyleBackColor = true;
       this.DISTRIBUTION_SECTION_CHECKBOX.CheckedChanged += new System.EventHandler(this.DISTRIBUTION_SECTION_CHECKBOX_Checked);
       // 
+      // SAFETY_FACTOR_CHECKBOX
+      // 
+      this.SAFETY_FACTOR_CHECKBOX.AutoSize = true;
+      this.SAFETY_FACTOR_CHECKBOX.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+      this.SAFETY_FACTOR_CHECKBOX.Location = new System.Drawing.Point(85, 627);
+      this.SAFETY_FACTOR_CHECKBOX.Name = "SAFETY_FACTOR_CHECKBOX";
+      this.SAFETY_FACTOR_CHECKBOX.Size = new System.Drawing.Size(150, 17);
+      this.SAFETY_FACTOR_CHECKBOX.TabIndex = 216;
+      this.SAFETY_FACTOR_CHECKBOX.Text = "APPLY SAFETY FACTOR";
+      this.SAFETY_FACTOR_CHECKBOX.UseVisualStyleBackColor = true;
+      this.SAFETY_FACTOR_CHECKBOX.CheckedChanged += new System.EventHandler(this.SAFETY_FACTOR_CheckChanged);
+      // 
+      // SAFETY_FACTOR_TEXTBOX
+      // 
+      this.SAFETY_FACTOR_TEXTBOX.Location = new System.Drawing.Point(241, 624);
+      this.SAFETY_FACTOR_TEXTBOX.Name = "SAFETY_FACTOR_TEXTBOX";
+      this.SAFETY_FACTOR_TEXTBOX.Size = new System.Drawing.Size(56, 20);
+      this.SAFETY_FACTOR_TEXTBOX.TabIndex = 217;
+      this.SAFETY_FACTOR_TEXTBOX.Text = "1.25";
+      // 
+      // ADD_ALL_PANELS_BUTTON
+      // 
+      this.ADD_ALL_PANELS_BUTTON.Location = new System.Drawing.Point(26, 17);
+      this.ADD_ALL_PANELS_BUTTON.Name = "ADD_ALL_PANELS_BUTTON";
+      this.ADD_ALL_PANELS_BUTTON.Size = new System.Drawing.Size(112, 23);
+      this.ADD_ALL_PANELS_BUTTON.TabIndex = 218;
+      this.ADD_ALL_PANELS_BUTTON.Text = "ADD ALL PANELS";
+      this.ADD_ALL_PANELS_BUTTON.UseVisualStyleBackColor = true;
+      this.ADD_ALL_PANELS_BUTTON.Click += new System.EventHandler(this.ADD_ALL_PANELS_BUTTON_Click);
+      // 
+      // CREATE_LOAD_SUMMARY_BUTTON
+      // 
+      this.CREATE_LOAD_SUMMARY_BUTTON.Location = new System.Drawing.Point(583, 538);
+      this.CREATE_LOAD_SUMMARY_BUTTON.Name = "CREATE_LOAD_SUMMARY_BUTTON";
+      this.CREATE_LOAD_SUMMARY_BUTTON.Size = new System.Drawing.Size(170, 23);
+      this.CREATE_LOAD_SUMMARY_BUTTON.TabIndex = 219;
+      this.CREATE_LOAD_SUMMARY_BUTTON.Text = "CREATE LOAD SUMMARY";
+      this.CREATE_LOAD_SUMMARY_BUTTON.UseVisualStyleBackColor = true;
+      // 
       // PanelUserControl
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
+      this.Controls.Add(this.CREATE_LOAD_SUMMARY_BUTTON);
+      this.Controls.Add(this.ADD_ALL_PANELS_BUTTON);
+      this.Controls.Add(this.SAFETY_FACTOR_TEXTBOX);
+      this.Controls.Add(this.SAFETY_FACTOR_CHECKBOX);
       this.Controls.Add(this.DISTRIBUTION_SECTION_CHECKBOX);
       this.Controls.Add(this.FED_FROM_COMBO_BOX);
       this.Controls.Add(this.FED_FROM_LABEL);
@@ -895,8 +942,13 @@
     private System.Windows.Forms.CheckBox LML_OVERRIDE;
     private System.Windows.Forms.Button HP_TO_VA;
     private string ID;
+    private bool is3PH;
     private System.Windows.Forms.Label FED_FROM_LABEL;
     private System.Windows.Forms.ComboBox FED_FROM_COMBO_BOX;
     private System.Windows.Forms.CheckBox DISTRIBUTION_SECTION_CHECKBOX;
+    private System.Windows.Forms.CheckBox SAFETY_FACTOR_CHECKBOX;
+    private System.Windows.Forms.TextBox SAFETY_FACTOR_TEXTBOX;
+    private System.Windows.Forms.Button ADD_ALL_PANELS_BUTTON;
+    private System.Windows.Forms.Button CREATE_LOAD_SUMMARY_BUTTON;
   }
 }

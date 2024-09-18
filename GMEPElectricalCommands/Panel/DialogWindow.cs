@@ -179,6 +179,7 @@ namespace ElectricalCommands {
           continue;
         }
         userControl.AddListeners();
+        userControl.configure_distribution_panel(null, null);
         userControl.UpdatePerCellValueChange();
       }
     }

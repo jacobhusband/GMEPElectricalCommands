@@ -30,7 +30,7 @@ namespace ElectricalCommands.Load_Summary {
     }
     private void listen_for_new_rows() {
       // TODO
-      REMOVED_LOAD_FLOW_LAYOUT_PANEL.ControlAdded += new ControlEventHandler(REMOVED_LOAD_FLOW_LAYOUT_PANEL_ControlAdded);
+      REMOVED_LOADS_FLOW_LAYOUT_PANEL.ControlAdded += new ControlEventHandler(REMOVED_LOAD_FLOW_LAYOUT_PANEL_ControlAdded);
     }
 
     private void REMOVED_LOAD_FLOW_LAYOUT_PANEL_ControlAdded(object sender, ControlEventArgs e) {
@@ -100,13 +100,21 @@ namespace ElectricalCommands.Load_Summary {
 
     private void clear_current_modal_data() {
       LOAD_SUMMARY_RESULT_TEXTBOX.Clear();
-      ADDITIONAL_LOAD_FLOW_LAYOUT_PANEL.Controls.Clear();
-      PANEL_FLOW_LAYOUT_PANEL.Controls.Clear();
-      REMOVED_LOAD_FLOW_LAYOUT_PANEL.Controls.Clear();
+      AGGREGATED_LOADS_FLOW_LAYOUT_PANEL.Controls.Clear();
+      REMOVED_LOADS_FLOW_LAYOUT_PANEL.Controls.Clear();
       OVERRIDE_PANEL_LOADS_CHECKBOX.Checked = false;
       TWELVE_MONTH_UTILITY_BILL_TEXTBOX.Text = "0";
       SAFETY_FACTOR_CHECKBOX.Checked = false;
     }
+
+    public FlowLayoutPanel retrieve_aggregated_loads_flow_layout() {
+      return AGGREGATED_LOADS_FLOW_LAYOUT_PANEL;
+    }
+
+    internal FlowLayoutPanel retrieve_removed_loads_flow_layout() {
+      return REMOVED_LOADS_FLOW_LAYOUT_PANEL;
+    }
+
 
     private void PANEL_FLOW_LAYOUT_PANEL_Paint(object sender, PaintEventArgs e) {
 
@@ -118,6 +126,9 @@ namespace ElectricalCommands.Load_Summary {
       
     }
 
+    private void AGGREGATED_LOADS_LABEL_Click(object sender, EventArgs e) {
+
+    }
   }
   
 }

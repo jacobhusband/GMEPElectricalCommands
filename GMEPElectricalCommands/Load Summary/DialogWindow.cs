@@ -28,8 +28,12 @@ namespace ElectricalCommands.Load_Summary {
       this.userControls = new List<LoadSummaryForm>();
       this.Shown += DIALOG_WINDOW_SHOWN;
       this.FormClosing += DIALOG_WINDOW_CLOSING;
+      this.KeyPreview = true;
+      this.KeyDown += new KeyEventHandler(DIALOG_WINDOW_KEYDOWN);
+      this.Deactivate += DIALOG_WINDOW_DEACTIVATE;
       this.acDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
-
+      this.acDoc.BeginDocumentClose -= new DocumentBeginCloseEventHandler(docBeginDocClose);
+      this.acDoc.BeginDocumentClose += new DocumentBeginCloseEventHandler(docBeginDocClose);
     }
 
     private void DIALOG_WINDOW_SHOWN(object sender, EventArgs e) {
@@ -41,6 +45,21 @@ namespace ElectricalCommands.Load_Summary {
     private void DIALOG_WINDOW_CLOSING(object sender, EventArgs e) {
       this.acDoc.BeginDocumentClose -= new DocumentBeginCloseEventHandler(docBeginDocClose);
       SaveLoadSummaryDataToLocalJsonFile();
+    }
+
+    private void DIALOG_WINDOW_KEYDOWN(object sender, KeyEventArgs e) {
+      if (e.Control && e.KeyCode == Keys.S) {
+        SaveLoadSummaryDataToLocalJsonFile();
+      }
+    }
+
+    private void DIALOG_WINDOW_DEACTIVATE(object sender, EventArgs e) {
+      foreach (LoadSummaryForm userControl in userControls) {
+        FlowLayoutPanel aggFlowLayout = userControl.retrieve_aggregated_loads_flow_layout();
+        aggFlowLayout.Controls.Clear();
+        FlowLayoutPanel remFlowLayout = userControl.retrieve_removed_loads_flow_layout();
+        remFlowLayout.Controls.Clear();
+      }
     }
 
     private void docBeginDocClose(object sender, DocumentBeginCloseEventArgs e) {
@@ -63,9 +82,37 @@ namespace ElectricalCommands.Load_Summary {
             loadSummaryStorage.Add(userControl.retrieve_data_from_modal());
           }
 
-          //StoreDataInJsonFile(panelStorage);
+          StoreDataInJsonFile(loadSummaryStorage);
         }
       }
+    }
+
+    public void StoreDataInJsonFile(List<Dictionary<string, object>> saveData) {
+      string acDocPath = Path.GetDirectoryName(this.acDoc.Name);
+      string savesDirectory = Path.Combine(acDocPath, "Saves");
+      string loadSummarySavesDirectory = Path.Combine(savesDirectory, "LoadSummary");
+
+      // Create the "Saves" directory if it doesn't exist
+      if (!Directory.Exists(savesDirectory)) {
+        Directory.CreateDirectory(savesDirectory);
+      }
+
+      // Create the "Saves/LoadSummary" directory if it doesn't exist
+      if (!Directory.Exists(loadSummarySavesDirectory)) {
+        Directory.CreateDirectory(loadSummarySavesDirectory);
+      }
+
+      // Create a JSON file name based on the AutoCAD file name and the current timestamp
+      string acDocFileName = Path.GetFileNameWithoutExtension(acDoc.Name);
+      string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+      string jsonFileName = acDocFileName + "_" + timestamp + ".json";
+      string jsonFilePath = Path.Combine(loadSummarySavesDirectory, jsonFileName);
+
+      // Serialize all the load summary data to JSON
+      string jsonData = JsonConvert.SerializeObject(saveData, Formatting.Indented);
+
+      // Write the JSON data to the file
+      File.WriteAllText(jsonFilePath, jsonData);
     }
 
     private void DialogWindow_Load(object sender, EventArgs e) {
@@ -97,7 +144,7 @@ namespace ElectricalCommands.Load_Summary {
       string savesDirectory = Path.Combine(acDocPath, "Saves");
       string loadSummarySavesDirectory = Path.Combine(savesDirectory, "LoadSummary");
 
-      // Check if the "Saves/Panel" directory exists
+      // Check if the "Saves/LoadSummary" directory exists
       if (Directory.Exists(loadSummarySavesDirectory)) {
         // Get all JSON files in the directory
         string[] jsonFiles = Directory.GetFiles(loadSummarySavesDirectory, "*.json");
@@ -119,22 +166,41 @@ namespace ElectricalCommands.Load_Summary {
       return allLoadSummaryData;
     }
     private void MakeTabsAndPopulate(List<Dictionary<string, object>> loadSummaryStorage) {
-      //set_up_field_values_from_load_summary_data(panelStorage);
+      set_up_field_values_from_load_summary_data(loadSummaryStorage);
 
-      var sortedPanels = loadSummaryStorage.OrderBy(panel => panel["panel"].ToString()).ToList();
+      var sortedLoadSummariess = loadSummaryStorage.OrderBy(loadSummary => loadSummary["load_summary"].ToString()).ToList();
 
-      foreach (Dictionary<string, object> panel in sortedPanels) {
-        string panelName = panel["panel"].ToString();
-        //PanelUserControl userControl = (PanelUserControl)findUserControl(panelName);
-        //if (userControl == null) {
-        //  continue;
-        //}
+      foreach (Dictionary<string, object> loadSummary in sortedLoadSummariess) {
+        string loadSummaryName = loadSummary["load_summary"].ToString();
+        LoadSummaryForm userControl = (LoadSummaryForm)findUserControl(loadSummaryName);
+        if (userControl == null) {
+          continue;
+        }
         //userControl.AddListeners();
-        //userControl.UpdatePerCellValueChange();
       }
     }
 
-    private void set_up_cell_values_from_load_summary_data(List<Dictionary<string, object>> loadSummaryStorage) {
+    public UserControl findUserControl(string panelName) {
+      foreach (LoadSummaryForm userControl in userControls) {
+        string userControlName = userControl.Name.Replace("'", "");
+        userControlName = userControlName.Replace(" ", "");
+        userControlName = userControlName.Replace("-", "");
+        userControlName = userControlName.Replace("PANEL", "");
+
+        panelName = panelName.Replace("'", "");
+        panelName = panelName.Replace(" ", "");
+        panelName = panelName.Replace("-", "");
+        panelName = panelName.Replace("PANEL", "");
+
+        if (userControlName.ToLower() == panelName.ToLower()) {
+          return userControl;
+        }
+      }
+
+      return null;
+    }
+
+    private void set_up_field_values_from_load_summary_data(List<Dictionary<string, object>> loadSummaryStorage) {
       var sortedLoadSummaries = loadSummaryStorage.OrderBy(loadSummary => loadSummary["load_summary"].ToString()).ToList();
 
       foreach (Dictionary<string, object> loadSummary in sortedLoadSummaries) {

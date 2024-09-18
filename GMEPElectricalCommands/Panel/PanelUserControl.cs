@@ -1,5 +1,6 @@
 ﻿using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.GraphicsSystem;
 using Emgu.CV.ImgHash;
@@ -47,6 +48,7 @@ namespace ElectricalCommands {
       this.newPanelForm = newPanelForm;
       this.Name = tabName;
       this.notesStorage = new List<string>();
+      this.is3PH = is3PH;
 
       INFO_LABEL.Text = "";
 
@@ -56,7 +58,6 @@ namespace ElectricalCommands {
 
       change_size_of_phase_columns(is3PH);
       add_phase_sum_column(is3PH);
-      listen_for_distribution_section_checked(null, null);
 
       PANEL_NAME_INPUT.TextChanged += new EventHandler(this.PANEL_NAME_INPUT_TextChanged);
       PANEL_GRID.CellValueChanged += new DataGridViewCellEventHandler(this.PANEL_GRID_CellValueChangedLink);
@@ -1071,21 +1072,42 @@ namespace ElectricalCommands {
       }
     }
 
-    private void listen_for_distribution_section_checked(object sender, EventArgs e) {
+    public void configure_distribution_panel(object sender, EventArgs e, bool updateCalcs = true) {
       if (DISTRIBUTION_SECTION_CHECKBOX.Checked) {
         for (int i = 0; i < PANEL_GRID.Rows.Count; i++) {
-          PANEL_GRID.Rows[i].Cells["circuit_left"].Style.BackColor = Color.LightGray;
-          PANEL_GRID.Rows[i].Cells["circuit_right"].Style.BackColor = Color.LightGray;
-          PANEL_GRID.Rows[i].Cells["circuit_left"].Style.ForeColor = Color.LightGray;
-          PANEL_GRID.Rows[i].Cells["circuit_right"].Style.ForeColor = Color.LightGray;
+          int poles = 3;
+          if (!this.is3PH) {
+            poles = 2;
+          }
+          if (i % poles != 0) {
+            PANEL_GRID.Rows[i].Cells["description_left"].Style.BackColor = Color.Black;
+            PANEL_GRID.Rows[i].Cells["description_left"].Style.ForeColor = Color.Black;
+            PANEL_GRID.Rows[i].Cells["description_right"].Style.BackColor = Color.Black;
+            PANEL_GRID.Rows[i].Cells["description_right"].Style.ForeColor = Color.Black;
+            PANEL_GRID.Rows[i].Cells["description_left"].ReadOnly = true;
+            PANEL_GRID.Rows[i].Cells["description_right"].ReadOnly = true;
+          }
+          PANEL_GRID.Rows[i].Cells["circuit_left"].Style.BackColor = Color.Black;
+          PANEL_GRID.Rows[i].Cells["circuit_right"].Style.BackColor = Color.Black;
+          PANEL_GRID.Rows[i].Cells["circuit_left"].Style.ForeColor = Color.Black;
+          PANEL_GRID.Rows[i].Cells["circuit_right"].Style.ForeColor = Color.Black;
           PANEL_GRID.Rows[i].Cells["circuit_left"].ReadOnly = true;
           PANEL_GRID.Rows[i].Cells["circuit_right"].ReadOnly = true;
           PANEL_NAME_LABEL.Text = "DISTRIBUTION SECTION";
           PANEL_NAME_LABEL.Location = new Point(57, 74);
           this.mainForm.PANEL_NAME_INPUT_TextChanged(sender, e, PANEL_NAME_INPUT.Text, true);
+          CREATE_PANEL_BUTTON.Visible = false;
+          CREATE_LOAD_SUMMARY_BUTTON.Visible = true;
+          ADD_ALL_PANELS_BUTTON.Visible = true;
+          SAFETY_FACTOR_CHECKBOX.Enabled = true;
         }
-      } else {
+      }
+      else {
         for (int i = 0; i < PANEL_GRID.Rows.Count; i++) {
+          PANEL_GRID.Rows[i].Cells["description_left"].Style.BackColor = Color.White;
+          PANEL_GRID.Rows[i].Cells["description_right"].Style.BackColor = Color.White;
+          PANEL_GRID.Rows[i].Cells["description_left"].Style.ForeColor = Color.Black;
+          PANEL_GRID.Rows[i].Cells["description_right"].Style.ForeColor = Color.Black;
           PANEL_GRID.Rows[i].Cells["circuit_left"].Style.BackColor = Color.White;
           PANEL_GRID.Rows[i].Cells["circuit_right"].Style.BackColor = Color.White;
           PANEL_GRID.Rows[i].Cells["circuit_left"].Style.ForeColor = Color.Black;
@@ -1095,8 +1117,13 @@ namespace ElectricalCommands {
           PANEL_NAME_LABEL.Text = "PANEL";
           PANEL_NAME_LABEL.Location = new Point(150, 74);
           this.mainForm.PANEL_NAME_INPUT_TextChanged(sender, e, PANEL_NAME_INPUT.Text);
+          CREATE_PANEL_BUTTON.Visible = true;
+          CREATE_LOAD_SUMMARY_BUTTON.Visible = false;
+          ADD_ALL_PANELS_BUTTON.Visible = false;
+          SAFETY_FACTOR_CHECKBOX.Enabled = false;
         }
       }
+      if (updateCalcs) SAFETY_FACTOR_CheckChanged(sender, e);
     }
 
     public void clear_modal_and_remove_rows(Dictionary<string, object> selectedPanelData) {
@@ -1149,6 +1176,7 @@ namespace ElectricalCommands {
       // Set Checkboxes
       LCL_OVERRIDE.Checked = GetSafeBoolean("lcl_override");
       LML_OVERRIDE.Checked = GetSafeBoolean("lml_override");
+      DISTRIBUTION_SECTION_CHECKBOX.Checked = GetSafeBoolean("distribution_section");
 
       // Set ComboBoxes
       STATUS_COMBOBOX.SelectedItem = GetSafeString("existing");
@@ -1322,7 +1350,7 @@ namespace ElectricalCommands {
 
         // set the width of the grid
         PHASE_SUM_GRID.Width = 285;
-        PHASE_SUM_GRID.Location = new System.Drawing.Point(12, 319);
+        PHASE_SUM_GRID.Location = new System.Drawing.Point(12, 335);
       }
       else {
         if (PHASE_SUM_GRID.Columns.Count > 2) {
@@ -1335,7 +1363,7 @@ namespace ElectricalCommands {
 
         // set the width of the grid
         PHASE_SUM_GRID.Width = 245;
-        PHASE_SUM_GRID.Location = new System.Drawing.Point(52, 319);
+        PHASE_SUM_GRID.Location = new System.Drawing.Point(52, 335);
       }
     }
 
@@ -1834,10 +1862,11 @@ namespace ElectricalCommands {
       else {
         listen_for_2P_rows_added(e);
       }
+      configure_distribution_panel(sender, e, false);
     }
 
     private void DISTRIBUTION_SECTION_CHECKBOX_Checked(object sender, EventArgs e) {
-      listen_for_distribution_section_checked(sender, e);
+      configure_distribution_panel(sender, e);
     }
 
     private void PANEL_GRID_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e) {
@@ -2069,6 +2098,51 @@ namespace ElectricalCommands {
         sum += phC;
       }
       mainForm.UpdateLCLLML();
+      if (DISTRIBUTION_SECTION_CHECKBOX.Checked) {
+        List<Dictionary<string, object>> allPanelData = this.mainForm.retrieve_saved_panel_data();
+        // iterate thru panels
+        // if panel is in distribution section,
+        // set phA, phB, and phC to largest of the three
+        double linkedPanelsSum = 0;
+        int poles = 3;
+        if (!this.is3PH) {
+          poles = 2;
+        }
+        foreach (Dictionary<string, object> panel in allPanelData) {
+          if (panel.TryGetValue("distribution_section", out object value)) {
+            if (value is bool boolValue && boolValue == false) {
+              if (panel.TryGetValue("panel", out object panelName)) {
+                panelName = "PANEL " + panelName.ToString().Replace("'", "");
+                for (int i = 0; i < PANEL_GRID.Rows.Count; i += poles) {
+                  string compare = PANEL_GRID.Rows[i].Cells["description_left"].Value.ToString();
+                  if (compare == panelName.ToString()) {
+                    double a = Convert.ToDouble(PANEL_GRID.Rows[i].Cells["phase_a_left"].Value ?? 0);
+                    double b = Convert.ToDouble(PANEL_GRID.Rows[i + 1].Cells["phase_b_left"].Value ?? 0);
+                    double c = 0;
+                    if (poles == 3) {
+                      c = Convert.ToDouble(PANEL_GRID.Rows[i + 2].Cells["phase_c_left"].Value ?? 0);
+                    }
+                    linkedPanelsSum += Math.Max(Math.Max(a, b), c);
+                  }
+                  compare = PANEL_GRID.Rows[i].Cells["description_right"].Value.ToString();
+                  if (compare == panelName.ToString()) {
+                    double a = Convert.ToDouble(PANEL_GRID.Rows[i].Cells["phase_a_right"].Value ?? 0);
+                    double b = Convert.ToDouble(PANEL_GRID.Rows[i + 1].Cells["phase_b_right"].Value ?? 0);
+                    double c = 0;
+                    if (poles == 3) {
+                      c = Convert.ToDouble(PANEL_GRID.Rows[i + 2].Cells["phase_c_left"].Value ?? 0);
+                    }
+                    linkedPanelsSum += Math.Max(Math.Max(a, b), c);
+                  }
+                }
+              }
+            }
+          }
+        }
+        phA = linkedPanelsSum;
+        phB = linkedPanelsSum;
+        phC = linkedPanelsSum;
+      }
 
       TOTAL_VA_GRID.Rows[0].Cells[0].Value = CalculateTotalVA(sum);
 
@@ -2104,7 +2178,11 @@ namespace ElectricalCommands {
       }
 
       double maxVal = Math.Max(Math.Max(phA, phB), phC);
-      return Math.Round(maxVal / lineVoltage, 1);
+      double safetyFactor = 1.0;
+      if (SAFETY_FACTOR_CHECKBOX.Enabled && SAFETY_FACTOR_CHECKBOX.Checked) {
+        safetyFactor = Convert.ToDouble(SAFETY_FACTOR_TEXTBOX.Text);
+      }
+      return Math.Round(maxVal * safetyFactor / lineVoltage, 1);
     }
 
     public void UpdateLCLLMLLabels(int lcl, int lml) {
@@ -2355,6 +2433,37 @@ namespace ElectricalCommands {
       }
       else {
         LML.Enabled = true;
+      }
+    }
+
+    private void SAFETY_FACTOR_CheckChanged(object sender, EventArgs e) {
+      UpdatePerCellValueChange();
+    }
+
+    private void ADD_ALL_PANELS_BUTTON_Click(object sender, EventArgs e) {
+      this.mainForm.SavePanelDataToLocalJsonFile();
+      // iterate over all panels
+      List<Dictionary<string, object>> allPanelData = this.mainForm.retrieve_saved_panel_data();
+      int index = 0;
+      string side = "left"; int phase = Convert.ToInt32(PHASE_COMBOBOX.Text);
+      if (phase == 1) {
+        phase = 2;
+      }
+      foreach (Dictionary<string, object> panel in allPanelData) {
+        if (panel.TryGetValue("distribution_section", out object value)) {
+          if (value is bool boolValue && boolValue == false) {
+            if (panel.TryGetValue("panel", out object panelName)) {
+              panelName = panelName.ToString().Replace("'", "");
+              PANEL_GRID.Rows[index].Cells[$"description_{side}"].Value = "PANEL " + panelName;
+              PANEL_GRID.Rows[index + 1].Cells[$"description_{side}"].Value = "";
+              if (phase == 3) {
+                PANEL_GRID.Rows[index + 2].Cells[$"description_{side}"].Value = "";
+              }
+              index += phase;
+            }
+          }
+          GetSubPanels();
+        }
       }
     }
 

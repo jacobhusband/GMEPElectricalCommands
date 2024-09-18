@@ -26,12 +26,9 @@
       this.LOAD_SUMMARY_RESULT_TEXTBOX = new System.Windows.Forms.TextBox();
       this.REMOVE_LOADS_LABEL = new System.Windows.Forms.Label();
       this.ADD_REMOVED_LOADS_BUTTON = new System.Windows.Forms.Button();
-      this.REMOVED_LOAD_FLOW_LAYOUT_PANEL = new System.Windows.Forms.FlowLayoutPanel();
-      this.ADD_ADDITIONAL_LOAD_BUTTON = new System.Windows.Forms.Button();
-      this.ADDITIONAL_LOADS_LABEL = new System.Windows.Forms.Label();
-      this.ADDITIONAL_LOAD_FLOW_LAYOUT_PANEL = new System.Windows.Forms.FlowLayoutPanel();
-      this.PANEL_LOADS_LABEL = new System.Windows.Forms.Label();
-      this.PANEL_FLOW_LAYOUT_PANEL = new System.Windows.Forms.FlowLayoutPanel();
+      this.REMOVED_LOADS_FLOW_LAYOUT_PANEL = new System.Windows.Forms.FlowLayoutPanel();
+      this.AGGREGATED_LOADS_LABEL = new System.Windows.Forms.Label();
+      this.AGGREGATED_LOADS_FLOW_LAYOUT_PANEL = new System.Windows.Forms.FlowLayoutPanel();
       this.OVERRIDE_PANEL_LOADS_CHECKBOX = new System.Windows.Forms.CheckBox();
       this.PHASE_LABEL = new System.Windows.Forms.Label();
       this.PEAK_KVA_LABEL = new System.Windows.Forms.Label();
@@ -42,6 +39,8 @@
       this.SYSTEM_VOLTAGE_COMBO_BOX = new System.Windows.Forms.ComboBox();
       this.TOTAL_KVA_AT_VOLTAGE_LABEL = new System.Windows.Forms.Label();
       this.SAFETY_FACTOR_TEXTBOX = new System.Windows.Forms.TextBox();
+      this.DISTRIBUTION_SECTION_COMBO_BOX = new System.Windows.Forms.ComboBox();
+      this.DISTRIBUTION_SECTION_LABEL = new System.Windows.Forms.Label();
       this.SuspendLayout();
       // 
       // LOAD_SUMMARY_RESULT_TEXTBOX
@@ -56,7 +55,7 @@
       // REMOVE_LOADS_LABEL
       // 
       this.REMOVE_LOADS_LABEL.AutoSize = true;
-      this.REMOVE_LOADS_LABEL.Location = new System.Drawing.Point(20, 382);
+      this.REMOVE_LOADS_LABEL.Location = new System.Drawing.Point(20, 406);
       this.REMOVE_LOADS_LABEL.Name = "REMOVE_LOADS_LABEL";
       this.REMOVE_LOADS_LABEL.Size = new System.Drawing.Size(85, 13);
       this.REMOVE_LOADS_LABEL.TabIndex = 36;
@@ -64,61 +63,37 @@
       // 
       // ADD_REMOVED_LOADS_BUTTON
       // 
-      this.ADD_REMOVED_LOADS_BUTTON.Location = new System.Drawing.Point(415, 523);
+      this.ADD_REMOVED_LOADS_BUTTON.Location = new System.Drawing.Point(415, 547);
       this.ADD_REMOVED_LOADS_BUTTON.Name = "ADD_REMOVED_LOADS_BUTTON";
       this.ADD_REMOVED_LOADS_BUTTON.Size = new System.Drawing.Size(141, 23);
       this.ADD_REMOVED_LOADS_BUTTON.TabIndex = 35;
       this.ADD_REMOVED_LOADS_BUTTON.Text = "Add Removed Load";
       this.ADD_REMOVED_LOADS_BUTTON.UseVisualStyleBackColor = true;
       // 
-      // REMOVED_LOAD_FLOW_LAYOUT_PANEL
+      // REMOVED_LOADS_FLOW_LAYOUT_PANEL
       // 
-      this.REMOVED_LOAD_FLOW_LAYOUT_PANEL.Location = new System.Drawing.Point(23, 398);
-      this.REMOVED_LOAD_FLOW_LAYOUT_PANEL.Name = "REMOVED_LOAD_FLOW_LAYOUT_PANEL";
-      this.REMOVED_LOAD_FLOW_LAYOUT_PANEL.Size = new System.Drawing.Size(534, 118);
-      this.REMOVED_LOAD_FLOW_LAYOUT_PANEL.TabIndex = 34;
+      this.REMOVED_LOADS_FLOW_LAYOUT_PANEL.Location = new System.Drawing.Point(23, 422);
+      this.REMOVED_LOADS_FLOW_LAYOUT_PANEL.Name = "REMOVED_LOADS_FLOW_LAYOUT_PANEL";
+      this.REMOVED_LOADS_FLOW_LAYOUT_PANEL.Size = new System.Drawing.Size(534, 118);
+      this.REMOVED_LOADS_FLOW_LAYOUT_PANEL.TabIndex = 34;
       // 
-      // ADD_ADDITIONAL_LOAD_BUTTON
+      // AGGREGATED_LOADS_LABEL
       // 
-      this.ADD_ADDITIONAL_LOAD_BUTTON.Location = new System.Drawing.Point(415, 342);
-      this.ADD_ADDITIONAL_LOAD_BUTTON.Name = "ADD_ADDITIONAL_LOAD_BUTTON";
-      this.ADD_ADDITIONAL_LOAD_BUTTON.Size = new System.Drawing.Size(142, 23);
-      this.ADD_ADDITIONAL_LOAD_BUTTON.TabIndex = 33;
-      this.ADD_ADDITIONAL_LOAD_BUTTON.Text = "Add Additional Load";
-      this.ADD_ADDITIONAL_LOAD_BUTTON.UseVisualStyleBackColor = true;
+      this.AGGREGATED_LOADS_LABEL.AutoSize = true;
+      this.AGGREGATED_LOADS_LABEL.Location = new System.Drawing.Point(20, 52);
+      this.AGGREGATED_LOADS_LABEL.Name = "AGGREGATED_LOADS_LABEL";
+      this.AGGREGATED_LOADS_LABEL.Size = new System.Drawing.Size(94, 13);
+      this.AGGREGATED_LOADS_LABEL.TabIndex = 30;
+      this.AGGREGATED_LOADS_LABEL.Text = "Aggregated Loads";
+      this.AGGREGATED_LOADS_LABEL.Click += new System.EventHandler(this.AGGREGATED_LOADS_LABEL_Click);
       // 
-      // ADDITIONAL_LOADS_LABEL
+      // AGGREGATED_LOADS_FLOW_LAYOUT_PANEL
       // 
-      this.ADDITIONAL_LOADS_LABEL.AutoSize = true;
-      this.ADDITIONAL_LOADS_LABEL.Location = new System.Drawing.Point(20, 209);
-      this.ADDITIONAL_LOADS_LABEL.Name = "ADDITIONAL_LOADS_LABEL";
-      this.ADDITIONAL_LOADS_LABEL.Size = new System.Drawing.Size(85, 13);
-      this.ADDITIONAL_LOADS_LABEL.TabIndex = 32;
-      this.ADDITIONAL_LOADS_LABEL.Text = "Additional Loads";
-      // 
-      // ADDITIONAL_LOAD_FLOW_LAYOUT_PANEL
-      // 
-      this.ADDITIONAL_LOAD_FLOW_LAYOUT_PANEL.Location = new System.Drawing.Point(23, 225);
-      this.ADDITIONAL_LOAD_FLOW_LAYOUT_PANEL.Name = "ADDITIONAL_LOAD_FLOW_LAYOUT_PANEL";
-      this.ADDITIONAL_LOAD_FLOW_LAYOUT_PANEL.Size = new System.Drawing.Size(534, 111);
-      this.ADDITIONAL_LOAD_FLOW_LAYOUT_PANEL.TabIndex = 31;
-      // 
-      // PANEL_LOADS_LABEL
-      // 
-      this.PANEL_LOADS_LABEL.AutoSize = true;
-      this.PANEL_LOADS_LABEL.Location = new System.Drawing.Point(20, 28);
-      this.PANEL_LOADS_LABEL.Name = "PANEL_LOADS_LABEL";
-      this.PANEL_LOADS_LABEL.Size = new System.Drawing.Size(66, 13);
-      this.PANEL_LOADS_LABEL.TabIndex = 30;
-      this.PANEL_LOADS_LABEL.Text = "Panel Loads";
-      // 
-      // PANEL_FLOW_LAYOUT_PANEL
-      // 
-      this.PANEL_FLOW_LAYOUT_PANEL.Location = new System.Drawing.Point(23, 44);
-      this.PANEL_FLOW_LAYOUT_PANEL.Name = "PANEL_FLOW_LAYOUT_PANEL";
-      this.PANEL_FLOW_LAYOUT_PANEL.Size = new System.Drawing.Size(534, 143);
-      this.PANEL_FLOW_LAYOUT_PANEL.TabIndex = 29;
-      this.PANEL_FLOW_LAYOUT_PANEL.Paint += new System.Windows.Forms.PaintEventHandler(this.PANEL_FLOW_LAYOUT_PANEL_Paint);
+      this.AGGREGATED_LOADS_FLOW_LAYOUT_PANEL.Location = new System.Drawing.Point(23, 68);
+      this.AGGREGATED_LOADS_FLOW_LAYOUT_PANEL.Name = "AGGREGATED_LOADS_FLOW_LAYOUT_PANEL";
+      this.AGGREGATED_LOADS_FLOW_LAYOUT_PANEL.Size = new System.Drawing.Size(534, 324);
+      this.AGGREGATED_LOADS_FLOW_LAYOUT_PANEL.TabIndex = 29;
+      this.AGGREGATED_LOADS_FLOW_LAYOUT_PANEL.Paint += new System.Windows.Forms.PaintEventHandler(this.PANEL_FLOW_LAYOUT_PANEL_Paint);
       // 
       // OVERRIDE_PANEL_LOADS_CHECKBOX
       // 
@@ -217,20 +192,36 @@
       this.SAFETY_FACTOR_TEXTBOX.Text = "1.25";
       this.SAFETY_FACTOR_TEXTBOX.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
       // 
+      // DISTRIBUTION_SECTION_COMBO_BOX
+      // 
+      this.DISTRIBUTION_SECTION_COMBO_BOX.FormattingEnabled = true;
+      this.DISTRIBUTION_SECTION_COMBO_BOX.Location = new System.Drawing.Point(122, 21);
+      this.DISTRIBUTION_SECTION_COMBO_BOX.Name = "DISTRIBUTION_SECTION_COMBO_BOX";
+      this.DISTRIBUTION_SECTION_COMBO_BOX.Size = new System.Drawing.Size(228, 21);
+      this.DISTRIBUTION_SECTION_COMBO_BOX.TabIndex = 39;
+      // 
+      // DISTRIBUTION_SECTION_LABEL
+      // 
+      this.DISTRIBUTION_SECTION_LABEL.AutoSize = true;
+      this.DISTRIBUTION_SECTION_LABEL.Location = new System.Drawing.Point(20, 24);
+      this.DISTRIBUTION_SECTION_LABEL.Name = "DISTRIBUTION_SECTION_LABEL";
+      this.DISTRIBUTION_SECTION_LABEL.Size = new System.Drawing.Size(98, 13);
+      this.DISTRIBUTION_SECTION_LABEL.TabIndex = 40;
+      this.DISTRIBUTION_SECTION_LABEL.Text = "Distribution Section";
+      // 
       // LoadSummaryForm
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      this.Controls.Add(this.DISTRIBUTION_SECTION_LABEL);
+      this.Controls.Add(this.DISTRIBUTION_SECTION_COMBO_BOX);
       this.Controls.Add(this.SAFETY_FACTOR_TEXTBOX);
       this.Controls.Add(this.LOAD_SUMMARY_RESULT_TEXTBOX);
       this.Controls.Add(this.REMOVE_LOADS_LABEL);
       this.Controls.Add(this.ADD_REMOVED_LOADS_BUTTON);
-      this.Controls.Add(this.REMOVED_LOAD_FLOW_LAYOUT_PANEL);
-      this.Controls.Add(this.ADD_ADDITIONAL_LOAD_BUTTON);
-      this.Controls.Add(this.ADDITIONAL_LOADS_LABEL);
-      this.Controls.Add(this.ADDITIONAL_LOAD_FLOW_LAYOUT_PANEL);
-      this.Controls.Add(this.PANEL_LOADS_LABEL);
-      this.Controls.Add(this.PANEL_FLOW_LAYOUT_PANEL);
+      this.Controls.Add(this.REMOVED_LOADS_FLOW_LAYOUT_PANEL);
+      this.Controls.Add(this.AGGREGATED_LOADS_LABEL);
+      this.Controls.Add(this.AGGREGATED_LOADS_FLOW_LAYOUT_PANEL);
       this.Controls.Add(this.OVERRIDE_PANEL_LOADS_CHECKBOX);
       this.Controls.Add(this.PHASE_LABEL);
       this.Controls.Add(this.PEAK_KVA_LABEL);
@@ -252,12 +243,9 @@
     private System.Windows.Forms.TextBox LOAD_SUMMARY_RESULT_TEXTBOX;
     private System.Windows.Forms.Label REMOVE_LOADS_LABEL;
     private System.Windows.Forms.Button ADD_REMOVED_LOADS_BUTTON;
-    private System.Windows.Forms.FlowLayoutPanel REMOVED_LOAD_FLOW_LAYOUT_PANEL;
-    private System.Windows.Forms.Button ADD_ADDITIONAL_LOAD_BUTTON;
-    private System.Windows.Forms.Label ADDITIONAL_LOADS_LABEL;
-    private System.Windows.Forms.FlowLayoutPanel ADDITIONAL_LOAD_FLOW_LAYOUT_PANEL;
-    private System.Windows.Forms.Label PANEL_LOADS_LABEL;
-    private System.Windows.Forms.FlowLayoutPanel PANEL_FLOW_LAYOUT_PANEL;
+    private System.Windows.Forms.FlowLayoutPanel REMOVED_LOADS_FLOW_LAYOUT_PANEL;
+    private System.Windows.Forms.Label AGGREGATED_LOADS_LABEL;
+    private System.Windows.Forms.FlowLayoutPanel AGGREGATED_LOADS_FLOW_LAYOUT_PANEL;
     private System.Windows.Forms.CheckBox OVERRIDE_PANEL_LOADS_CHECKBOX;
     private System.Windows.Forms.Label PHASE_LABEL;
     private System.Windows.Forms.Label PEAK_KVA_LABEL;
@@ -268,5 +256,7 @@
     private System.Windows.Forms.ComboBox SYSTEM_VOLTAGE_COMBO_BOX;
     private System.Windows.Forms.Label TOTAL_KVA_AT_VOLTAGE_LABEL;
     private System.Windows.Forms.TextBox SAFETY_FACTOR_TEXTBOX;
+    private System.Windows.Forms.ComboBox DISTRIBUTION_SECTION_COMBO_BOX;
+    private System.Windows.Forms.Label DISTRIBUTION_SECTION_LABEL;
   }
 }
