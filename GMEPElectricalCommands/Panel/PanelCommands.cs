@@ -825,6 +825,42 @@ namespace ElectricalCommands {
       );
     }
 
+    public void Create_Load_Summary(Dictionary<string, object> panelData) {
+      var (doc, db, ed) = PanelCommands.GetGlobals();
+      var promptOptions = new PromptPointOptions("\nSelect top right corner point: ");
+      var promptResult = ed.GetPoint(promptOptions);
+      if (promptResult.Status != PromptStatus.OK)
+        return;
+
+      var spaceId =
+        (db.TileMode == true)
+          ? SymbolUtilityServices.GetBlockModelSpaceId(db)
+          : SymbolUtilityServices.GetBlockPaperSpaceId(db);
+
+      // Initial point
+      var topRightCorner = promptResult.Value;
+      var originalTopRightCorner = promptResult.Value;
+
+      // Lowest Y point
+      double lowestY = topRightCorner.Y;
+
+      var totalLevel = 0;
+      var decreaseY = 0.0;
+
+      int counter = 0;
+      CREATEBLOCK();
+
+      var endPoint = new Point3d(0, 0, 0);
+
+      using (var tr = db.TransactionManager.StartTransaction()) {
+        var btr = (BlockTableRecord)tr.GetObject(spaceId, OpenMode.ForWrite);
+
+        // Create initial values
+        var startPoint = new Point3d(topRightCorner.X - 8.9856, topRightCorner.Y, 0);
+        var layerName = "0";
+      }
+    }
+
     public void Create_Panels(List<Dictionary<string, object>> panelDataList) {
       var (doc, db, ed) = PanelCommands.GetGlobals();
 

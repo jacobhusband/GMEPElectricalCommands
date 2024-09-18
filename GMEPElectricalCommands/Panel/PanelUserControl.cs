@@ -213,6 +213,13 @@ namespace ElectricalCommands {
       return 0;
     }
 
+    public double getPhaseValue(object val) {
+      if (!String.IsNullOrEmpty(val as string)) {
+        return Convert.ToDouble(val as string);
+      }
+      return 0;
+    }
+
     public Dictionary<string, object> retrieve_data_from_modal() {
       // Create a new panel
       Dictionary<string, object> panel = new Dictionary<string, object>();
@@ -2100,48 +2107,70 @@ namespace ElectricalCommands {
       mainForm.UpdateLCLLML();
       if (DISTRIBUTION_SECTION_CHECKBOX.Checked) {
         List<Dictionary<string, object>> allPanelData = this.mainForm.retrieve_saved_panel_data();
-        // iterate thru panels
-        // if panel is in distribution section,
-        // set phA, phB, and phC to largest of the three
-        double linkedPanelsSum = 0;
         int poles = 3;
         if (!this.is3PH) {
           poles = 2;
         }
-        foreach (Dictionary<string, object> panel in allPanelData) {
-          if (panel.TryGetValue("distribution_section", out object value)) {
-            if (value is bool boolValue && boolValue == false) {
-              if (panel.TryGetValue("panel", out object panelName)) {
-                panelName = "PANEL " + panelName.ToString().Replace("'", "");
-                for (int i = 0; i < PANEL_GRID.Rows.Count; i += poles) {
-                  string compare = PANEL_GRID.Rows[i].Cells["description_left"].Value.ToString();
-                  if (compare == panelName.ToString()) {
-                    double a = Convert.ToDouble(PANEL_GRID.Rows[i].Cells["phase_a_left"].Value ?? 0);
-                    double b = Convert.ToDouble(PANEL_GRID.Rows[i + 1].Cells["phase_b_left"].Value ?? 0);
-                    double c = 0;
-                    if (poles == 3) {
-                      c = Convert.ToDouble(PANEL_GRID.Rows[i + 2].Cells["phase_c_left"].Value ?? 0);
-                    }
-                    linkedPanelsSum += Math.Max(Math.Max(a, b), c);
-                  }
-                  compare = PANEL_GRID.Rows[i].Cells["description_right"].Value.ToString();
-                  if (compare == panelName.ToString()) {
-                    double a = Convert.ToDouble(PANEL_GRID.Rows[i].Cells["phase_a_right"].Value ?? 0);
-                    double b = Convert.ToDouble(PANEL_GRID.Rows[i + 1].Cells["phase_b_right"].Value ?? 0);
-                    double c = 0;
-                    if (poles == 3) {
-                      c = Convert.ToDouble(PANEL_GRID.Rows[i + 2].Cells["phase_c_left"].Value ?? 0);
-                    }
-                    linkedPanelsSum += Math.Max(Math.Max(a, b), c);
-                  }
+        phA = 0;
+        phB = 0;
+        phC = 0;
+        for (int i = 0; i < PANEL_GRID.Rows.Count; i += poles) {
+          double linkedPanelsSum = 0;
+          string desc = PANEL_GRID.Rows[i].Cells["description_left"].Value.ToString();
+          bool isPanel = false;
+          foreach (Dictionary<string, object> panel in allPanelData) {
+            if (panel.TryGetValue("panel", out object panelName)) {
+              panelName = "PANEL " + panelName.ToString().Replace("'", "");
+              if (desc == panelName.ToString()) {
+                double a = getPhaseValue(PANEL_GRID.Rows[i].Cells["phase_a_left"].Value);
+                double b = 0;
+                if (i < PANEL_GRID.Rows.Count - 1) {
+                  b = getPhaseValue(PANEL_GRID.Rows[i + 1].Cells["phase_b_left"].Value);
                 }
+                double c = 0;
+                if (poles == 3 && i < PANEL_GRID.Rows.Count - 2) {
+                  c = getPhaseValue(PANEL_GRID.Rows[i + 2].Cells["phase_c_left"].Value);
+                }
+                linkedPanelsSum = Math.Max(Math.Max(a, b), c);
+                isPanel = true;
               }
             }
           }
+          desc = PANEL_GRID.Rows[i].Cells["description_right"].Value.ToString();
+          foreach (Dictionary<string, object> panel in allPanelData) {
+            if (panel.TryGetValue("panel", out object panelName)) {
+              panelName = "PANEL " + panelName.ToString().Replace("'", "");
+              if (desc == panelName.ToString()) {
+                double a = getPhaseValue(PANEL_GRID.Rows[i].Cells["phase_a_right"].Value);
+                double b = 0;
+                if (i < PANEL_GRID.Rows.Count - 1) {
+                  b = getPhaseValue(PANEL_GRID.Rows[i + 1].Cells["phase_b_right"].Value);
+                }
+                double c = 0;
+                if (poles == 3 && i < PANEL_GRID.Rows.Count - 2) {
+                  c = getPhaseValue(PANEL_GRID.Rows[i + 2].Cells["phase_c_right"].Value);
+                }
+                linkedPanelsSum = Math.Max(Math.Max(a, b), c);
+                isPanel = true;
+              }
+            }
+          }
+          phA += linkedPanelsSum;
+          phB += linkedPanelsSum;
+          phC += linkedPanelsSum;
+          if (!isPanel) {
+            phA += getPhaseValue(PANEL_GRID.Rows[i].Cells["phase_a_left"].Value);
+            phA += getPhaseValue(PANEL_GRID.Rows[i].Cells["phase_a_right"].Value);
+            if (i < PANEL_GRID.Rows.Count - 1) {
+              phB += getPhaseValue(PANEL_GRID.Rows[i + 1].Cells["phase_b_left"].Value);
+              phB += getPhaseValue(PANEL_GRID.Rows[i + 1].Cells["phase_b_right"].Value);
+            }
+            if (poles == 3 && i < PANEL_GRID.Rows.Count - 2) {
+              phC += getPhaseValue(PANEL_GRID.Rows[i + 2].Cells["phase_c_left"].Value);
+              phC += getPhaseValue(PANEL_GRID.Rows[i + 2].Cells["phase_c_right"].Value);
+            }
+          }
         }
-        phA = linkedPanelsSum;
-        phB = linkedPanelsSum;
-        phC = linkedPanelsSum;
       }
 
       TOTAL_VA_GRID.Rows[0].Cells[0].Value = CalculateTotalVA(sum);
