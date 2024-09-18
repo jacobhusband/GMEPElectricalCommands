@@ -827,7 +827,7 @@ namespace ElectricalCommands {
 
     public void Create_Load_Summary(Dictionary<string, object> panelData) {
       var (doc, db, ed) = PanelCommands.GetGlobals();
-      var promptOptions = new PromptPointOptions("\nSelect top right corner point: ");
+      var promptOptions = new PromptPointOptions("\nSelect top left corner point: ");
       var promptResult = ed.GetPoint(promptOptions);
       if (promptResult.Status != PromptStatus.OK)
         return;
@@ -839,25 +839,145 @@ namespace ElectricalCommands {
 
       // Initial point
       var topRightCorner = promptResult.Value;
-      var originalTopRightCorner = promptResult.Value;
 
-      // Lowest Y point
-      double lowestY = topRightCorner.Y;
+      double GetSafeDouble(object val) {
+        if (!String.IsNullOrEmpty(val as string)) {
+          return Convert.ToDouble(val as string);
+        }
+        return 0;
+      }
 
-      var totalLevel = 0;
-      var decreaseY = 0.0;
-
-      int counter = 0;
-      CREATEBLOCK();
-
-      var endPoint = new Point3d(0, 0, 0);
+      bool GetSafeBoolean(string key) {
+        if (panelData.TryGetValue(key, out object value)) {
+          if (value is bool boolValue) {
+            return boolValue;
+          }
+          if (value is string stringValue) {
+            return bool.TryParse(stringValue, out bool result) && result;
+          }
+        }
+        return false;
+      }
 
       using (var tr = db.TransactionManager.StartTransaction()) {
         var btr = (BlockTableRecord)tr.GetObject(spaceId, OpenMode.ForWrite);
 
-        // Create initial values
-        var startPoint = new Point3d(topRightCorner.X - 8.9856, topRightCorner.Y, 0);
-        var layerName = "0";
+        var startPoint = new Point3d(topRightCorner.X, topRightCorner.Y, 0);
+        
+        List<string> descriptionLeft = (List<string>)panelData["description_left"];
+        List<string> descriptionRight = (List<string>)panelData["description_right"];
+        List<string> phaseALeft = (List<string>)panelData["phase_a_left"];
+        List<string> phaseARight = (List<string>)panelData["phase_a_right"];
+        List<string> phaseBLeft = (List<string>)panelData["phase_b_left"];
+        List<string> phaseBRight = (List<string>)panelData["phase_b_right"];
+        List<string> phaseCLeft = [];
+        List<string> phaseCRight = [];
+        int totalEntries = 0;
+        for (int i = 0; i < descriptionLeft.Count; i++) {
+          if (!String.IsNullOrEmpty(descriptionLeft[i]) && descriptionLeft[i] != "SPARE" && descriptionLeft[i] != "SPACE") {
+            totalEntries++;
+          }
+          if (!String.IsNullOrEmpty(descriptionRight[i]) && descriptionRight[i] != "SPARE" && descriptionRight[i] != "SPACE") {
+            totalEntries++;
+          }
+        }
+        Table tb = new Table();
+        tb.TableStyle = db.Tablestyle;
+        tb.Position = startPoint;
+        tb.SetSize(totalEntries + 4, 2);
+        tb.SetRowHeight(0.5);
+        tb.Cells[0, 0].TextHeight = (0.125);
+        tb.Cells[0, 0].TextString = $"{panelData["panel"] as string } LOAD SUMMARY";
+        int tableRowIndex = 1;
+        int increment = 2;
+        tb.SetColumnWidth(2);
+        if (panelData.ContainsKey("phase_c_left")) {
+          increment = 3;
+          phaseCLeft = (List<string>)panelData["phase_c_left"];
+          phaseCRight = (List<string>)panelData["phase_c_right"];
+        }
+        for (int i = 0; i < descriptionLeft.Count; i += increment * 2) {
+          if (!String.IsNullOrEmpty(descriptionLeft[i]) && descriptionLeft[i] != "SPARE" && descriptionLeft[i] != "SPACE") {
+            double phA = GetSafeDouble(phaseALeft[i]);
+            double phB = GetSafeDouble(phaseBLeft[i + 2]);
+            double phC = 0;
+            if (increment == 3) {
+              phC = GetSafeDouble(phaseCLeft[i + 4]);
+            }
+            tb.Cells[tableRowIndex, 0].TextString = descriptionLeft[i];
+            tb.Cells[tableRowIndex, 0].TextHeight = (0.125);
+            tb.Cells[tableRowIndex, 0].Alignment = CellAlignment.MiddleCenter;
+            tb.Cells[tableRowIndex, 1].TextString = Math.Round((phA + phB + phC)/1000, 1).ToString() + " KVA";
+            tb.Cells[tableRowIndex, 1].TextHeight = (0.125);
+            tb.Cells[tableRowIndex, 1].Alignment = CellAlignment.MiddleCenter;
+            tableRowIndex++;
+          }
+          if (!String.IsNullOrEmpty(descriptionRight[i]) && descriptionRight[i] != "SPARE" && descriptionRight[i] != "SPACE") {
+            double phA = GetSafeDouble(phaseARight[i]);
+            double phB = GetSafeDouble(phaseBRight[i + 2]);
+            double phC = 0;
+            if (increment == 3) {
+              phC = GetSafeDouble(phaseCRight[i + 4]);
+            }
+            tb.Cells[tableRowIndex, 0].TextString = descriptionRight[i];
+            tb.Cells[tableRowIndex, 0].TextHeight = (0.125);
+            tb.Cells[tableRowIndex, 0].Alignment = CellAlignment.MiddleCenter;
+            tb.Cells[tableRowIndex, 1].TextString = Math.Round((phA + phB + phC) / 1000, 1).ToString() + " KVA";
+            tb.Cells[tableRowIndex, 1].TextHeight = (0.125);
+            tb.Cells[tableRowIndex, 1].Alignment = CellAlignment.MiddleCenter;
+            tableRowIndex++;
+          }
+        }
+
+        tb.Cells[totalEntries + 1, 0].TextHeight = (0.125);
+        tb.Cells[totalEntries + 1, 1].TextHeight = (0.125);
+        tb.Cells[totalEntries + 1, 0].Alignment = CellAlignment.MiddleCenter;
+        tb.Cells[totalEntries + 1, 1].Alignment = CellAlignment.MiddleCenter;
+        tb.Cells[totalEntries + 1, 0].TextString = "TOTAL (KVA)";
+        tb.Cells[totalEntries + 1, 1].TextString = panelData["kva"] as string;
+
+        bool usingSafetyFactor = GetSafeBoolean("using_safety_factor");
+        double lineVoltage = GetSafeDouble(panelData["voltage1"]);
+        double phaseVoltage = GetSafeDouble(panelData["voltage2"]);
+        double yFactor = 1;
+        if (increment == 3) {
+          yFactor = 1.732;
+        }
+
+        double feederAmps = GetSafeDouble(panelData["feeder_amps"]);
+
+        double kva = GetSafeDouble(panelData["kva"]);
+
+        if (usingSafetyFactor) {
+          double safetyFactor = Convert.ToDouble(panelData.TryGetValue("safety_factor", out object value) ? value?.ToString() ?? "1" : "1");
+          
+          if (safetyFactor == 0) safetyFactor = 1;
+          tb.Cells[totalEntries + 2, 0].TextHeight = (0.125);
+          tb.Cells[totalEntries + 2, 1].TextHeight = (0.125);
+          tb.Cells[totalEntries + 3, 0].TextHeight = (0.125);
+          tb.Cells[totalEntries + 3, 1].TextHeight = (0.125);
+          tb.Cells[totalEntries + 2, 0].Alignment = CellAlignment.MiddleCenter;
+          tb.Cells[totalEntries + 2, 1].Alignment = CellAlignment.MiddleCenter;
+          tb.Cells[totalEntries + 3, 0].Alignment = CellAlignment.MiddleCenter;
+          tb.Cells[totalEntries + 3, 1].Alignment = CellAlignment.MiddleCenter;
+          tb.Cells[totalEntries + 2, 0].TextString = $"TOTAL (AMP@{lineVoltage}/{phaseVoltage}V)";
+          tb.Cells[totalEntries + 2, 1].TextString = Math.Round(kva * 1000 / phaseVoltage / yFactor, 1).ToString();
+          tb.Cells[totalEntries + 3, 0].TextString = $"AMPx{safetyFactor} SAFETY FACTOR";
+          tb.Cells[totalEntries + 3, 1].TextString = Math.Round(kva * 1000 / phaseVoltage / yFactor * safetyFactor, 1).ToString();
+        }
+        else {
+          tb.Cells[totalEntries + 2, 0].TextHeight = (0.125);
+          tb.Cells[totalEntries + 2, 1].TextHeight = (0.125);
+          tb.Cells[totalEntries + 2, 0].Alignment = CellAlignment.MiddleCenter;
+          tb.Cells[totalEntries + 2, 1].Alignment = CellAlignment.MiddleCenter;
+          tb.Cells[totalEntries + 2, 0].TextString = $"TOTAL (AMP@{lineVoltage}/{phaseVoltage}V)";
+          tb.Cells[totalEntries + 2, 1].TextString = Math.Round(kva * 1000 / phaseVoltage / yFactor, 1).ToString();
+        }
+
+        BlockTable bt = (BlockTable)tr.GetObject(doc.Database.BlockTableId, OpenMode.ForRead);
+        btr.AppendEntity(tb);
+        tr.AddNewlyCreatedDBObject(tb, true);
+        tr.Commit();
       }
     }
 

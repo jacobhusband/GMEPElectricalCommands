@@ -273,6 +273,8 @@ namespace ElectricalCommands {
       panel.Add("lcl_override", LCL_OVERRIDE.Checked);
       panel.Add("lml_override", LML_OVERRIDE.Checked);
       panel.Add("distribution_section", DISTRIBUTION_SECTION_CHECKBOX.Checked);
+      panel.Add("safety_factor", SafeConvertToDouble(SAFETY_FACTOR_TEXTBOX.Text));
+      panel.Add("using_safety_factor", SAFETY_FACTOR_CHECKBOX.Checked);
 
       panel.Add(
         "subtotal_a",
@@ -305,7 +307,13 @@ namespace ElectricalCommands {
       panel.Add("lml", lml);
       panel.Add("lml125", lml125);
       panel.Add("kva", PANEL_LOAD_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
-      panel.Add("feeder_amps", FEEDER_AMP_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
+      if (SAFETY_FACTOR_CHECKBOX.Enabled && SAFETY_FACTOR_CHECKBOX.Checked) {
+        double feederAmps = Convert.ToDouble(FEEDER_AMP_GRID.Rows[0].Cells[0].Value.ToString()) / Convert.ToDouble(SAFETY_FACTOR_TEXTBOX.Text);
+        panel.Add("feeder_amps", feederAmps.ToString());
+      }
+      else {
+        panel.Add("feeder_amps", FEEDER_AMP_GRID.Rows[0].Cells[0].Value.ToString());
+      }
       panel.Add("custom_title", CUSTOM_TITLE_TEXT.Text.ToUpper());
 
       string busRatingInput = BUS_RATING_INPUT.Text.ToLower();
@@ -428,7 +436,7 @@ namespace ElectricalCommands {
             .Replace(" ", "") ?? "0"
         );
         phaseALeftValue =
-          phaseALeftValue.Contains(";") || !Regex.IsMatch(phaseALeftValue, @"^\d+$")
+          phaseALeftValue.Contains(";") || !Regex.IsMatch(phaseALeftValue, @"^-?\d+$")
             ? phaseALeftValue
             : Math.Round(Convert.ToDouble(phaseALeftValue)).ToString();
 
@@ -441,7 +449,7 @@ namespace ElectricalCommands {
             .Replace(" ", "") ?? "0"
         );
         phaseBLeftValue =
-          phaseBLeftValue.Contains(";") || !Regex.IsMatch(phaseBLeftValue, @"^\d+$")
+          phaseBLeftValue.Contains(";") || !Regex.IsMatch(phaseBLeftValue, @"^-?\d+$")
             ? phaseBLeftValue
             : Math.Round(Convert.ToDouble(phaseBLeftValue)).ToString();
 
@@ -454,7 +462,7 @@ namespace ElectricalCommands {
             .Replace(" ", "") ?? "0"
         );
         phaseARightValue =
-          phaseARightValue.Contains(";") || !Regex.IsMatch(phaseARightValue, @"^\d+$")
+          phaseARightValue.Contains(";") || !Regex.IsMatch(phaseARightValue, @"^-?\d+$")
             ? phaseARightValue
             : Math.Round(Convert.ToDouble(phaseARightValue)).ToString();
 
@@ -467,7 +475,7 @@ namespace ElectricalCommands {
             .Replace(" ", "") ?? "0"
         );
         phaseBRightValue =
-          phaseBRightValue.Contains(";") || !Regex.IsMatch(phaseBRightValue, @"^\d+$")
+          phaseBRightValue.Contains(";") || !Regex.IsMatch(phaseBRightValue, @"^-?\d+$")
             ? phaseBRightValue
             : Math.Round(Convert.ToDouble(phaseBRightValue)).ToString();
 
@@ -493,7 +501,7 @@ namespace ElectricalCommands {
               .Replace(" ", "") ?? "0"
           );
           phaseCLeftValue =
-            phaseCLeftValue.Contains(";") || !Regex.IsMatch(phaseCLeftValue, @"^\d+$")
+            phaseCLeftValue.Contains(";") || !Regex.IsMatch(phaseCLeftValue, @"^-?\d+$")
               ? phaseCLeftValue
               : Math.Round(Convert.ToDouble(phaseCLeftValue)).ToString();
           phaseCRightValue = (
@@ -505,7 +513,7 @@ namespace ElectricalCommands {
               .Replace(" ", "") ?? "0"
           );
           phaseCRightValue =
-            phaseCRightValue.Contains(";") || !Regex.IsMatch(phaseCRightValue, @"^\d+$")
+            phaseCRightValue.Contains(";") || !Regex.IsMatch(phaseCRightValue, @"^-?\d+$")
               ? phaseCRightValue
               : Math.Round(Convert.ToDouble(phaseCRightValue)).ToString();
         }
@@ -1184,6 +1192,8 @@ namespace ElectricalCommands {
       LCL_OVERRIDE.Checked = GetSafeBoolean("lcl_override");
       LML_OVERRIDE.Checked = GetSafeBoolean("lml_override");
       DISTRIBUTION_SECTION_CHECKBOX.Checked = GetSafeBoolean("distribution_section");
+      SAFETY_FACTOR_CHECKBOX.Checked = GetSafeBoolean("using_safety_factor");
+      SAFETY_FACTOR_TEXTBOX.Text = GetSafeString("safety_factor");
 
       // Set ComboBoxes
       STATUS_COMBOBOX.SelectedItem = GetSafeString("existing");
@@ -1202,6 +1212,9 @@ namespace ElectricalCommands {
       TOTAL_VA_GRID.Rows[0].Cells[0].Value = GetSafeString("total_va");
       PANEL_LOAD_GRID.Rows[0].Cells[0].Value = GetSafeString("kva");
       FEEDER_AMP_GRID.Rows[0].Cells[0].Value = GetSafeString("feeder_amps");
+      if (SAFETY_FACTOR_CHECKBOX.Checked) {
+        FEEDER_AMP_GRID.Rows[0].Cells[0].Value = (SafeConvertToDouble(GetSafeString("feeder_amps")) * SafeConvertToDouble(GetSafeString("safety_factor"))).ToString();
+      }
 
       // Set Custom Title if it exists
       if (selectedPanelData.TryGetValue("custom_title", out object customTitle)) {
@@ -2027,6 +2040,12 @@ namespace ElectricalCommands {
       }
     }
 
+    private void SAFETY_FACTOR_TEXTBOX_KeyDown(object sender, KeyEventArgs e) {
+      if (decimal.TryParse(e.KeyValue.ToString(), out decimal value)) {
+        SAFETY_FACTOR_TEXTBOX.Text = SAFETY_FACTOR_TEXTBOX.Text + e.KeyValue;
+      }
+    }
+
     private async void PANEL_GRID_CellClick(object sender, DataGridViewCellEventArgs e) {
       if (e.RowIndex == -1) {
         return;
@@ -2117,7 +2136,8 @@ namespace ElectricalCommands {
         for (int i = 0; i < PANEL_GRID.Rows.Count; i += poles) {
           double linkedPanelsSum = 0;
           string desc = PANEL_GRID.Rows[i].Cells["description_left"].Value.ToString();
-          bool isPanel = false;
+          bool leftIsPanel = false;
+          bool rightIsPanel = false;
           foreach (Dictionary<string, object> panel in allPanelData) {
             if (panel.TryGetValue("panel", out object panelName)) {
               panelName = "PANEL " + panelName.ToString().Replace("'", "");
@@ -2132,7 +2152,7 @@ namespace ElectricalCommands {
                   c = getPhaseValue(PANEL_GRID.Rows[i + 2].Cells["phase_c_left"].Value);
                 }
                 linkedPanelsSum = Math.Max(Math.Max(a, b), c);
-                isPanel = true;
+                leftIsPanel = true;
               }
             }
           }
@@ -2151,22 +2171,28 @@ namespace ElectricalCommands {
                   c = getPhaseValue(PANEL_GRID.Rows[i + 2].Cells["phase_c_right"].Value);
                 }
                 linkedPanelsSum = Math.Max(Math.Max(a, b), c);
-                isPanel = true;
+                rightIsPanel = true;
               }
             }
           }
           phA += linkedPanelsSum;
           phB += linkedPanelsSum;
           phC += linkedPanelsSum;
-          if (!isPanel) {
+          if (!leftIsPanel) {
             phA += getPhaseValue(PANEL_GRID.Rows[i].Cells["phase_a_left"].Value);
-            phA += getPhaseValue(PANEL_GRID.Rows[i].Cells["phase_a_right"].Value);
             if (i < PANEL_GRID.Rows.Count - 1) {
               phB += getPhaseValue(PANEL_GRID.Rows[i + 1].Cells["phase_b_left"].Value);
-              phB += getPhaseValue(PANEL_GRID.Rows[i + 1].Cells["phase_b_right"].Value);
             }
             if (poles == 3 && i < PANEL_GRID.Rows.Count - 2) {
               phC += getPhaseValue(PANEL_GRID.Rows[i + 2].Cells["phase_c_left"].Value);
+            }
+          }
+          if (!rightIsPanel) {
+            phA += getPhaseValue(PANEL_GRID.Rows[i].Cells["phase_a_right"].Value);
+            if (i < PANEL_GRID.Rows.Count - 1) {
+              phB += getPhaseValue(PANEL_GRID.Rows[i + 1].Cells["phase_b_right"].Value);
+            }
+            if (poles == 3 && i < PANEL_GRID.Rows.Count - 2) {
               phC += getPhaseValue(PANEL_GRID.Rows[i + 2].Cells["phase_c_right"].Value);
             }
           }
@@ -2187,12 +2213,17 @@ namespace ElectricalCommands {
 
       PANEL_LOAD_GRID.Rows[0].Cells[0].Value = CalculatePanelLoad(sum);
 
+      double safetyFactor = 1.0;
+      if (SAFETY_FACTOR_CHECKBOX.Enabled && SAFETY_FACTOR_CHECKBOX.Checked) {
+        safetyFactor = Convert.ToDouble(SAFETY_FACTOR_TEXTBOX.Text);
+      }
+
       object lineVoltageObj = LINE_VOLTAGE_COMBOBOX.SelectedItem;
       if (lineVoltageObj != null) {
         double lineVoltage = Convert.ToDouble(lineVoltageObj);
         if (lineVoltage != 0) {
           if (LCL.Text == "0" && LML.Text == "0") {
-            FEEDER_AMP_GRID.Rows[0].Cells[0].Value = CalculateFeederAmps(phA, phB, phC, lineVoltage);
+            FEEDER_AMP_GRID.Rows[0].Cells[0].Value = CalculateFeederAmps(phA, phB, phC, lineVoltage) * safetyFactor;
           }
           else {
             FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(sum / (lineVoltage * 3), 1);
@@ -2207,11 +2238,8 @@ namespace ElectricalCommands {
       }
 
       double maxVal = Math.Max(Math.Max(phA, phB), phC);
-      double safetyFactor = 1.0;
-      if (SAFETY_FACTOR_CHECKBOX.Enabled && SAFETY_FACTOR_CHECKBOX.Checked) {
-        safetyFactor = Convert.ToDouble(SAFETY_FACTOR_TEXTBOX.Text);
-      }
-      return Math.Round(maxVal * safetyFactor / lineVoltage, 1);
+      
+      return Math.Round(maxVal / lineVoltage, 1);
     }
 
     public void UpdateLCLLMLLabels(int lcl, int lml) {
@@ -2265,7 +2293,26 @@ namespace ElectricalCommands {
       }
     }
 
-    private void DELETE_ROW_BUTTON_Click(object sender, EventArgs e) {
+    private void CREATE_LOAD_SUMMARY_BUTTON_Click(object sender, EventArgs e) {
+      Dictionary<string, object> panelDataList = retrieve_data_from_modal();
+      using (
+        DocumentLock docLock =
+          Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.LockDocument()
+      ) {
+        this.mainForm.Close();
+        myCommandsInstance.Create_Load_Summary(panelDataList);
+
+        Autodesk.AutoCAD.ApplicationServices.Application.MainWindow.WindowState = Autodesk
+          .AutoCAD
+          .Windows
+          .Window
+          .State
+          .Maximized;
+        Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.Window.Focus();
+      }
+    }
+
+     private void DELETE_ROW_BUTTON_Click(object sender, EventArgs e) {
       if (PANEL_GRID.Rows.Count > 0) {
         var lastRow = PANEL_GRID.Rows[PANEL_GRID.Rows.Count - 1];
         var phaseCells = new List<string>
@@ -2538,7 +2585,6 @@ namespace ElectricalCommands {
       string phaseVA = "";
 
       if (numPhases == 1) {
-        Console.WriteLine("num phases = 1");
         switch (sumObject) {
           case var _ when sumObject > 7.5: { // 10
               if (voltage == "120") {
@@ -2790,7 +2836,6 @@ namespace ElectricalCommands {
             };
         }
       }
-      Console.WriteLine($"phaseVA {phaseVA}");
       return phaseVA;
     }
 

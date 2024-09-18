@@ -776,6 +776,7 @@
       this.SAFETY_FACTOR_TEXTBOX.Size = new System.Drawing.Size(56, 20);
       this.SAFETY_FACTOR_TEXTBOX.TabIndex = 217;
       this.SAFETY_FACTOR_TEXTBOX.Text = "1.25";
+      this.SAFETY_FACTOR_TEXTBOX.KeyDown += new System.Windows.Forms.KeyEventHandler(this.SAFETY_FACTOR_TEXTBOX_KeyDown);
       // 
       // ADD_ALL_PANELS_BUTTON
       // 
@@ -795,6 +796,7 @@
       this.CREATE_LOAD_SUMMARY_BUTTON.TabIndex = 219;
       this.CREATE_LOAD_SUMMARY_BUTTON.Text = "CREATE LOAD SUMMARY";
       this.CREATE_LOAD_SUMMARY_BUTTON.UseVisualStyleBackColor = true;
+      this.CREATE_LOAD_SUMMARY_BUTTON.Click += new System.EventHandler(this.CREATE_LOAD_SUMMARY_BUTTON_Click);
       // 
       // PanelUserControl
       // 
