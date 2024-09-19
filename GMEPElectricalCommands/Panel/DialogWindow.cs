@@ -461,6 +461,24 @@ namespace ElectricalCommands {
       }
     }
 
+    public void PANEL_NAME_INPUT_Leave(object sender, EventArgs e, string input, string id, string fedFrom) {
+      int selectedIndex = PANEL_TABS.SelectedIndex;
+      List<Dictionary<string, object>> panelStorage = retrieve_saved_panel_data();
+      string oldPanelName = "";
+      foreach (Dictionary<string, object> panel in panelStorage) {
+        if (!String.IsNullOrEmpty(id) && (panel["id"] as string).ToLower() == id.ToLower()) {
+          oldPanelName = (panel["panel"] as string).Replace("'", "");
+        }
+      }
+      if (!String.IsNullOrEmpty(oldPanelName) && !String.IsNullOrEmpty(fedFrom)) {
+        PanelUserControl fedFromUserControl = (PanelUserControl)findUserControl(fedFrom);
+        fedFromUserControl.UpdateSubpanelName("PANEL " + oldPanelName, "PANEL " + input);
+      }
+      PanelUserControl userControl = (PanelUserControl)findUserControl(input);
+      userControl.UpdateSubpanelFedFrom();
+      SavePanelDataToLocalJsonFile();
+    }
+
     private void MAINFORM_DEACTIVATE(object sender, EventArgs e) {
       foreach (PanelUserControl userControl in userControls) {
         DataGridView panelGrid = userControl.retrieve_panelGrid();

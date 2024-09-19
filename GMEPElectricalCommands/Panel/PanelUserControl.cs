@@ -388,6 +388,17 @@ namespace ElectricalCommands {
               .ToUpper()
               .Replace("\r", "");
         }
+        if (descriptionLeftValue.StartsWith("PANEL")) {
+          foreach (UserControl userControl in this.mainForm.retrieve_userControls()) {
+            TextBox panelName =
+              userControl.Controls.Find("PANEL_NAME_INPUT", true).FirstOrDefault() as TextBox;
+            if ("PANEL " + panelName.Text == descriptionLeftValue) {
+              Label panelId =
+              userControl.Controls.Find("PANEL_ID_LABEL", true).FirstOrDefault() as Label;
+              descriptionLeftValue = panelId.Text;
+            }
+          }
+        }
         string descriptionRightValue = "";
         if (
           string.IsNullOrEmpty(PANEL_GRID.Rows[i].Cells["description_right"].Value as string)
@@ -412,7 +423,17 @@ namespace ElectricalCommands {
               .ToUpper()
               .Replace("\r", "");
         }
-
+        if (descriptionRightValue.StartsWith("PANEL")) {
+          foreach (UserControl userControl in this.mainForm.retrieve_userControls()) {
+            TextBox panelName =
+            userControl.Controls.Find("PANEL_NAME_INPUT", true).FirstOrDefault() as TextBox;
+            if ("PANEL " + panelName.Text == descriptionRightValue) {
+              Label panelId =
+              userControl.Controls.Find("PANEL_ID_LABEL", true).FirstOrDefault() as Label;
+              descriptionRightValue = panelId.Text;
+            }
+          }
+        }
         string breakerLeftValue =
           PANEL_GRID.Rows[i].Cells["breaker_left"].Value?.ToString().ToUpper().Replace("\r", "")
           ?? "";
@@ -1141,7 +1162,7 @@ namespace ElectricalCommands {
           PANEL_GRID.Rows[i].Cells["circuit_right"].ReadOnly = false;
           PANEL_NAME_LABEL.Text = "PANEL";
           PANEL_NAME_LABEL.Location = new Point(150, 74);
-          this.mainForm.PANEL_NAME_INPUT_TextChanged(sender, e, PANEL_NAME_INPUT.Text);
+          this.mainForm.PANEL_NAME_INPUT_TextChanged(sender, e, PANEL_NAME_INPUT.Text, false);
           CREATE_PANEL_BUTTON.Visible = true;
           CREATE_LOAD_SUMMARY_BUTTON.Visible = false;
           ADD_ALL_PANELS_BUTTON.Visible = false;
@@ -1190,6 +1211,8 @@ namespace ElectricalCommands {
         return false;
       }
 
+      PANEL_ID_LABEL.Text = GetSafeString("id");
+      ID = PANEL_ID_LABEL.Text;
       // Set TextBoxes
       MAIN_INPUT.Text = GetSafeString("main").Replace("AMP", "").Replace("A", "").Replace(" ", "");
       PANEL_NAME_INPUT.Text = GetSafeString("panel").Replace("'", "");
@@ -1239,18 +1262,18 @@ namespace ElectricalCommands {
       }
 
       List<string> multi_row_datagrid_keys = new List<string>
-    {
-        "description_left",
-        "description_right",
-        "phase_a_left",
-        "phase_b_left",
-        "phase_a_right",
-        "phase_b_right",
-        "breaker_left",
-        "breaker_right",
-        "circuit_left",
-        "circuit_right"
-    };
+      {
+          "description_left",
+          "description_right",
+          "phase_a_left",
+          "phase_b_left",
+          "phase_a_right",
+          "phase_b_right",
+          "breaker_left",
+          "breaker_right",
+          "circuit_left",
+          "circuit_right"
+      };
 
       // Check if the panel is three phase and if so add the third phase to the list of keys
       if (selectedPanelData["phase"].ToString() == "3") {
@@ -1323,6 +1346,27 @@ namespace ElectricalCommands {
           else {
             // Log or handle the unexpected type
             Console.WriteLine($"Warning: Value for key {key} is not a JArray");
+          }
+        }
+      }
+      List<Dictionary<string, object>> panelData = this.mainForm.retrieve_saved_panel_data();
+      for (int i = 0; i < PANEL_GRID.Rows.Count; i++) {
+        if (IsUuid(PANEL_GRID.Rows[i].Cells["description_left"].Value as string)) {
+          foreach (Dictionary<string, object> panel in panelData) {
+            var panelId = panel["id"].ToString().Replace("\'", "").Replace("`", "");
+            if (panelId.ToLower() == (PANEL_GRID.Rows[i].Cells["description_left"].Value as string).ToLower()) {
+              string panelName = panel["panel"].ToString().Replace("\'", "").Replace("`", "");
+              PANEL_GRID.Rows[i].Cells["description_left"].Value = "PANEL " + panelName;
+            }
+          }
+        }
+        if (IsUuid(PANEL_GRID.Rows[i].Cells["description_right"].Value as string)) {
+          foreach (Dictionary<string, object> panel in panelData) {
+            var panelId = panel["id"].ToString().Replace("\'", "").Replace("`", "");
+            if (panelId.ToLower() == (PANEL_GRID.Rows[i].Cells["description_right"].Value as string).ToLower()) {
+              string panelName = panel["panel"].ToString().Replace("\'", "").Replace("`", "");
+              PANEL_GRID.Rows[i].Cells["description_right"].Value = "PANEL " + panelName;
+            }
           }
         }
       }
@@ -1893,6 +1937,11 @@ namespace ElectricalCommands {
 
     private void PANEL_NAME_INPUT_TextChanged(object sender, EventArgs e) {
       this.mainForm.PANEL_NAME_INPUT_TextChanged(sender, e, PANEL_NAME_INPUT.Text.ToUpper(), DISTRIBUTION_SECTION_CHECKBOX.Checked);
+      this.Name = PANEL_NAME_INPUT.Text.ToUpper();
+    }
+
+    private void PANEL_NAME_INPUT_Leave(object sender, EventArgs e) {
+      this.mainForm.PANEL_NAME_INPUT_Leave(sender, e, PANEL_NAME_INPUT.Text.ToUpper(), ID, FED_FROM_TEXTBOX.Text);
     }
 
     private void PANEL_GRID_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e) {
@@ -3011,6 +3060,54 @@ namespace ElectricalCommands {
         ConvertHpToVaBySide2Ph("right");
       }
 
+    }
+
+    public bool IsUuid(string str) {
+      return Regex.IsMatch(str, @"^[a-fA-F0-9]{8}(-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$");
+    }
+
+    internal void UpdateSubpanelName(string oldSubpanelName, string newSubpanelName) {
+      for (int i = 0; i < PANEL_GRID.Rows.Count; i++) {
+        if ((PANEL_GRID.Rows[i].Cells["description_left"].Value as string).ToUpper() == oldSubpanelName.ToUpper()) {
+          PANEL_GRID.Rows[i].Cells["description_left"].Value = newSubpanelName.ToUpper();
+        }
+        if ((PANEL_GRID.Rows[i].Cells["description_right"].Value as string).ToUpper() == oldSubpanelName.ToUpper()) {
+          PANEL_GRID.Rows[i].Cells["description_right"].Value = newSubpanelName.ToUpper();
+        }
+      }
+    }
+
+    internal void UpdateSubpanelFedFrom() {
+      for (int i = 0; i < PANEL_GRID.Rows.Count; i++) {
+        if ((PANEL_GRID.Rows[i].Cells["description_left"].Value as string).ToUpper().StartsWith("PANEL")) {
+          PanelUserControl panelControl = (PanelUserControl)this.mainForm.findUserControl((PANEL_GRID.Rows[i].Cells["description_left"].Value as string).ToUpper());
+          if (panelControl != null) {
+            string name = this.Name;
+            TextBox panelControl_fedFromTextbox =
+                panelControl.Controls.Find("FED_FROM_TEXTBOX", true).FirstOrDefault() as TextBox;
+            if (DISTRIBUTION_SECTION_CHECKBOX.Checked) {
+              panelControl_fedFromTextbox.Text = name;
+            }
+            else {
+              panelControl_fedFromTextbox.Text = "PANEL " + name;
+            }
+          }
+        }
+        if ((PANEL_GRID.Rows[i].Cells["description_right"].Value as string).ToUpper().StartsWith("PANEL")) {
+          PanelUserControl panelControl = (PanelUserControl)this.mainForm.findUserControl((PANEL_GRID.Rows[i].Cells["description_right"].Value as string).ToUpper());
+          if (panelControl != null) {
+            string name = this.Name;
+            TextBox panelControl_fedFromTextbox =
+                panelControl.Controls.Find("FED_FROM_TEXTBOX", true).FirstOrDefault() as TextBox;
+            if (DISTRIBUTION_SECTION_CHECKBOX.Checked) {
+              panelControl_fedFromTextbox.Text = name;
+            }
+            else {
+              panelControl_fedFromTextbox.Text = "PANEL " + name;
+            }
+          }
+        }
+      }
     }
   }
 

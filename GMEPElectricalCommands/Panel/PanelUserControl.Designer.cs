@@ -102,6 +102,7 @@
       this.ADD_ALL_PANELS_BUTTON = new System.Windows.Forms.Button();
       this.CREATE_LOAD_SUMMARY_BUTTON = new System.Windows.Forms.Button();
       this.FED_FROM_TEXTBOX = new System.Windows.Forms.TextBox();
+      this.PANEL_ID_LABEL = new System.Windows.Forms.Label();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -348,6 +349,7 @@
       this.PANEL_NAME_INPUT.Name = "PANEL_NAME_INPUT";
       this.PANEL_NAME_INPUT.Size = new System.Drawing.Size(100, 20);
       this.PANEL_NAME_INPUT.TabIndex = 145;
+      this.PANEL_NAME_INPUT.Leave += new System.EventHandler(this.PANEL_NAME_INPUT_Leave);
       // 
       // PHASE_SUM_GRID
       // 
@@ -799,11 +801,22 @@
       this.FED_FROM_TEXTBOX.Size = new System.Drawing.Size(100, 20);
       this.FED_FROM_TEXTBOX.TabIndex = 220;
       // 
+      // PANEL_ID_LABEL
+      // 
+      this.PANEL_ID_LABEL.AutoSize = true;
+      this.PANEL_ID_LABEL.Location = new System.Drawing.Point(822, 4);
+      this.PANEL_ID_LABEL.Name = "PANEL_ID_LABEL";
+      this.PANEL_ID_LABEL.Size = new System.Drawing.Size(35, 13);
+      this.PANEL_ID_LABEL.TabIndex = 221;
+      this.PANEL_ID_LABEL.Text = "label2";
+      this.PANEL_ID_LABEL.Visible = false;
+      // 
       // PanelUserControl
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
+      this.Controls.Add(this.PANEL_ID_LABEL);
       this.Controls.Add(this.FED_FROM_TEXTBOX);
       this.Controls.Add(this.CREATE_LOAD_SUMMARY_BUTTON);
       this.Controls.Add(this.ADD_ALL_PANELS_BUTTON);
@@ -953,5 +966,6 @@
     private System.Windows.Forms.Button ADD_ALL_PANELS_BUTTON;
     private System.Windows.Forms.Button CREATE_LOAD_SUMMARY_BUTTON;
     private System.Windows.Forms.TextBox FED_FROM_TEXTBOX;
+    private System.Windows.Forms.Label PANEL_ID_LABEL;
   }
 }
