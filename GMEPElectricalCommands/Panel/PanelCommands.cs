@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace ElectricalCommands {
@@ -825,7 +826,7 @@ namespace ElectricalCommands {
       );
     }
 
-    public void Create_Load_Summary(Dictionary<string, object> panelData) {
+    public void Create_Load_Summary(Dictionary<string, object> panelData, List<Dictionary<string, object>> panelStorage) {
       var (doc, db, ed) = PanelCommands.GetGlobals();
       var promptOptions = new PromptPointOptions("\nSelect top left corner point: ");
       var promptResult = ed.GetPoint(promptOptions);
@@ -857,6 +858,17 @@ namespace ElectricalCommands {
           }
         }
         return false;
+      }
+
+      string GetLoadName(string key) {
+        if (Regex.IsMatch(key, @"^[a-fA-F0-9]{8}(-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$")) {
+          foreach (Dictionary<string, object> panel in panelStorage) {
+            if ((panel["id"] as string).ToLower() == key.ToLower()) {
+              return "PANEL " + panel["panel"] as string;
+            }
+          }
+        }
+        return key;
       }
 
       using (var tr = db.TransactionManager.StartTransaction()) {
@@ -904,7 +916,7 @@ namespace ElectricalCommands {
             if (increment == 3) {
               phC = GetSafeDouble(phaseCLeft[i + 4]);
             }
-            tb.Cells[tableRowIndex, 0].TextString = descriptionLeft[i];
+            tb.Cells[tableRowIndex, 0].TextString = GetLoadName(descriptionLeft[i]);
             tb.Cells[tableRowIndex, 1].TextString = Math.Round((phA + phB + phC)/1000, 1).ToString() + " KVA";
             tableRowIndex++;
           }
@@ -915,7 +927,7 @@ namespace ElectricalCommands {
             if (increment == 3) {
               phC = GetSafeDouble(phaseCRight[i + 4]);
             }
-            tb.Cells[tableRowIndex, 0].TextString = descriptionRight[i];
+            tb.Cells[tableRowIndex, 0].TextString = GetLoadName(descriptionRight[i]);
             tb.Cells[tableRowIndex, 1].TextString = Math.Round((phA + phB + phC) / 1000, 1).ToString() + " KVA";
             tableRowIndex++;
           }

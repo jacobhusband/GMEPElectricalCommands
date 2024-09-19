@@ -2301,12 +2301,13 @@ namespace ElectricalCommands {
 
     private void CREATE_LOAD_SUMMARY_BUTTON_Click(object sender, EventArgs e) {
       Dictionary<string, object> panelDataList = retrieve_data_from_modal();
+      List<Dictionary<string, object>> panelStorage = this.mainForm.retrieve_saved_panel_data();
       using (
         DocumentLock docLock =
           Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument.LockDocument()
       ) {
         this.mainForm.Close();
-        myCommandsInstance.Create_Load_Summary(panelDataList);
+        myCommandsInstance.Create_Load_Summary(panelDataList, panelStorage);
 
         Autodesk.AutoCAD.ApplicationServices.Application.MainWindow.WindowState = Autodesk
           .AutoCAD
