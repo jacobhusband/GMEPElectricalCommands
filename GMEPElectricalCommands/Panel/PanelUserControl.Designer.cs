@@ -96,12 +96,12 @@
       this.LML_OVERRIDE = new System.Windows.Forms.CheckBox();
       this.HP_TO_VA = new System.Windows.Forms.Button();
       this.FED_FROM_LABEL = new System.Windows.Forms.Label();
-      this.FED_FROM_COMBO_BOX = new System.Windows.Forms.ComboBox();
       this.DISTRIBUTION_SECTION_CHECKBOX = new System.Windows.Forms.CheckBox();
       this.SAFETY_FACTOR_CHECKBOX = new System.Windows.Forms.CheckBox();
       this.SAFETY_FACTOR_TEXTBOX = new System.Windows.Forms.TextBox();
       this.ADD_ALL_PANELS_BUTTON = new System.Windows.Forms.Button();
       this.CREATE_LOAD_SUMMARY_BUTTON = new System.Windows.Forms.Button();
+      this.FED_FROM_TEXTBOX = new System.Windows.Forms.TextBox();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.FEEDER_AMP_GRID)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PANEL_LOAD_GRID)).BeginInit();
@@ -731,19 +731,11 @@
       // FED_FROM_LABEL
       // 
       this.FED_FROM_LABEL.AutoSize = true;
-      this.FED_FROM_LABEL.Location = new System.Drawing.Point(111, 124);
+      this.FED_FROM_LABEL.Location = new System.Drawing.Point(129, 124);
       this.FED_FROM_LABEL.Name = "FED_FROM_LABEL";
       this.FED_FROM_LABEL.Size = new System.Drawing.Size(62, 13);
       this.FED_FROM_LABEL.TabIndex = 213;
       this.FED_FROM_LABEL.Text = "FED FROM";
-      // 
-      // FED_FROM_COMBO_BOX
-      // 
-      this.FED_FROM_COMBO_BOX.FormattingEnabled = true;
-      this.FED_FROM_COMBO_BOX.Location = new System.Drawing.Point(176, 121);
-      this.FED_FROM_COMBO_BOX.Name = "FED_FROM_COMBO_BOX";
-      this.FED_FROM_COMBO_BOX.Size = new System.Drawing.Size(121, 21);
-      this.FED_FROM_COMBO_BOX.TabIndex = 214;
       // 
       // DISTRIBUTION_SECTION_CHECKBOX
       // 
@@ -798,17 +790,26 @@
       this.CREATE_LOAD_SUMMARY_BUTTON.UseVisualStyleBackColor = true;
       this.CREATE_LOAD_SUMMARY_BUTTON.Click += new System.EventHandler(this.CREATE_LOAD_SUMMARY_BUTTON_Click);
       // 
+      // FED_FROM_TEXTBOX
+      // 
+      this.FED_FROM_TEXTBOX.BackColor = System.Drawing.SystemColors.Info;
+      this.FED_FROM_TEXTBOX.Location = new System.Drawing.Point(197, 121);
+      this.FED_FROM_TEXTBOX.Name = "FED_FROM_TEXTBOX";
+      this.FED_FROM_TEXTBOX.ReadOnly = true;
+      this.FED_FROM_TEXTBOX.Size = new System.Drawing.Size(100, 20);
+      this.FED_FROM_TEXTBOX.TabIndex = 220;
+      // 
       // PanelUserControl
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.WhiteSmoke;
+      this.Controls.Add(this.FED_FROM_TEXTBOX);
       this.Controls.Add(this.CREATE_LOAD_SUMMARY_BUTTON);
       this.Controls.Add(this.ADD_ALL_PANELS_BUTTON);
       this.Controls.Add(this.SAFETY_FACTOR_TEXTBOX);
       this.Controls.Add(this.SAFETY_FACTOR_CHECKBOX);
       this.Controls.Add(this.DISTRIBUTION_SECTION_CHECKBOX);
-      this.Controls.Add(this.FED_FROM_COMBO_BOX);
       this.Controls.Add(this.FED_FROM_LABEL);
       this.Controls.Add(this.HP_TO_VA);
       this.Controls.Add(this.LML_OVERRIDE);
@@ -946,11 +947,11 @@
     private string ID;
     private bool is3PH;
     private System.Windows.Forms.Label FED_FROM_LABEL;
-    private System.Windows.Forms.ComboBox FED_FROM_COMBO_BOX;
     private System.Windows.Forms.CheckBox DISTRIBUTION_SECTION_CHECKBOX;
     private System.Windows.Forms.CheckBox SAFETY_FACTOR_CHECKBOX;
     private System.Windows.Forms.TextBox SAFETY_FACTOR_TEXTBOX;
     private System.Windows.Forms.Button ADD_ALL_PANELS_BUTTON;
     private System.Windows.Forms.Button CREATE_LOAD_SUMMARY_BUTTON;
+    private System.Windows.Forms.TextBox FED_FROM_TEXTBOX;
   }
 }

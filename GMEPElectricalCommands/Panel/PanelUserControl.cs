@@ -306,15 +306,18 @@ namespace ElectricalCommands {
       double lml125 = Math.Round(lml * 1.25, 0);
       panel.Add("lml", lml);
       panel.Add("lml125", lml125);
-      panel.Add("kva", PANEL_LOAD_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
       if (SAFETY_FACTOR_CHECKBOX.Enabled && SAFETY_FACTOR_CHECKBOX.Checked) {
         double feederAmps = Convert.ToDouble(FEEDER_AMP_GRID.Rows[0].Cells[0].Value.ToString()) / Convert.ToDouble(SAFETY_FACTOR_TEXTBOX.Text);
+        double kva = Convert.ToDouble(PANEL_LOAD_GRID.Rows[0].Cells[0].Value.ToString()) / Convert.ToDouble(SAFETY_FACTOR_TEXTBOX.Text);
         panel.Add("feeder_amps", feederAmps.ToString());
+        panel.Add("kva", kva.ToString());
       }
       else {
+        panel.Add("kva", PANEL_LOAD_GRID.Rows[0].Cells[0].Value.ToString().ToUpper());
         panel.Add("feeder_amps", FEEDER_AMP_GRID.Rows[0].Cells[0].Value.ToString());
       }
       panel.Add("custom_title", CUSTOM_TITLE_TEXT.Text.ToUpper());
+      panel.Add("fed_from", FED_FROM_TEXTBOX.Text.ToUpper());
 
       string busRatingInput = BUS_RATING_INPUT.Text.ToLower();
 
@@ -754,6 +757,7 @@ namespace ElectricalCommands {
               string panelName = match.Groups[2].Value;
               if (!subPanels.Contains(panelName)) {
                 subPanels.Add(panelName.ToUpper());
+
               }
             }
           }
@@ -1114,6 +1118,12 @@ namespace ElectricalCommands {
           CREATE_PANEL_BUTTON.Visible = false;
           CREATE_LOAD_SUMMARY_BUTTON.Visible = true;
           ADD_ALL_PANELS_BUTTON.Visible = true;
+          if (GetPanelLoad() > 0) {
+            ADD_ALL_PANELS_BUTTON.Enabled = false;
+          }
+          else {
+            ADD_ALL_PANELS_BUTTON.Enabled = true;
+          }
           SAFETY_FACTOR_CHECKBOX.Enabled = true;
         }
       }
@@ -1187,6 +1197,7 @@ namespace ElectricalCommands {
       BUS_RATING_INPUT.Text = GetSafeString("bus_rating").Replace("AMP", "").Replace("A", "").Replace(" ", "");
       LCL.Text = GetSafeString("lcl");
       LML.Text = GetSafeString("lml");
+      FED_FROM_TEXTBOX.Text = GetSafeString("fed_from");
 
       // Set Checkboxes
       LCL_OVERRIDE.Checked = GetSafeBoolean("lcl_override");
@@ -1213,6 +1224,7 @@ namespace ElectricalCommands {
       PANEL_LOAD_GRID.Rows[0].Cells[0].Value = GetSafeString("kva");
       FEEDER_AMP_GRID.Rows[0].Cells[0].Value = GetSafeString("feeder_amps");
       if (SAFETY_FACTOR_CHECKBOX.Checked) {
+        PANEL_LOAD_GRID.Rows[0].Cells[0].Value = (SafeConvertToDouble(GetSafeString("kva")) * SafeConvertToDouble(GetSafeString("safety_factor"))).ToString();
         FEEDER_AMP_GRID.Rows[0].Cells[0].Value = (SafeConvertToDouble(GetSafeString("feeder_amps")) * SafeConvertToDouble(GetSafeString("safety_factor"))).ToString();
       }
 
@@ -1799,6 +1811,14 @@ namespace ElectricalCommands {
             UserControl panelControl = mainForm.findUserControl(panelName);
             DataGridView panelControl_phaseSumGrid =
               panelControl.Controls.Find("PHASE_SUM_GRID", true).FirstOrDefault() as DataGridView;
+            TextBox panelControl_fedFromTextbox =
+              panelControl.Controls.Find("FED_FROM_TEXTBOX", true).FirstOrDefault() as TextBox;
+            if (DISTRIBUTION_SECTION_CHECKBOX.Checked) {
+              panelControl_fedFromTextbox.Text = PANEL_NAME_INPUT.Text;
+            }
+            else {
+              panelControl_fedFromTextbox.Text = "PANEL " + PANEL_NAME_INPUT.Text;
+            }
             var phaseSumGridColumnCount = panelControl_phaseSumGrid.ColumnCount;
             var panelPhaseSumGridColumnCount = PHASE_SUM_GRID.ColumnCount;
 
@@ -2124,81 +2144,7 @@ namespace ElectricalCommands {
         sum += phC;
       }
       mainForm.UpdateLCLLML();
-      if (DISTRIBUTION_SECTION_CHECKBOX.Checked) {
-        List<Dictionary<string, object>> allPanelData = this.mainForm.retrieve_saved_panel_data();
-        int poles = 3;
-        if (!this.is3PH) {
-          poles = 2;
-        }
-        phA = 0;
-        phB = 0;
-        phC = 0;
-        for (int i = 0; i < PANEL_GRID.Rows.Count; i += poles) {
-          double linkedPanelsSum = 0;
-          string desc = PANEL_GRID.Rows[i].Cells["description_left"].Value.ToString();
-          bool leftIsPanel = false;
-          bool rightIsPanel = false;
-          foreach (Dictionary<string, object> panel in allPanelData) {
-            if (panel.TryGetValue("panel", out object panelName)) {
-              panelName = "PANEL " + panelName.ToString().Replace("'", "");
-              if (desc == panelName.ToString()) {
-                double a = getPhaseValue(PANEL_GRID.Rows[i].Cells["phase_a_left"].Value);
-                double b = 0;
-                if (i < PANEL_GRID.Rows.Count - 1) {
-                  b = getPhaseValue(PANEL_GRID.Rows[i + 1].Cells["phase_b_left"].Value);
-                }
-                double c = 0;
-                if (poles == 3 && i < PANEL_GRID.Rows.Count - 2) {
-                  c = getPhaseValue(PANEL_GRID.Rows[i + 2].Cells["phase_c_left"].Value);
-                }
-                linkedPanelsSum = Math.Max(Math.Max(a, b), c);
-                leftIsPanel = true;
-              }
-            }
-          }
-          desc = PANEL_GRID.Rows[i].Cells["description_right"].Value.ToString();
-          foreach (Dictionary<string, object> panel in allPanelData) {
-            if (panel.TryGetValue("panel", out object panelName)) {
-              panelName = "PANEL " + panelName.ToString().Replace("'", "");
-              if (desc == panelName.ToString()) {
-                double a = getPhaseValue(PANEL_GRID.Rows[i].Cells["phase_a_right"].Value);
-                double b = 0;
-                if (i < PANEL_GRID.Rows.Count - 1) {
-                  b = getPhaseValue(PANEL_GRID.Rows[i + 1].Cells["phase_b_right"].Value);
-                }
-                double c = 0;
-                if (poles == 3 && i < PANEL_GRID.Rows.Count - 2) {
-                  c = getPhaseValue(PANEL_GRID.Rows[i + 2].Cells["phase_c_right"].Value);
-                }
-                linkedPanelsSum = Math.Max(Math.Max(a, b), c);
-                rightIsPanel = true;
-              }
-            }
-          }
-          phA += linkedPanelsSum;
-          phB += linkedPanelsSum;
-          phC += linkedPanelsSum;
-          if (!leftIsPanel) {
-            phA += getPhaseValue(PANEL_GRID.Rows[i].Cells["phase_a_left"].Value);
-            if (i < PANEL_GRID.Rows.Count - 1) {
-              phB += getPhaseValue(PANEL_GRID.Rows[i + 1].Cells["phase_b_left"].Value);
-            }
-            if (poles == 3 && i < PANEL_GRID.Rows.Count - 2) {
-              phC += getPhaseValue(PANEL_GRID.Rows[i + 2].Cells["phase_c_left"].Value);
-            }
-          }
-          if (!rightIsPanel) {
-            phA += getPhaseValue(PANEL_GRID.Rows[i].Cells["phase_a_right"].Value);
-            if (i < PANEL_GRID.Rows.Count - 1) {
-              phB += getPhaseValue(PANEL_GRID.Rows[i + 1].Cells["phase_b_right"].Value);
-            }
-            if (poles == 3 && i < PANEL_GRID.Rows.Count - 2) {
-              phC += getPhaseValue(PANEL_GRID.Rows[i + 2].Cells["phase_c_right"].Value);
-            }
-          }
-        }
-      }
-
+      
       TOTAL_VA_GRID.Rows[0].Cells[0].Value = CalculateTotalVA(sum);
 
       // Handle LCL
@@ -2211,19 +2157,30 @@ namespace ElectricalCommands {
         sum += Math.Round(Convert.ToDouble(LML.Text) * 0.25, 0);
       }
 
-      PANEL_LOAD_GRID.Rows[0].Cells[0].Value = CalculatePanelLoad(sum);
-
       double safetyFactor = 1.0;
       if (SAFETY_FACTOR_CHECKBOX.Enabled && SAFETY_FACTOR_CHECKBOX.Checked) {
         safetyFactor = Convert.ToDouble(SAFETY_FACTOR_TEXTBOX.Text);
       }
+      double totalKva = CalculatePanelLoad(sum) * safetyFactor;
+      PANEL_LOAD_GRID.Rows[0].Cells[0].Value = totalKva;
 
       object lineVoltageObj = LINE_VOLTAGE_COMBOBOX.SelectedItem;
+      object phaseVoltageObj = PHASE_VOLTAGE_COMBOBOX.SelectedItem;
       if (lineVoltageObj != null) {
         double lineVoltage = Convert.ToDouble(lineVoltageObj);
+        double phaseVoltage = Convert.ToDouble(phaseVoltageObj);
+        double yFactor = 1;
+        if (phaseVoltage == 208.0 && this.is3PH) {
+          yFactor = 1.732;
+        }
         if (lineVoltage != 0) {
           if (LCL.Text == "0" && LML.Text == "0") {
-            FEEDER_AMP_GRID.Rows[0].Cells[0].Value = CalculateFeederAmps(phA, phB, phC, lineVoltage) * safetyFactor;
+            if (DISTRIBUTION_SECTION_CHECKBOX.Checked) {
+              FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(totalKva * 1000 / phaseVoltage / yFactor, 1);
+            }
+            else {
+              FEEDER_AMP_GRID.Rows[0].Cells[0].Value = CalculateFeederAmps(phA, phB, phC, lineVoltage) * safetyFactor;
+            }
           }
           else {
             FEEDER_AMP_GRID.Rows[0].Cells[0].Value = Math.Round(sum / (lineVoltage * 3), 1);
@@ -2521,25 +2478,54 @@ namespace ElectricalCommands {
       // iterate over all panels
       List<Dictionary<string, object>> allPanelData = this.mainForm.retrieve_saved_panel_data();
       int index = 0;
-      string side = "left"; int phase = Convert.ToInt32(PHASE_COMBOBOX.Text);
+      int prevIndex = 0;
+      int nextIndex = 0;
+      string side = "left";
+      int phase = Convert.ToInt32(PHASE_COMBOBOX.Text);
       if (phase == 1) {
         phase = 2;
+      }
+      void add(string panelName) {
+        PANEL_GRID.Rows[index].Cells[$"description_{side}"].Value = "PANEL " + panelName;
+        PANEL_GRID.Rows[index + 1].Cells[$"description_{side}"].Value = "";
+        if (phase == 3) {
+          PANEL_GRID.Rows[index + 2].Cells[$"description_{side}"].Value = "";
+        }
+        index += phase;
+        if (index >= PANEL_GRID.Rows.Count && side == "left") {
+          side = "right";
+          nextIndex = index;
+          index = prevIndex;
+          prevIndex = nextIndex;
+        }
+        else if (index >= PANEL_GRID.Rows.Count && side == "right") {
+          side = "left";
+          for (int i = 0; i < phase; i++) {
+            ADD_ROW_BUTTON_Click(sender, e);
+          }
+        }
       }
       foreach (Dictionary<string, object> panel in allPanelData) {
         if (panel.TryGetValue("distribution_section", out object value)) {
           if (value is bool boolValue && boolValue == false) {
             if (panel.TryGetValue("panel", out object panelName)) {
               panelName = panelName.ToString().Replace("'", "");
-              PANEL_GRID.Rows[index].Cells[$"description_{side}"].Value = "PANEL " + panelName;
-              PANEL_GRID.Rows[index + 1].Cells[$"description_{side}"].Value = "";
-              if (phase == 3) {
-                PANEL_GRID.Rows[index + 2].Cells[$"description_{side}"].Value = "";
+              if (panel.TryGetValue("fed_from", out object fedFrom)) {
+                fedFrom = fedFrom.ToString();
+                if (!fedFrom.ToString().StartsWith("PANEL") && !fedFrom.ToString().StartsWith("SUBPANEL")) {
+                  add(panelName as string);
+                }
               }
-              index += phase;
+              else {
+                add(panelName as string);
+              }
             }
           }
-          GetSubPanels();
         }
+      }
+      //GetSubPanels();
+      if (GetPanelLoad() > 0) {
+        ADD_ALL_PANELS_BUTTON.Enabled = false;
       }
     }
 

@@ -884,13 +884,13 @@ namespace ElectricalCommands {
         Table tb = new Table();
         tb.TableStyle = db.Tablestyle;
         tb.Position = startPoint;
-        tb.SetSize(totalEntries + 4, 2);
+        tb.SetSize(totalEntries + 5, 2);
         tb.SetRowHeight(0.5);
         tb.Cells[0, 0].TextHeight = (0.125);
         tb.Cells[0, 0].TextString = $"{panelData["panel"] as string } LOAD SUMMARY";
         int tableRowIndex = 1;
         int increment = 2;
-        tb.SetColumnWidth(2);
+        tb.SetColumnWidth(3);
         if (panelData.ContainsKey("phase_c_left")) {
           increment = 3;
           phaseCLeft = (List<string>)panelData["phase_c_left"];
@@ -905,11 +905,7 @@ namespace ElectricalCommands {
               phC = GetSafeDouble(phaseCLeft[i + 4]);
             }
             tb.Cells[tableRowIndex, 0].TextString = descriptionLeft[i];
-            tb.Cells[tableRowIndex, 0].TextHeight = (0.125);
-            tb.Cells[tableRowIndex, 0].Alignment = CellAlignment.MiddleCenter;
             tb.Cells[tableRowIndex, 1].TextString = Math.Round((phA + phB + phC)/1000, 1).ToString() + " KVA";
-            tb.Cells[tableRowIndex, 1].TextHeight = (0.125);
-            tb.Cells[tableRowIndex, 1].Alignment = CellAlignment.MiddleCenter;
             tableRowIndex++;
           }
           if (!String.IsNullOrEmpty(descriptionRight[i]) && descriptionRight[i] != "SPARE" && descriptionRight[i] != "SPACE") {
@@ -920,19 +916,10 @@ namespace ElectricalCommands {
               phC = GetSafeDouble(phaseCRight[i + 4]);
             }
             tb.Cells[tableRowIndex, 0].TextString = descriptionRight[i];
-            tb.Cells[tableRowIndex, 0].TextHeight = (0.125);
-            tb.Cells[tableRowIndex, 0].Alignment = CellAlignment.MiddleCenter;
             tb.Cells[tableRowIndex, 1].TextString = Math.Round((phA + phB + phC) / 1000, 1).ToString() + " KVA";
-            tb.Cells[tableRowIndex, 1].TextHeight = (0.125);
-            tb.Cells[tableRowIndex, 1].Alignment = CellAlignment.MiddleCenter;
             tableRowIndex++;
           }
         }
-
-        tb.Cells[totalEntries + 1, 0].TextHeight = (0.125);
-        tb.Cells[totalEntries + 1, 1].TextHeight = (0.125);
-        tb.Cells[totalEntries + 1, 0].Alignment = CellAlignment.MiddleCenter;
-        tb.Cells[totalEntries + 1, 1].Alignment = CellAlignment.MiddleCenter;
         tb.Cells[totalEntries + 1, 0].TextString = "TOTAL (KVA)";
         tb.Cells[totalEntries + 1, 1].TextString = panelData["kva"] as string;
 
@@ -940,38 +927,50 @@ namespace ElectricalCommands {
         double lineVoltage = GetSafeDouble(panelData["voltage1"]);
         double phaseVoltage = GetSafeDouble(panelData["voltage2"]);
         double yFactor = 1;
-        if (increment == 3) {
+        if (increment == 3 && phaseVoltage != 240) {
           yFactor = 1.732;
         }
-
         double feederAmps = GetSafeDouble(panelData["feeder_amps"]);
 
         double kva = GetSafeDouble(panelData["kva"]);
+        double busSize = Convert.ToDouble(panelData.TryGetValue("bus_rating", out object bus) ? bus?.ToString().Replace("A", "") ?? "1" : "1");
 
+        double totalAmperage = 0;
         if (usingSafetyFactor) {
           double safetyFactor = Convert.ToDouble(panelData.TryGetValue("safety_factor", out object value) ? value?.ToString() ?? "1" : "1");
-          
+          totalAmperage = Math.Round(kva * 1000 / phaseVoltage / yFactor * safetyFactor, 1);
           if (safetyFactor == 0) safetyFactor = 1;
-          tb.Cells[totalEntries + 2, 0].TextHeight = (0.125);
-          tb.Cells[totalEntries + 2, 1].TextHeight = (0.125);
-          tb.Cells[totalEntries + 3, 0].TextHeight = (0.125);
-          tb.Cells[totalEntries + 3, 1].TextHeight = (0.125);
-          tb.Cells[totalEntries + 2, 0].Alignment = CellAlignment.MiddleCenter;
-          tb.Cells[totalEntries + 2, 1].Alignment = CellAlignment.MiddleCenter;
-          tb.Cells[totalEntries + 3, 0].Alignment = CellAlignment.MiddleCenter;
-          tb.Cells[totalEntries + 3, 1].Alignment = CellAlignment.MiddleCenter;
-          tb.Cells[totalEntries + 2, 0].TextString = $"TOTAL (AMP@{lineVoltage}/{phaseVoltage}V)";
-          tb.Cells[totalEntries + 2, 1].TextString = Math.Round(kva * 1000 / phaseVoltage / yFactor, 1).ToString();
-          tb.Cells[totalEntries + 3, 0].TextString = $"AMPx{safetyFactor} SAFETY FACTOR";
-          tb.Cells[totalEntries + 3, 1].TextString = Math.Round(kva * 1000 / phaseVoltage / yFactor * safetyFactor, 1).ToString();
+          tb.Cells[totalEntries + 2, 0].TextString = $"TOTAL (KVAx{safetyFactor})";
+          tb.Cells[totalEntries + 2, 1].TextString = Math.Round(kva * safetyFactor).ToString();
+          tb.Cells[totalEntries + 3, 0].TextString = $"TOTAL (AMP@{lineVoltage}/{phaseVoltage}V)";
+          tb.Cells[totalEntries + 3, 1].TextString = totalAmperage.ToString();
+          if (totalAmperage < busSize) {
+            tb.Cells[totalEntries + 4, 0].TextString = "CONCLUSION";
+            tb.Cells[totalEntries + 4, 1].TextString = $"{busSize}A SERVICE CAN HANDLE {totalAmperage} LOAD.";
+          }
+          else {
+            tb.Cells[totalEntries + 4, 0].TextString = "CONCLUSION";
+            tb.Cells[totalEntries + 4, 1].TextString = $"{busSize}A SERVICE CANNOT HANDLE {totalAmperage} LOAD.";
+          }
         }
         else {
-          tb.Cells[totalEntries + 2, 0].TextHeight = (0.125);
-          tb.Cells[totalEntries + 2, 1].TextHeight = (0.125);
-          tb.Cells[totalEntries + 2, 0].Alignment = CellAlignment.MiddleCenter;
-          tb.Cells[totalEntries + 2, 1].Alignment = CellAlignment.MiddleCenter;
           tb.Cells[totalEntries + 2, 0].TextString = $"TOTAL (AMP@{lineVoltage}/{phaseVoltage}V)";
           tb.Cells[totalEntries + 2, 1].TextString = Math.Round(kva * 1000 / phaseVoltage / yFactor, 1).ToString();
+          if (totalAmperage < busSize) {
+            tb.Cells[totalEntries + 3, 0].TextString = "CONCLUSION";
+            tb.Cells[totalEntries + 3, 1].TextString = $"{busSize}A SERVICE CAN HANDLE {totalAmperage} LOAD.";
+          }
+          else {
+            tb.Cells[totalEntries + 3, 0].TextString = "CONCLUSION";
+            tb.Cells[totalEntries + 3, 1].TextString = $"{busSize}A SERVICE CANNOT HANDLE {totalAmperage} LOAD.";
+          }
+        }
+
+        for (int i = 0; i < totalEntries + 5; i++) {
+          for (int j = 0; j < 2; j++) {
+            tb.Cells[i, j].TextHeight = 0.125;
+            tb.Cells[i, j].Alignment = CellAlignment.MiddleCenter;
+          }
         }
 
         BlockTable bt = (BlockTable)tr.GetObject(doc.Database.BlockTableId, OpenMode.ForRead);
