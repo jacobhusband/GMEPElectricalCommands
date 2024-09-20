@@ -3110,6 +3110,43 @@ namespace ElectricalCommands {
         }
       }
     }
+
+    internal void RemoveFedFrom(string panelName) {
+      Console.WriteLine(panelName);
+      if (panelName.Replace("DISTRIB. ", "") == FED_FROM_TEXTBOX.Text) {
+        FED_FROM_TEXTBOX.Text = "";
+      }
+      if (panelName == FED_FROM_TEXTBOX.Text) {
+        FED_FROM_TEXTBOX.Text = "";
+      }
+    }
+
+    internal void RemoveSubpanel(string subpanelName, bool subpanelIs3Ph) {
+      string side = "left";
+      for (int j = 0; j < 2; j++) {
+        for (int i = 0; i < PANEL_GRID.Rows.Count; i++) {
+          if ((PANEL_GRID.Rows[i].Cells[$"description_{side}"].Value as string).ToUpper().Replace("PANEL ", "") == subpanelName.ToUpper()) {
+            if (subpanelIs3Ph) {
+              PANEL_GRID.Rows[i + 2].Cells[$"description_{side}"].Value = "";
+              PANEL_GRID.Rows[i + 2].Cells[$"phase_a_{side}"].Value = "";
+              PANEL_GRID.Rows[i + 2].Cells[$"phase_b_{side}"].Value = "";
+              PANEL_GRID.Rows[i + 2].Cells[$"phase_c_{side}"].Value = "";
+            }
+            PANEL_GRID.Rows[i].Cells[$"description_{side}"].Value = "SPARE";
+            PANEL_GRID.Rows[i + 1].Cells[$"description_{side}"].Value = "";
+            PANEL_GRID.Rows[i].Cells[$"phase_a_{side}"].Value = "";
+            PANEL_GRID.Rows[i].Cells[$"phase_b_{side}"].Value = "";
+            PANEL_GRID.Rows[i + 1].Cells[$"phase_a_{side}"].Value = "";
+            PANEL_GRID.Rows[i + 1].Cells[$"phase_b_{side}"].Value = "";
+          }
+        }
+        side = "right";
+      }
+    }
+
+    public bool Is3Ph() {
+      return is3PH;
+    }
   }
 
   public class PanelItem {
